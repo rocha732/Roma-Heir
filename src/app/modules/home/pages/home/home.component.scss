@@ -1,0 +1,262 @@
+.row {
+  gap: 20px;
+}
+th, td.text-cell {
+  height: 50px;
+  vertical-align: middle;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+td.actions-cell {
+  height: 50px;
+  vertical-align: middle;
+}
+
+.overflow-hidden {
+  display: grid;
+  gap: 20px;
+}
+.hours-list {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: center;
+  gap: 10px;
+  li {
+    box-shadow: 4px 4px 20px 0px #0000001a;
+  }
+}
+/* Aplica a todos los botones con la clase .btn */
+button.btn {
+  background-color: #2e2f37 !important;
+  color: #ffffff !important;
+  border: 1px solid #2e2f37 !important;
+  transition: all 0.3s ease;
+}
+
+/* Hover → colores invertidos */
+button.btn:hover {
+  background-color: #ffffff !important;
+  color: #2e2f37 !important;
+  border: 1px solid #2e2f37 !important;
+}
+
+/* Active (presionado) → vuelve al color original */
+button.btn:active {
+  background-color: #2e2f37 !important;
+  color: #ffffff !important;
+  border: 1px solid #2e2f37 !important;
+}
+.text-cell {
+  max-width: 150px; /* ajusta al tamaño que necesites */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dropdown-item {
+  cursor: pointer;
+}
+
+.card {
+  border-radius: 16px;
+}
+.status-badge {
+  /*
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  display: inline-block;
+*/
+  &.pendiente {
+    background-color: #ffc107; // amarillo
+  }
+
+  &.confirmada {
+    background-color: #28a745; // verde
+  }
+
+  &.cancelada {
+    background-color: #dc3545; // rojo
+  }
+
+  &.completada {
+    background-color: #007bff; // azul
+  }
+
+  &.ausente {
+    background-color: #6c757d; // gris oscuro
+  }
+
+  &.reprogramada {
+    background-color: #fd7e14; // naranja
+  }
+}tr.pendiente > td {
+  background-color: #fff3cd !important; // amarillo suave
+}
+
+tr.confirmada > td {
+  background-color: #d4edda !important; // verde suave
+}
+
+tr.cancelada > td {
+  background-color: #f8d7da !important; // rojo suave
+}
+
+tr.completada > td {
+  background-color: #cce5ff !important; // azul suave
+}
+
+tr.ausente > td {
+  background-color: #e2e3e5 !important; // gris claro
+}
+
+tr.reprogramada > td {
+  background-color: #ffe5b4 !important; // naranja claro
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between; // puedes usar space-between si quieres separación total
+  gap: clamp(4px, 1vw, 12px); // 🔥 gap automático: mínimo 4px, máximo 12px según ancho
+  font-size: 0.5rem;
+  cursor: pointer;
+padding-left: 12px;
+    padding-right: 12px;
+  .item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .legend-item {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+}
+
+.day {
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 4px 20px 0px #00000026;
+  padding: 10px;
+  gap: 10px;
+  width: 80px;
+  height: 80px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.day:hover {
+  transform: translateY(-5px);
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+.day.selected {
+  background-color: #2e2f37;
+  color: #ffffff;
+  font-weight: bold;
+  transform: scale(1.05);
+}
+.time-slot {
+  text-align: center;
+  width: 90px;
+  height: 42px;
+  opacity: 1;
+  padding: 10px;
+  box-shadow: 4px 4px 20px 0px #0000001a;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.time-slot:hover {
+  transform: translateY(-5px);
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+.time-slot.selected {
+  background-color: #2e2f37;
+  color: #ffffff;
+  font-weight: bold;
+  transform: scale(1.05);
+}
+.slots {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 10px;
+  column-gap: 20px;
+}/* Íconos por estado */
+.icon-pendiente {
+  color: #ffc107; // Amarillo
+}
+.icon-confirmada {
+  color: #0d6efd; // Azul
+}
+.icon-cancelada {
+  color: #dc3545; // Rojo
+}
+.icon-completada {
+  color: #198754; // Verde
+}
+.icon-ausente {
+  color: #6c757d; // Gris
+}
+.icon-reprogramada {
+  color: #6610f2; // Morado
+}
+
+/* Header sticky */
+.sticky-header {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 2;
+}
+.icon-pendiente {
+  color: #ffc107; /* amarillo */
+}
+.icon-confirmada {
+  color: #28a745; /* verde */
+}
+.icon-cancelada {
+  color: #dc3545; /* rojo */
+}
+.icon-completada {
+  color: #0d6efd; /* azul */
+}
+.icon-ausente {
+  color: #fd7e14; /* naranja */
+}
+.icon-reprogramada {
+  color: #6f42c1; /* morado */
+}
+
+.legend .item {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.legend .item mat-icon {
+  font-size: 20px;
+  vertical-align: middle;
+}
+
+.legend .item span {
+  font-size: 14px;
+}
+.hours-list {
+  li {
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    &:hover {
+      background-color: #f1f1f1;
+      transform: scale(1.02);
+    }
+  }
+}

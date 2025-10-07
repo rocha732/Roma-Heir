@@ -1,0 +1,153 @@
+<div
+  *ngIf="loading"
+  class="d-flex justify-content-center align-items-center position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50"
+  style="z-index: 2000"
+>
+  <div class="spinner-border text-light" role="status">
+    <span class="visually-hidden">Cargando...</span>
+  </div>
+</div>
+
+<div class="calendar-container d-flex justify-content-around">
+  <div class="container">
+    <div class="card">
+      <div class="card-title">Selecciona tu fecha</div>
+      <div class="card-body">
+        <div class="d-flex justify-content-around">
+          <div
+            *ngFor="let date of weekDays"
+            class="day"
+            [class.selected]="selectedDate?.fecha === date.fecha"
+            (click)="selectDate(date)"
+          >
+            <div class="date">{{ date.day }}</div>
+            <div class="day-name">{{ date.semana }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" *ngIf="selectedDate">
+      <div class="card-title">Selecciona tu hora</div>
+      <div class="card-body">
+        <div *ngIf="morningSlots.length > 0" class="time-slots">
+          <h1>MAÑANA</h1>
+          <div class="slots">
+            <div *ngFor="let item of morningSlots">
+              <div
+                class="time-slot"
+                (click)="selectTime(item)"
+                [class.selected]="selectedTime === item"
+              >
+                {{ item.slice(0, 5) }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="afternoonSlots.length > 0" class="time-slots">
+          <h1>TARDE</h1>
+          <div class="slots">
+            <div *ngFor="let item of afternoonSlots">
+              <div
+                class="time-slot"
+                (click)="selectTime(item)"
+                [class.selected]="selectedTime === item"
+              >
+                {{ item.slice(0, 5) }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="eveningSlots.length > 0" class="time-slots">
+          <h1>NOCHE</h1>
+          <div class="slots">
+            <div *ngFor="let item of eveningSlots">
+              <div
+                class="time-slot"
+                (click)="selectTime(item)"
+                [class.selected]="selectedTime === item"
+              >
+                {{ item.slice(0, 5) }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" *ngIf="selectedTime">
+      <div class="card-title text-center mt-2">Selecciona tu estilista</div>
+      <div class="card-body">
+        <div *ngIf="specialists.length > 0" class="time-slots">
+          <div class="slots d-flex flex-wrap gap-3 justify-content-center">
+            <div
+              *ngFor="let specialist of specialists"
+              class="specialist-card"
+              (click)="selectSpecialist(specialist.id)"
+              [class.selected]="selectedSpecialistId === specialist.id"
+            >
+              <img
+                [src]="specialist.profileImageUrl"
+                alt="Foto de {{ specialist.firstName }}"
+                class="specialist-photo"
+              />
+              <div class="specialist-info">
+                <h5>{{ specialist.firstName }} {{ specialist.lastName }}</h5>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="specialists.length === 0" class="text-center text-muted">
+          No hay especialistas disponibles
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="selectedSpecialistId">
+      <button class="btn btn-primary w-100 mb-3" (click)="confirmAppointment()">
+        Confirmar cita
+      </button>
+    </div>
+  </div>
+</div>
+<!-- Modal de confirmación -->
+<div
+  class="modal fade"
+  id="confirmModal"
+  tabindex="-1"
+  aria-labelledby="confirmModalLabel"
+  aria-hidden="true"
+  (hidden.bs.modal)="goDashboard()"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmModalLabel">Cita confirmada</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Cerrar"
+          (click)="goDashboard()"
+        ></button>
+      </div>
+      <div class="modal-body text-center">
+        ✅ Tu cita fue registrada con éxito <br />
+        <strong>{{ selectedDate?.fecha }}</strong> a las
+        <strong>{{ selectedTime }}</strong>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+          (click)="goDashboard()"
+        >
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

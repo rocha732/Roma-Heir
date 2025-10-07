@@ -68,7 +68,9 @@
               "browserTarget": "roma-hair:build:production"
             },
             "development": {
-              "browserTarget": "roma-hair:build:development"
+              "browserTarget": "roma-hair:build:development",
+                    "proxyConfig": "proxy.conf.json"   
+
             }
           },
           "defaultConfiguration": "development"

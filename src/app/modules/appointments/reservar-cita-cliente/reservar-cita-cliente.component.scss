@@ -1,0 +1,116 @@
+.day {
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 4px 20px 0px #00000026;
+  padding: 10px;
+  gap: 10px;
+  width: 80px;
+  height: 80px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.day:hover {
+  transform: translateY(-5px);
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+.day.selected {
+  background-color: #2e2f37;
+  color: #ffffff;
+  font-weight: bold;
+  transform: scale(1.05);
+}
+
+.time-slot {
+  text-align: center;
+  width: 90px;
+  height: 42px;
+  opacity: 1;
+  padding: 10px;
+  box-shadow: 4px 4px 20px 0px #0000001a;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.time-slot:hover {
+  transform: translateY(-5px);
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+.time-slot.selected {
+  background-color: #2e2f37;
+  color: #ffffff;
+  font-weight: bold;
+  transform: scale(1.05);
+}
+.slots {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 10px;
+  column-gap: 20px;
+}
+.specialist-card {
+  width: 180px;
+  background: #fff;
+  border: 1px solid #ddd;
+  overflow: hidden;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &.selected {
+    border: 1px solid #2e2f37;
+  }
+}
+
+.specialist-photo {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+.specialist-info {
+  padding: 0.5rem 0.75rem;
+
+  h5 {
+    font-size: 1rem;
+    margin: 0.25rem 0;
+  }
+
+  p {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+  }
+}
+.btn{
+  background-color: #2e2f37;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 0px;  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+  &:active {
+    background-color: #000000; // cuando lo clickeas
+    transform: scale(0.95);    // efecto de "hundido"
+  }
+
+  &:focus {
+    outline: 2px solid #000000; // cuando el botón queda enfocado
+    outline-offset: 2px;
+  }
+}

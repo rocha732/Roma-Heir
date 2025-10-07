@@ -1,0 +1,595 @@
+<!-- Spinner global -->
+<div
+  *ngIf="loading"
+  class="d-flex justify-content-center align-items-center position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50"
+  style="z-index: 2000"
+>
+  <div class="spinner-border text-light" role="status">
+    <span class="visually-hidden">Cargando...</span>
+  </div>
+</div>
+
+<div class="container text-center">
+  <div class="overflow-hidden text-center">
+    <div class="row">
+      <div class="card col-sm">
+        <div class="card-body">
+          <h5 class="card-title">Registrar Cliente</h5>
+          <form (ngSubmit)="registerClient()" #clientForm="ngForm">
+            <div class="mb-3">
+              <label for="firstName" class="form-label">Nombre</label>
+              <input
+                type="text"
+                id="firstName"
+                class="form-control"
+                [(ngModel)]="customer.firstName"
+                name="firstName"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="lastName" class="form-label">Apellido</label>
+              <input
+                type="text"
+                id="lastName"
+                class="form-control"
+                [(ngModel)]="customer.lastName"
+                name="lastName"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="email" class="form-label">Correo</label>
+              <input
+                type="email"
+                id="email"
+                class="form-control"
+                [(ngModel)]="customer.email"
+                name="email"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="phone" class="form-label">Teléfono</label>
+              <input
+                type="text"
+                id="phone"
+                class="form-control"
+                [(ngModel)]="customer.phone"
+                name="phone"
+                required
+              />
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+              Registrar
+            </button>
+          </form>
+        </div>
+      </div>
+      <div class="card col-sm-8">
+        <div class="card-body">
+          <h5 class="card-title">Clientes total ({{ customers.length }})</h5>
+
+          <!-- 🔍 Buscador -->
+          <div class="mb-3">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Buscar por nombre, apellido o correo"
+              [(ngModel)]="searchTerm"
+            />
+          </div>
+
+          <!-- Contenedor con overscroll -->
+          <div
+            class="table-responsive"
+            style="max-height: 300px; overflow-y: auto; min-height: 300px"
+          >
+            <table class="table table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th
+                    class="col-2"
+                    style="
+                      position: sticky;
+                      top: 0;
+                      background: white;
+                      z-index: 2;
+                    "
+                  >
+                    firstName
+                  </th>
+                  <th
+                    class="col-2"
+                    style="
+                      position: sticky;
+                      top: 0;
+                      background: white;
+                      z-index: 2;
+                    "
+                  >
+                    lastName
+                  </th>
+                  <th
+                    class="col-4"
+                    style="
+                      position: sticky;
+                      top: 0;
+                      background: white;
+                      z-index: 2;
+                    "
+                  >
+                    email
+                  </th>
+                  <th
+                    class="col-2"
+                    style="
+                      position: sticky;
+                      top: 0;
+                      background: white;
+                      z-index: 2;
+                    "
+                  >
+                    phone
+                  </th>
+                  <th
+                    class="col-2"
+                    style="
+                      position: sticky;
+                      top: 0;
+                      background: white;
+                      z-index: 2;
+                    "
+                  ></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let customer of filteredCustomers()">
+                  <td class="text-cell">{{ customer.firstName }}</td>
+                  <td class="text-cell">{{ customer.lastName }}</td>
+                  <td class="text-cell">{{ customer.email }}</td>
+                  <td class="text-cell">{{ customer.phone }}</td>
+                  <td class="actions-cell">
+                    <div class="btn-group" role="group">
+                      <button
+                        type="button"
+                        class="btn btn-primary dropdown-toggle"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                      >
+                        Acciones
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li>
+                          <a
+                            class="dropdown-item"
+                            (click)="agendarCitaPaciente(customer.id)"
+                            >Agendar</a
+                          >
+                        </li>
+                        <li><a class="dropdown-item">Perfil</a></li>
+                      </ul>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="card col-sm">
+        <div class="card-body">
+          <h5 class="card-title">Horarios disponibles para HOY</h5>
+          <div *ngIf="hasSlots; else noSlots">
+            <div *ngIf="morningSlots.length > 0">
+              <h6>Mañana</h6>
+              <ul class="list-group hours-list">
+                <li
+                  *ngFor="let slot of morningSlots"
+                  class="list-group-item"
+                  (click)="openSlotModal(slot)"
+                >
+                  {{ slot.slice(0, 5) }}
+                </li>
+              </ul>
+            </div>
+
+            <div *ngIf="afternoonSlots.length > 0">
+              <h6 class="mt-3">Tarde</h6>
+              <ul class="list-group hours-list">
+                <li
+                  *ngFor="let slot of afternoonSlots"
+                  class="list-group-item"
+                  (click)="openSlotModal(slot)"
+                >
+                  {{ slot.slice(0, 5) }}
+                </li>
+              </ul>
+            </div>
+
+            <div *ngIf="eveningSlots.length > 0">
+              <h6 class="mt-3">Noche</h6>
+              <ul class="list-group hours-list">
+                <li
+                  *ngFor="let slot of eveningSlots"
+                  class="list-group-item"
+                  (click)="openSlotModal(slot)"
+                >
+                  {{ slot.slice(0, 5) }}
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <ng-template #noSlots>
+            <div class="alert alert-danger mt-3">
+              No hay horarios disponibles para hoy.
+            </div>
+          </ng-template>
+        </div>
+      </div>
+
+      <div class="card col-sm">
+        <div class="card-body">
+          <h5 class="card-title">Reservas</h5>
+
+          <!-- Leyenda con íconos -->
+          <div class="d-flex flex-wrap legend mb-3">
+            <div (click)="filterByStatus(1)" class="item">
+              <mat-icon class="icon-pendiente" matTooltip="Pendiente">
+                hourglass_empty
+              </mat-icon>
+            </div>
+
+            <div (click)="filterByStatus(2)" class="item">
+              <mat-icon class="icon-confirmada" matTooltip="Confirmada">
+                check_circle
+              </mat-icon>
+            </div>
+
+            <div (click)="filterByStatus(3)" class="item">
+              <mat-icon class="icon-cancelada" matTooltip="Cancelada">
+                cancel
+              </mat-icon>
+            </div>
+
+            <div (click)="filterByStatus(4)" class="item">
+              <mat-icon class="icon-completada" matTooltip="Completada">
+                task_alt
+              </mat-icon>
+            </div>
+
+            <div (click)="filterByStatus(5)" class="item">
+              <mat-icon class="icon-ausente" matTooltip="Ausente">
+                report_problem
+              </mat-icon>
+            </div>
+
+            <div (click)="filterByStatus(6)" class="item">
+              <mat-icon class="icon-reprogramada" matTooltip="Reprogramada">
+                update
+              </mat-icon>
+            </div>
+
+            <button
+              class="btn btn-sm btn-outline-secondary ms-1"
+              (click)="clearFilter()"
+            >
+              Ver todas
+            </button>
+
+            <button
+              class="btn btn-sm btn-outline-secondary ms-1"
+              (click)="FilterToday()"
+            >
+              Hoy
+            </button>
+          </div>
+
+          <!-- Tabla -->
+          <div
+            class="table-responsive"
+            style="max-height: 300px; overflow-y: auto; min-height: 300px"
+          >
+            <table class="table table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th class="col-2 sticky-header">Customer</th>
+                  <th class="col-2 sticky-header">Specialist</th>
+                  <th class="col-1 sticky-header">Hour</th>
+                  <th class="col-2 sticky-header">
+                    <div class="d-flex align-items-center">
+                      <span class="me-2">Reserved</span>
+                      <input
+                        matInput
+                        [matDatepicker]="picker"
+                        placeholder="Filtrar fecha"
+                        [matDatepickerFilter]="dateFilter"
+                        (dateChange)="filterByDate($event.value)"
+                        class="form-control form-control-sm"
+                        style="visibility: hidden; padding: 0px; width: 0px"
+                      />
+                      <mat-datepicker-toggle
+                        matSuffix
+                        [for]="picker"
+                      ></mat-datepicker-toggle>
+                      <mat-datepicker #picker></mat-datepicker>
+                    </div>
+                  </th>
+
+                  <th class="col-1 sticky-header text-center">Status</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr *ngFor="let reservation of filteredReservations">
+                  <td class="text-cell">
+                    {{ searchCustomer(reservation.customerId) }}
+                  </td>
+                  <td class="text-cell">
+                    {{ searchSpecialist(reservation.specialistId) }}
+                  </td>
+                  <td class="text-cell">
+                    {{ reservation.hourAt.slice(0, 5) }}
+                  </td>
+                  <td class="text-cell">
+                    {{ reservation.reservedAt.slice(0, 10) }}
+                  </td>
+
+                  <td class="text-center position-relative">
+                    <!-- Ícono con menú (excepto Completado y Cancelado) -->
+                    <mat-icon
+                      *ngIf="
+                        reservation.statusId !== 3 && reservation.statusId !== 4
+                      "
+                      [matMenuTriggerFor]="menu"
+                      [ngClass]="{
+                        'icon-pendiente': reservation.statusId === 1,
+                        'icon-confirmada': reservation.statusId === 2,
+                        'icon-ausente': reservation.statusId === 5,
+                        'icon-reprogramada': reservation.statusId === 6
+                      }"
+                      matTooltip="{{ getStatusName(reservation.statusId) }}"
+                      style="cursor: pointer"
+                    >
+                      {{
+                        reservation.statusId === 1
+                          ? "hourglass_empty"
+                          : reservation.statusId === 2
+                          ? "check_circle"
+                          : reservation.statusId === 5
+                          ? "report_problem"
+                          : reservation.statusId === 6
+                          ? "update"
+                          : ""
+                      }}
+                    </mat-icon>
+
+                    <!-- Ícono fijo para Completado o Cancelado -->
+                    <mat-icon
+                      *ngIf="
+                        reservation.statusId === 3 || reservation.statusId === 4
+                      "
+                      [ngClass]="{
+                        'icon-cancelada': reservation.statusId === 3,
+                        'icon-completada': reservation.statusId === 4
+                      }"
+                      matTooltip="{{ getStatusName(reservation.statusId) }}"
+                    >
+                      {{ reservation.statusId === 3 ? "cancel" : "task_alt" }}
+                    </mat-icon>
+
+                    <!-- Menú desplegable -->
+                    <mat-menu #menu="matMenu">
+                      <ng-container *ngFor="let item of reservationStatuses">
+                        <button
+                          mat-menu-item
+                          *ngIf="
+                            item.id !== 1 && item.id !== reservation.statusId
+                          "
+                          (click)="
+                            item.id === 6
+                              ? reprogramReservation(reservation.id)
+                              : newStatusReservation(reservation.id, item.id)
+                          "
+                        >
+                          {{ item.name }}
+                        </button>
+                      </ng-container>
+                    </mat-menu>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card col-sm">
+        <div class="card-body">
+          
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal de Éxito -->
+<div
+  class="modal fade"
+  id="successModal"
+  tabindex="-1"
+  aria-labelledby="successModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="successModalLabel">
+          Se envio el codigo al correo ingresado
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Cerrar"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <input
+          type="text"
+          [(ngModel)]="userInput"
+          class="form-control"
+          placeholder="Inserta tu código aquí"
+        />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="submitInput()">
+          Enviar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Reprogramación -->
+<div
+  class="modal fade"
+  id="reprogramModal"
+  tabindex="-1"
+  aria-labelledby="reprogramModalLabel"
+  aria-hidden="true"
+  (hidden.bs.modal)="onReprogramModalClosed()"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="reprogramModalLabel">
+          Reprogramar Reserva
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Cerrar"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <label for="newDate">Nueva Fecha</label>
+        <div class="d-flex justify-content-around">
+          <div
+            *ngFor="let date of weekDays"
+            class="day"
+            [class.selected]="newReservationDate?.fecha === date.fecha"
+            (click)="selectDate(date)"
+          >
+            <div class="date">{{ date.day }}</div>
+            <div class="day-name">{{ date.semana }}</div>
+          </div>
+        </div>
+
+        <label for="newHour" class="mt-3" *ngIf="newReservationDate"
+          >Nueva Hora</label
+        >
+        <div class="card-body">
+          <div *ngIf="morningSlotsRep.length > 0" class="time-slots">
+            <h5>MAÑANA</h5>
+            <div class="slots">
+              <div *ngFor="let item of morningSlotsRep">
+                <div
+                  class="time-slot"
+                  (click)="selectTime(item)"
+                  [class.selected]="newReservationHour === item"
+                >
+                  {{ item.slice(0, 5) }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="afternoonSlotsRep.length > 0" class="time-slots">
+            <h5>TARDE</h5>
+            <div class="slots">
+              <div *ngFor="let item of afternoonSlotsRep">
+                <div
+                  class="time-slot"
+                  (click)="selectTime(item)"
+                  [class.selected]="newReservationHour === item"
+                >
+                  {{ item.slice(0, 5) }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="eveningSlotsRep.length > 0" class="time-slots">
+            <h5>NOCHE</h5>
+            <div class="slots">
+              <div *ngFor="let item of eveningSlotsRep">
+                <div
+                  class="time-slot"
+                  (click)="selectTime(item)"
+                  [class.selected]="newReservationHour === item"
+                >
+                  {{ item.slice(0, 5) }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="padding: 10px">
+        <div class="d-grid gap-2">
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="confirmReprogramReservation()"
+            *ngIf="newReservationDate && newReservationHour"
+          >
+            Reprogramar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div
+  class="modal fade"
+  id="slotModal"
+  tabindex="-1"
+  aria-labelledby="slotModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="slotModalLabel">Confirmar horario</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Cerrar"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p>¿Deseas seleccionar el horario?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-primary" (click)="confirmSlot()">
+          Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
