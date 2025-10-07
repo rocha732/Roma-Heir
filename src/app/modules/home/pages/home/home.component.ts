@@ -3,6 +3,7 @@ import { ApiService } from 'src/app/core/services/api.service';
 
 import * as bootstrap from 'bootstrap';
 import { Router } from '@angular/router';
+import { ChartConfiguration } from 'chart.js';
 
 @Component({
   selector: 'app-home',
@@ -39,7 +40,12 @@ export class HomeComponent {
   customers: any[] = [];
   validDates: string[] = [];
   weekDays: any[] = [];
-
+  reservationsCountByDate: { date: string; count: number }[] = [];
+  dataChartReservationsByDate: any;
+  reservationsCountByMonth: { month: string; count: number }[] = [];
+  dataChartReservationsByMonth: any;
+  reservationsCountBySpecialist: { specialistName: string; count: number }[] = [];
+  dataChartReservationsBySpecialist: any;
   hours: any;
   specialists: any[] = localStorage.getItem('specialists')
     ? JSON.parse(localStorage.getItem('specialists') || '[]')
@@ -47,6 +53,71 @@ export class HomeComponent {
   reservationStatuses: any[] = localStorage.getItem('reservationStatuses')
     ? JSON.parse(localStorage.getItem('reservationStatuses') || '[]')
     : [];
+  public lineChartOptions: ChartConfiguration['options'] = {
+    responsive: true,
+    scales: {
+      y: {
+        beginAtZero: true, // empieza desde 0
+        ticks: {
+          stepSize: 1, // incrementos de 1 en 1
+          precision: 0, // sin decimales
+        },
+        grid: {
+          color: '#eee',
+        },
+      },
+      x: {
+        grid: {
+          color: '#f9f9f9',
+        },
+      },
+    },
+    plugins: {
+      legend: { display: true },
+    },
+  };
+
+  public barChartOptions: ChartConfiguration['options'] = {
+    responsive: true,
+    maintainAspectRatio: false, // opcional, útil si usas un contenedor flexible
+    scales: {
+      y: {
+        beginAtZero: true, // empieza desde 0
+        ticks: {
+          stepSize: 1, // incrementos de 1 en 1
+          precision: 0, // sin decimales
+        },
+        grid: {
+          color: '#eee',
+        },
+      },
+      x: {
+        grid: {
+          color: '#f9f9f9',
+        },
+      },
+    },
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top',
+        labels: {
+          boxWidth: 15,
+          color: '#555',
+        },
+      },
+      tooltip: {
+        enabled: true,
+        backgroundColor: '#333',
+        titleColor: '#fff',
+        bodyColor: '#fff',
+      },
+    },
+    animation: {
+      duration: 800,
+      easing: 'easeOutQuart',
+    },
+  };
 
   constructor(private ApiService: ApiService, private router: Router) {
     this.weekDays = this.getNext7Days();
@@ -113,6 +184,7 @@ export class HomeComponent {
         this.validDates = data.map(
           (r: any) => new Date(r.reservedAt).toISOString().split('T')[0]
         );
+        this.generateDataChart();
       },
     });
   }
@@ -437,5 +509,135 @@ export class HomeComponent {
     modal?.hide();
   }
 
-  
+  generateDataChart() {
+    console.log('reservations =>', this.reservations);
+    this.reservationsCountByDate = this.getReservationsCountByDate(
+      this.reservations
+    );
+    this.reservationsCountByMonth = this.getReservationsCountByMonth(
+      this.reservations
+    );
+
+    this.reservationsCountBySpecialist = this.getReservationsCountBySpecialist(
+      this.reservations, this.specialists
+    );
+    this.dataChartReservationsByDate = {
+      labels: this.reservationsCountByDate.map((item) => item.date),
+      datasets: [
+        {
+          label: 'Citas registradas',
+          data: this.reservationsCountByDate.map((item) => item.count),
+          fill: false,
+          borderColor: '#42A5F5', // línea
+          backgroundColor: 'rgba(66,165,245,0.2)', // fondo bajo la línea
+          pointBackgroundColor: '#1565C0', // color de los puntos
+          pointBorderColor: '#FFFFFF', // borde de los puntos
+          pointRadius: 6, // tamaño del punto
+          pointHoverRadius: 8, // tamaño al pasar el mouse
+          tension: 0.1,
+        },
+      ],
+    };
+    this.dataChartReservationsByMonth = {
+      labels: this.reservationsCountByMonth.map((item) => item.month),
+      datasets: [
+        {
+          label: 'Citas registradas',
+          data: this.reservationsCountByMonth.map((item) => item.count),
+          fill: false,
+        },
+      ],
+    };
+
+    this.dataChartReservationsBySpecialist = {
+      labels: this.reservationsCountBySpecialist.map((item) => item.specialistName),
+      datasets: [
+        { 
+          label: 'Citas registradas',
+          data: this.reservationsCountBySpecialist.map((item) => item.count),
+          backgroundColor: 'rgba(75, 192, 192, 0.6)', // Color de las barras
+          borderColor: 'rgba(75, 192, 192, 1)', // Color del borde de las barras
+          borderWidth: 1 // Ancho del borde de las barras
+          
+        }]
+
+    }
+    console.log('data =>', this.reservationsCountBySpecialist);
+  }
+
+  getReservationsCountByDate(reservations: any[]) {
+    const counts: Record<string, number> = {};
+
+    reservations.forEach((r) => {
+      const date = r.reservedAt.split('T')[0]; // Extrae solo la parte de la fecha
+      counts[date] = (counts[date] || 0) + 1;
+    });
+
+    // Devuelve un arreglo ordenado por fecha (ideal para graficar)
+    return Object.entries(counts)
+      .map(([date, count]) => ({ date, count }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  getReservationsCountByMonth(reservations: any[]) {
+    const counts: Record<string, number> = {};
+    const currentYear = new Date().getFullYear();
+
+    const monthNames = [
+      'ene',
+      'feb',
+      'mar',
+      'abr',
+      'may',
+      'jun',
+      'jul',
+      'ago',
+      'sep',
+      'oct',
+      'nov',
+      'dic',
+    ];
+
+    reservations.forEach((r) => {
+      const dateStr = r.reservedAt || r.fecha || r.date;
+      if (!dateStr) return;
+
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return;
+
+      const year = date.getFullYear();
+      const monthIndex = date.getMonth(); // 0 = enero, 8 = septiembre
+
+      if (year === currentYear) {
+        const month = monthNames[monthIndex];
+        counts[month] = (counts[month] || 0) + 1;
+      }
+    });
+
+    // Devolver en orden fijo (ene → dic)
+    return monthNames
+      .filter((m) => counts[m])
+      .map((m) => ({ month: m, count: counts[m] }));
+  }
+
+  getReservationsCountBySpecialist(reservations: any[], specialists: any[]) {
+  const counts: Record<number, number> = {};
+
+  // Contar cuántas reservas tiene cada specialistId
+  reservations.forEach((r) => {
+    counts[r.specialistId] = (counts[r.specialistId] || 0) + 1;
+  });
+
+  // Combinar con los nombres de los especialistas
+  return Object.entries(counts).map(([id, count]) => {
+    const specialist = specialists.find((s) => s.id === Number(id));
+    return {
+      specialistName: specialist
+        ? `${specialist.firstName} ${specialist.lastName}`
+        : `ID ${id}`,
+      count,
+    };
+  });
+}
+
 }

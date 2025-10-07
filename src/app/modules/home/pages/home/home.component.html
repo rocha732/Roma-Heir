@@ -415,9 +415,38 @@
     <div class="row">
       <div class="card col-sm">
         <div class="card-body">
-          
+          <canvas
+            baseChart
+            [data]="dataChartReservationsByDate"
+            [options]="lineChartOptions"
+            [type]="'line'"
+          >
+          </canvas>
         </div>
+      </div>
 
+      <div class="card col-sm">
+        <div class="card-body">
+          <canvas
+            baseChart
+            [data]="dataChartReservationsByMonth"
+            [options]="barChartOptions"
+            [type]="'bar'"
+          >
+          </canvas>
+        </div>
+      </div>
+
+      <div class="card col-sm">
+        <div class="card-body">
+          <canvas
+            baseChart
+            [data]="dataChartReservationsBySpecialist"
+            [options]="barChartOptions"
+            [type]="'bar'"
+          >
+          </canvas>
+        </div>
       </div>
     </div>
   </div>
