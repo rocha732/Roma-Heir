@@ -13,10 +13,13 @@ import { ChartConfiguration } from 'chart.js';
 export class HomeComponent {
   userInput: string = '';
   searchTerm: string = '';
+  searchTerm2: string = '';
   todayWeekday!: number;
   hasSlots = false;
   hasSlotsRep = false;
   loading = false;
+  showError = false;
+  showError2 = false;
   customer = {
     firstName: '',
     lastName: '',
@@ -38,13 +41,18 @@ export class HomeComponent {
   afternoonSlotsRep: string[] = [];
   eveningSlotsRep: string[] = [];
   customers: any[] = [];
+  selectedCustomer: any = null;
+  searchTermSpecialist = '';
+  selectedSpecialist: any = null;
+
   validDates: string[] = [];
   weekDays: any[] = [];
   reservationsCountByDate: { date: string; count: number }[] = [];
   dataChartReservationsByDate: any;
   reservationsCountByMonth: { month: string; count: number }[] = [];
   dataChartReservationsByMonth: any;
-  reservationsCountBySpecialist: { specialistName: string; count: number }[] = [];
+  reservationsCountBySpecialist: { specialistName: string; count: number }[] =
+    [];
   dataChartReservationsBySpecialist: any;
   hours: any;
   specialists: any[] = localStorage.getItem('specialists')
@@ -495,6 +503,11 @@ export class HomeComponent {
 
   openSlotModal(slot: string) {
     this.selectedSlot = slot;
+    this.selectedCustomer = null;
+    this.selectedSpecialist = null;
+    this.showError = false;
+    this.searchTerm2 = '';
+    this.searchTermSpecialist = '';
     const modalEl = document.getElementById('slotModal');
     if (modalEl) {
       const modal = new bootstrap.Modal(modalEl);
@@ -503,10 +516,29 @@ export class HomeComponent {
   }
 
   confirmSlot() {
-    console.log('✅ Horario confirmado:', this.selectedSlot);
+    this.loading = true;
+    const newReservation = {
+      customerId: this.selectedCustomer.id,
+      specialistId: this.selectedSpecialist.id,
+      hourAt: this.selectedSlot,
+      reservedAt: new Date().toISOString().split('T')[0], // hoy
+      requiresPersonalAdvice: true, // pendiente
+    };
     const modalEl = document.getElementById('slotModal');
     const modal = bootstrap.Modal.getInstance(modalEl!);
-    modal?.hide();
+    this.ApiService.postReservation(newReservation).subscribe({
+      next: (data) => {
+        
+        modal?.hide();
+        this.resetSearch();this.refreshReservations();
+      },
+      error: (err) => {
+        modal?.hide();
+        this.resetSearch();
+      },
+    });
+
+    console.log('✅ Horario confirmado:', this.selectedSlot);
   }
 
   generateDataChart() {
@@ -519,7 +551,8 @@ export class HomeComponent {
     );
 
     this.reservationsCountBySpecialist = this.getReservationsCountBySpecialist(
-      this.reservations, this.specialists
+      this.reservations,
+      this.specialists
     );
     this.dataChartReservationsByDate = {
       labels: this.reservationsCountByDate.map((item) => item.date),
@@ -550,18 +583,19 @@ export class HomeComponent {
     };
 
     this.dataChartReservationsBySpecialist = {
-      labels: this.reservationsCountBySpecialist.map((item) => item.specialistName),
+      labels: this.reservationsCountBySpecialist.map(
+        (item) => item.specialistName
+      ),
       datasets: [
-        { 
+        {
           label: 'Citas registradas',
           data: this.reservationsCountBySpecialist.map((item) => item.count),
           backgroundColor: 'rgba(75, 192, 192, 0.6)', // Color de las barras
           borderColor: 'rgba(75, 192, 192, 1)', // Color del borde de las barras
-          borderWidth: 1 // Ancho del borde de las barras
-          
-        }]
-
-    }
+          borderWidth: 1, // Ancho del borde de las barras
+        },
+      ],
+    };
     console.log('data =>', this.reservationsCountBySpecialist);
   }
 
@@ -621,23 +655,137 @@ export class HomeComponent {
   }
 
   getReservationsCountBySpecialist(reservations: any[], specialists: any[]) {
-  const counts: Record<number, number> = {};
+    const counts: Record<number, number> = {};
 
-  // Contar cuántas reservas tiene cada specialistId
-  reservations.forEach((r) => {
-    counts[r.specialistId] = (counts[r.specialistId] || 0) + 1;
-  });
+    // Contar cuántas reservas tiene cada specialistId
+    reservations.forEach((r) => {
+      counts[r.specialistId] = (counts[r.specialistId] || 0) + 1;
+    });
 
-  // Combinar con los nombres de los especialistas
-  return Object.entries(counts).map(([id, count]) => {
-    const specialist = specialists.find((s) => s.id === Number(id));
-    return {
-      specialistName: specialist
-        ? `${specialist.firstName} ${specialist.lastName}`
-        : `ID ${id}`,
-      count,
-    };
-  });
+    // Combinar con los nombres de los especialistas
+    return Object.entries(counts).map(([id, count]) => {
+      const specialist = specialists.find((s) => s.id === Number(id));
+      return {
+        specialistName: specialist
+          ? `${specialist.firstName} ${specialist.lastName}`
+          : `ID ${id}`,
+        count,
+      };
+    });
+  }
+
+  filteredCustomer() {
+    const term = this.searchTerm2.toLowerCase();
+
+    // Obtener fecha actual en formato YYYY-MM-DD
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    // Filtrar por coincidencia de búsqueda
+    let filtered = this.customers.filter(
+      (c) =>
+        c.firstName.toLowerCase().includes(term) ||
+        c.lastName.toLowerCase().includes(term) ||
+        c.email.toLowerCase().includes(term)
+    );
+
+    // IDs de clientes que tienen reserva HOY y a la misma hora
+    const reservedIds = this.reservations
+      .filter(
+        (r) =>
+          r.hourAt.startsWith(this.selectedSlot) &&
+          r.reservedAt.startsWith(todayStr)
+      )
+      .map((r) => r.customerId);
+
+    // Excluirlos de la lista
+    filtered = filtered.filter((c) => !reservedIds.includes(c.id));
+
+    return filtered;
+  }
+
+  selectCustomer(user: any) {
+    this.selectedCustomer = user;
+    this.showError = true;
+
+    console.log('Usuario seleccionado:', this.selectedCustomer);
+  }
+
+  resetSearch() {
+    // Al hacer click en el input, se borra el usuario seleccionado
+    this.selectedCustomer = null;
+    this.searchTerm = '';
+    this.showError = false;
+    this.showError2 = false;
+    this.searchTerm2 = '';
+  }
+
+  resetSearchSpecialist() {
+    console.log('focus en input especialista');
+    this.selectedSpecialist = null;
+    this.searchTermSpecialist = '';
+    this.showError = false;
+    this.showError2 = false;
+    this.searchTerm2 = '';
+  }
+  validateCustomer() {
+    this.showError = true;
+    this.showError2 = false;
+    // Validar que true un cliente seleccionado
+    if (!this.selectedCustomer) {
+      console.warn('Debes seleccionar un cliente');
+      return false;
+    }
+
+    // Validar que haya un especialista seleccionado
+    if (!this.selectedSpecialist) {
+      console.warn('Debes seleccionar un especialista');
+      return false;
+    }
+
+    // Si ambas validaciones pasan → confirmar la cita
+    this.confirmSlot();
+
+    // Opcional: ocultar el error luego de confirmar correctamente
+    this.showError = false;
+    return true;
+  }
+
+  filteredSpecialist() {
+  const term = this.searchTermSpecialist.toLowerCase();
+
+  // Obtener fecha actual en formato YYYY-MM-DD
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  // Filtrar por coincidencia de búsqueda
+  let filtered = this.specialists.filter(
+    (s) =>
+      s.firstName.toLowerCase().includes(term) ||
+      s.lastName.toLowerCase().includes(term) ||
+      s.email.toLowerCase().includes(term)
+  );
+
+  // IDs de especialistas que tienen reserva HOY y a la misma hora
+  const reservedIds = this.reservations
+    .filter(
+      (r) =>
+        r.hourAt.startsWith(this.selectedSlot) &&
+        r.reservedAt.startsWith(todayStr)
+    )
+    .map((r) => r.specialistId);
+
+  // Excluir los especialistas reservados, excepto si su ID es 999
+  filtered = filtered.filter(
+    (s) => !reservedIds.includes(s.id) || s.id === 999
+  );
+
+  return filtered;
 }
 
+
+  selectSpecialist(specialist: any) {
+    console.log('Seleccionado:', specialist);
+    this.showError = true;
+    this.selectedSpecialist = specialist;
+    this.searchTermSpecialist = `${specialist.firstName} ${specialist.lastName}`;
+  }
 }

@@ -610,12 +610,98 @@
       </div>
       <div class="modal-body">
         <p>¿Deseas seleccionar el horario?</p>
+
+        <div class="mb-3 position-relative">
+          <label for="userSearch" class="form-label">Buscar usuario</label>
+          <input
+            id="userSearch"
+            type="text"
+            class="form-control"
+            [ngClass]="{ 'is-invalid': showError && !selectedCustomer }"
+            [value]="
+              selectedCustomer
+                ? selectedCustomer.firstName + ' ' + selectedCustomer.lastName
+                : ''
+            "
+            placeholder="Escribe un nombre..."
+            [(ngModel)]="searchTerm2"
+            (focus)="resetSearch()"
+          />
+
+          <!-- Lista filtrada -->
+          <ul
+            class="list-group position-absolute w-100"
+            style="z-index: 1000; max-height: 300px; overflow-y: auto"
+            *ngIf="filteredCustomer().length > 0 && !selectedCustomer"
+          >
+            <li
+              *ngFor="let user of filteredCustomer()"
+              class="list-group-item list-group-item-action"
+              (click)="selectCustomer(user)"
+            >
+              {{ user.firstName }} {{ user.lastName }}
+            </li>
+          </ul>
+
+          <!-- Mensaje de error -->
+          <div
+            *ngIf="showError2 && !selectedCustomer"
+            class="invalid-feedback d-block"
+          >
+            Debes seleccionar un usuario.
+          </div>
+        </div>
+        <div class="mb-3 position-relative">
+          <label for="specialistSearch" class="form-label"
+            >Buscar especialista</label
+          >
+          <input
+            id="specialistSearch"
+            type="text"
+            class="form-control"
+            [ngClass]="{ 'is-invalid': showError && !selectedSpecialist }"
+            [(ngModel)]="searchTermSpecialist"
+            placeholder="Escribe un nombre..."
+            (focus)="resetSearchSpecialist()"
+          />
+
+          <!-- Lista filtrada -->
+          <ul
+            class="list-group position-absolute w-100"
+            style="z-index: 1000; max-height: 200px; overflow-y: auto"
+            *ngIf="
+              filteredSpecialist().length > 0 &&
+              !selectedSpecialist &&
+              selectedCustomer
+            "
+          >
+            <li
+              *ngFor="let specialist of filteredSpecialist()"
+              class="list-group-item list-group-item-action"
+              (click)="selectSpecialist(specialist)"
+            >
+              {{ specialist.firstName }} {{ specialist.lastName }}
+            </li>
+          </ul>
+
+          <!-- Mensaje de error -->
+          <div
+            *ngIf="showError && !selectedSpecialist"
+            class="invalid-feedback d-block"
+          >
+            Debes seleccionar un especialista.
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
           Cancelar
         </button>
-        <button type="button" class="btn btn-primary" (click)="confirmSlot()">
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="validateCustomer()"
+        >
           Confirmar
         </button>
       </div>
