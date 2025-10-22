@@ -49,10 +49,36 @@ export class ApiService {
     return this.http.get<any>(`${this.apiUrl}/reservation-statuses`);
   }
 
-  patchReservationStatus(reservationId: number,newStatusId : any): Observable<any> {
-    return this.http.patch<any>(`${this.apiUrl}/Reservations/${reservationId}/status`, newStatusId);
+  patchReservationStatus(
+    reservationId: number,
+    newStatusId: any
+  ): Observable<any> {
+    return this.http.patch<any>(
+      `${this.apiUrl}/Reservations/${reservationId}/status`,
+      newStatusId
+    );
   }
 
-  putNewReservation(reservationId: number, updatedReservation: any): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/Reservations/${reservationId}/dates`, updatedReservation);  }
+  putNewReservation(
+    reservationId: number,
+    updatedReservation: any
+  ): Observable<any> {
+    return this.http.put<any>(
+      `${this.apiUrl}/Reservations/${reservationId}/dates`,
+      updatedReservation
+    );
+  }
+  getOrders(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/Orders`);
+  }
+  getOrderDetails(orderId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/Orders/${orderId}/details`);
+  }
+   getProducts(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/Products`);
+  }
+  putOrderPayment(orderId: number): Observable<any> {
+  return this.http.put<any>(`${this.apiUrl}/Orders/${orderId}/pays`, {});
+}
+
 }

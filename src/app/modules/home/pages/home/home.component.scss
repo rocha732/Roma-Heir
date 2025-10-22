@@ -263,3 +263,133 @@ padding-left: 12px;
 .list-group-item-action{
   cursor: pointer;
 }
+
+.product-image-container {
+  position: relative;
+  display: inline-block;
+  overflow: visible;
+}
+
+.product-image {
+  cursor: zoom-in;
+  transition: transform 0.3s ease;
+  border-radius: 8px;
+  z-index: 1;
+}
+
+/* Imagen ampliada centrada sobre la miniatura */
+.zoom-preview {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 220px;
+  height: 220px;
+  object-fit: cover;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.8);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 999;
+  pointer-events: none;
+  border-radius: 10px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  background: white;
+}
+
+/* Cuando pasas el mouse, aparece el zoom */
+.product-image-container:hover .zoom-preview {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Pequeño efecto en la miniatura */
+.product-image-container:hover .product-image {
+  transform: scale(1.1);
+}
+.modal,
+.cdk-overlay-container {
+  overflow: visible !important;
+}.modal,
+.cdk-overlay-container,
+.modal-dialog,
+.modal-content {
+  overflow: visible !important;
+}
+.product-image-container {
+  position: relative;
+  display: inline-block;
+}
+
+.product-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  transition: transform 0.3s ease;
+  cursor: zoom-in;
+}
+
+.zoom-preview {
+  position: fixed;
+  top: -10px;
+  left: 110%;
+  width: 220px;
+  height: 220px;
+  border-radius: 10px;
+  object-fit: cover;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transform: scale(0);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  z-index: 1000;
+  background: white;
+}
+
+.product-image-container:hover .zoom-preview {
+  transform: scale(1);
+  opacity: 1;
+}
+.product-image-container {
+  display: inline-block;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.product-image-container:hover {
+  transform: scale(1.05);
+}
+
+.image-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.image-modal-content {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
+  animation: zoomIn 0.3s ease;
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.dark-header{
+  background-color: #2e2f37;
+}
+

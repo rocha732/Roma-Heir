@@ -290,6 +290,13 @@
             >
               Hoy
             </button>
+
+            <button
+              class="btn btn-sm btn-outline-primary ms-1"
+              (click)="generateCombinedPDF()"
+            >
+              Planificación PDF
+            </button>
           </div>
 
           <!-- Tabla -->
@@ -449,8 +456,67 @@
         </div>
       </div>
     </div>
+
+    <div class="row">
+      <div class="card col-sm">
+        <div class="card-body">
+          <h5 class="card-title">Pedidos</h5>
+
+          <table class="table table-striped align-middle text-center">
+            <thead class="table-dark">
+              <tr>
+                <th>ID</th>
+                <th>Monto total (S/)</th>
+                <th>Total ítems</th>
+                <th>¿Pagado?</th>
+                <th>Fecha creación</th>
+                <th>Fecha pago</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of orders">
+                <td>{{ order.id }}</td>
+                <td>
+                  {{
+                    order.totalAmount | currency : "PEN" : "symbol" : "1.0-0"
+                  }}
+                </td>
+                <td>{{ order.totalItems }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    [ngClass]="order.paid ? 'bg-success' : 'bg-danger'"
+                  >
+                    {{ order.paid ? "Sí" : "No" }}
+                  </span>
+                </td>
+                <td>{{ order.createdAt | date : "dd/MM/yyyy HH:mm" }}</td>
+                <td>
+                  {{
+                    order.paidAt
+                      ? (order.paidAt | date : "dd/MM/yyyy HH:mm")
+                      : "—"
+                  }}
+                </td>
+                <td>
+                  <button
+                    class="btn btn-outline-primary btn-sm"
+                    (click)="showOrderInfo(order)"
+                    title="Ver información"
+                  >
+                    <i class="bi bi-eye"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
+
 <!-- Modal de Éxito -->
 <div
   class="modal fade"
@@ -590,6 +656,9 @@
     </div>
   </div>
 </div>
+
+<!-- Modal de agendar cita para hoy -->
+
 <div
   class="modal fade"
   id="slotModal"
@@ -703,6 +772,186 @@
           (click)="validateCustomer()"
         >
           Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal de Detalles de Pedido -->
+<div
+  class="modal fade"
+  id="orderDetailsModal"
+  tabindex="-1"
+  aria-labelledby="orderDetailsModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content rounded-3 shadow">
+      <div class="modal-header dark-header text-white">
+        <h5 class="modal-title" id="orderDetailsModalLabel">
+          🧾 Detalles del Pedido #{{ orderDetails?.id }}
+        </h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <div *ngIf="orderDetails; else noData">
+          <!-- Información del Cliente -->
+          <div class="mb-3">
+            <h6 class="fw-bold">👤 Cliente</h6>
+            <p class="mb-0">{{ orderDetails.customer.fullName }}</p>
+            <p class="mb-0">{{ orderDetails.customer.email }}</p>
+            <p class="mb-0">{{ orderDetails.customer.phone }}</p>
+          </div>
+
+          <hr />
+
+          <!-- Detalles del Pedido -->
+          <div class="row mb-3" style="gap: 0px">
+            <div class="col-md-6">
+              <p>
+                <strong>Método de Entrega:</strong>
+                {{ orderDetails.deliveryMethod }}
+              </p>
+              <p><strong>Estado:</strong> {{ orderDetails.orderStatus }}</p>
+            </div>
+            <div class="col-md-6 text-md-end">
+              <p>
+                <strong>Pagado:</strong>
+                {{ orderDetails.paid ? "Sí ✅" : "No ❌" }}
+              </p>
+              <p>
+                <strong>Total de Ítems:</strong> {{ orderDetails.totalItems }}
+              </p>
+              <p>
+                <strong>Fecha Pago:</strong>
+                {{ orderDetails.paidAt | date : "short" }}
+              </p>
+            </div>
+          </div>
+
+          <hr />
+
+          <!-- Tabla de Productos con datos -->
+          <div class="table-responsive">
+            <table class="table table-sm table-striped align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Producto</th>
+                  <th>Categoría</th>
+                  <th>Descripción</th>
+                  <th class="text-center">Cantidad</th>
+                  <th class="text-end">Precio (S/)</th>
+                  <th class="text-end">Subtotal (S/)</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr *ngFor="let item of orderDetails.items">
+                  <td>
+                    <div class="d-flex align-items-center position-relative">
+                      <!-- Imagen del producto -->
+                      <div
+                        class="product-image-container"
+                        (click)="openImage(item.product?.image)"
+                      >
+                        <img
+                          *ngIf="item.product?.image"
+                          [src]="item.product.image"
+                          alt="{{ item.product?.name }}"
+                          class="product-image rounded"
+                          width="60"
+                          height="60"
+                        />
+                      </div>
+
+                      <!-- Modal de imagen ampliada -->
+                      <div
+                        class="image-modal"
+                        *ngIf="selectedImage"
+                        (click)="closeImage()"
+                      >
+                        <img
+                          [src]="selectedImage"
+                          class="image-modal-content"
+                          alt="Vista ampliada"
+                        />
+                      </div>
+
+                      <div class="ms-2">
+                        <strong>{{ item.product?.name }}</strong>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td>{{ item.product?.category || "-" }}</td>
+
+                  <td class="text-truncate" style="max-width: 250px">
+                    {{ item.product?.description || "Sin descripción" }}
+                  </td>
+
+                  <td class="text-center">{{ item.quantity }}</td>
+
+                  <td class="text-end">
+                    {{ item.product?.price | number : "1.2-2" }}
+                  </td>
+
+                  <td class="text-end">
+                    {{ item.subtotal | number : "1.2-2" }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="text-end mt-3">
+            <h5 class="fw-bold">
+              Total: S/ {{ orderDetails.totalAmount | number : "1.2-2" }}
+            </h5>
+          </div>
+        </div>
+
+        <ng-template #noData>
+          <p class="text-center text-muted mb-0">
+            No hay información disponible.
+          </p>
+        </ng-template>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cerrar
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          *ngIf="orderDetails?.paid == false"
+          (click)="payOrder(orderDetails.id)"
+          [disabled]="!orderDetails"
+        >
+          💳 Confirmar pago
+        </button>
+        <button
+          type="button"
+          class="btn btn-success"
+          *ngIf="orderDetails?.paid"
+          (click)="printPaidOrderPDF()"
+        >
+          🧾 Imprimir Boleta (Pagado)
+        </button>
+
+        <button
+          type="button"
+          class="btn btn-warning"
+          *ngIf="!orderDetails?.paid"
+          (click)="printPendingOrderPDF()"
+        >
+          🧾 Imprimir Orden (Pendiente)
         </button>
       </div>
     </div>

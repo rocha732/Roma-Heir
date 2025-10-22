@@ -4,7 +4,8 @@ import { ApiService } from 'src/app/core/services/api.service';
 import * as bootstrap from 'bootstrap';
 import { Router } from '@angular/router';
 import { ChartConfiguration } from 'chart.js';
-
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
@@ -41,10 +42,12 @@ export class HomeComponent {
   afternoonSlotsRep: string[] = [];
   eveningSlotsRep: string[] = [];
   customers: any[] = [];
+  orders: any[] = [];
+  orderDetails: any;
+  products: any[] = [];
   selectedCustomer: any = null;
   searchTermSpecialist = '';
   selectedSpecialist: any = null;
-
   validDates: string[] = [];
   weekDays: any[] = [];
   reservationsCountByDate: { date: string; count: number }[] = [];
@@ -134,6 +137,7 @@ export class HomeComponent {
     this.todayWeekday = today.getDay() === 0 ? 7 : today.getDay();
     this.loading = true;
     this.refreshCustomers();
+    this.refreshProducts();
     this.businessHours(this.todayWeekday);
     if (this.specialists.length === 0) {
       this.refreshSpecialists();
@@ -143,6 +147,7 @@ export class HomeComponent {
     }
     this.refreshReservations();
   }
+
   getStatusReservations() {
     this.ApiService.getStatusReservations().subscribe({
       next: (data) => {
@@ -155,6 +160,7 @@ export class HomeComponent {
       },
     });
   }
+
   refreshSpecialists() {
     this.ApiService.getSpecialists().subscribe({
       next: (data) => {
@@ -179,6 +185,7 @@ export class HomeComponent {
       next: (data) => {
         this.loading = false;
         this.customers = data;
+        console.log('Customers =>', this.customers);
       },
     });
   }
@@ -188,7 +195,7 @@ export class HomeComponent {
       next: (data) => {
         this.reservations = data;
         this.filteredReservations = data; // por defecto todas
-        this.loading = false;
+        this.refreshgetOrders();
         this.validDates = data.map(
           (r: any) => new Date(r.reservedAt).toISOString().split('T')[0]
         );
@@ -323,6 +330,7 @@ export class HomeComponent {
       queryParams: { customersId },
     });
   }
+
   filterByStatus(statusId: number) {
     this.selectedStatusId = statusId;
     this.filteredReservations = this.reservations.filter(
@@ -334,6 +342,7 @@ export class HomeComponent {
     this.selectedStatusId = null;
     this.filteredReservations = this.reservations; // reset
   }
+
   newStatusReservation(idReservation: number, newStatusId: number) {
     this.loading = true;
     const data = { newStatusId: newStatusId };
@@ -356,6 +365,7 @@ export class HomeComponent {
       return reservedDate === today;
     });
   }
+
   dateFilter = (d: Date | null): boolean => {
     if (!d) return false;
     const dateStr = d.toISOString().split('T')[0];
@@ -373,6 +383,7 @@ export class HomeComponent {
       (r) => new Date(r.reservedAt).toISOString().split('T')[0] === selectedStr
     );
   }
+
   reprogramReservation(idReservation: number) {
     this.reservationToReprogram = idReservation;
     this.newReservationDate = '';
@@ -481,6 +492,7 @@ export class HomeComponent {
       },
     });
   }
+
   selectTime(slot: string) {
     this.newReservationHour = slot;
   }
@@ -496,6 +508,7 @@ export class HomeComponent {
     this.hasSlotsRep = false;
     this.reservationToReprogram = null;
   }
+  
   getStatusName(statusId: number): string {
     const status = this.reservationStatuses.find((s) => s.id === statusId);
     return status ? status.name : 'Desconocido';
@@ -528,9 +541,9 @@ export class HomeComponent {
     const modal = bootstrap.Modal.getInstance(modalEl!);
     this.ApiService.postReservation(newReservation).subscribe({
       next: (data) => {
-        
         modal?.hide();
-        this.resetSearch();this.refreshReservations();
+        this.resetSearch();
+        this.refreshReservations();
       },
       error: (err) => {
         modal?.hide();
@@ -751,41 +764,524 @@ export class HomeComponent {
   }
 
   filteredSpecialist() {
-  const term = this.searchTermSpecialist.toLowerCase();
+    const term = this.searchTermSpecialist.toLowerCase();
 
-  // Obtener fecha actual en formato YYYY-MM-DD
-  const todayStr = new Date().toISOString().split('T')[0];
+    // Obtener fecha actual en formato YYYY-MM-DD
+    const todayStr = new Date().toISOString().split('T')[0];
 
-  // Filtrar por coincidencia de búsqueda
-  let filtered = this.specialists.filter(
-    (s) =>
-      s.firstName.toLowerCase().includes(term) ||
-      s.lastName.toLowerCase().includes(term) ||
-      s.email.toLowerCase().includes(term)
-  );
+    // Filtrar por coincidencia de búsqueda
+    let filtered = this.specialists.filter(
+      (s) =>
+        s.firstName.toLowerCase().includes(term) ||
+        s.lastName.toLowerCase().includes(term) ||
+        s.email.toLowerCase().includes(term)
+    );
 
-  // IDs de especialistas que tienen reserva HOY y a la misma hora
-  const reservedIds = this.reservations
-    .filter(
-      (r) =>
-        r.hourAt.startsWith(this.selectedSlot) &&
-        r.reservedAt.startsWith(todayStr)
-    )
-    .map((r) => r.specialistId);
+    // IDs de especialistas que tienen reserva HOY y a la misma hora
+    const reservedIds = this.reservations
+      .filter(
+        (r) =>
+          r.hourAt.startsWith(this.selectedSlot) &&
+          r.reservedAt.startsWith(todayStr)
+      )
+      .map((r) => r.specialistId);
 
-  // Excluir los especialistas reservados, excepto si su ID es 999
-  filtered = filtered.filter(
-    (s) => !reservedIds.includes(s.id) || s.id === 999
-  );
+    // Excluir los especialistas reservados, excepto si su ID es 999
+    filtered = filtered.filter(
+      (s) => !reservedIds.includes(s.id) || s.id === 999
+    );
 
-  return filtered;
-}
-
+    return filtered;
+  }
 
   selectSpecialist(specialist: any) {
     console.log('Seleccionado:', specialist);
     this.showError = true;
     this.selectedSpecialist = specialist;
     this.searchTermSpecialist = `${specialist.firstName} ${specialist.lastName}`;
+  }
+
+  refreshgetOrders() {
+    this.ApiService.getOrders().subscribe({
+      next: (data) => {
+        this.loading = false;
+        this.orders = data;
+        console.log('Orders =>', this.orders);
+      },
+    });
+  }
+
+  showOrderInfo(order: any) {
+    this.loading = true;
+    this.ApiService.getOrderDetails(order.id).subscribe({
+      next: (data) => {
+        // 🔍 Enriquecer cada ítem con los datos del producto
+        if (data?.items?.length) {
+          data.items = data.items.map((item: any) => {
+            const productInfo = this.products.find(
+              (p) => p.id === item.productId
+            );
+            return {
+              ...item,
+              product: productInfo
+                ? {
+                    name: productInfo.name,
+                    description: productInfo.description,
+                    category: productInfo.categoryName,
+                    image: productInfo.profileImageUrl,
+                    price: productInfo.price,
+                  }
+                : null,
+            };
+          });
+        }
+
+        this.orderDetails = data;
+        this.loading = false;
+        console.log('📦 Detalles del pedido enriquecidos:', data);
+
+        // 📦 Mostrar modal después de cargar datos
+        const modalElement = document.getElementById('orderDetailsModal');
+        if (modalElement) {
+          const modal = new bootstrap.Modal(modalElement);
+          modal.show();
+        }
+      },
+      error: (err) => {
+        this.loading = false;
+        console.error('❌ Error fetching order details', err);
+      },
+    });
+  }
+
+  async printPaidOrderPDF() {
+    if (!this.orderDetails) return;
+
+    const order = this.orderDetails;
+    const doc = new jsPDF();
+
+    // Cargar logo
+    // Cargar logo PNG
+    const logo = await fetch('assets/ico-logo.png')
+      .then((res) => res.blob())
+      .then((blob) => {
+        return new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(blob);
+        });
+      });
+    // Agregar esto justo antes de insertar el logo
+    const logoX = 14;
+    const logoY = 8;
+    const logoWidth = 20;
+    const logoHeight = 20;
+
+    // Dibujar fondo negro detrás del logo
+    doc.setFillColor(0, 0, 0); // negro
+    doc.rect(logoX, logoY, logoWidth, logoHeight, 'F'); // 'F' = fill
+    // Insertar logo
+    doc.addImage(logo, 'PNG', 14, 8, 20, 20);
+
+    // Encabezado
+    doc.setFontSize(16);
+    doc.text('ROMA HAIR - Boleta de Pago', 40, 20);
+    doc.setFontSize(11);
+    doc.text(`Pedido #${order.id}`, 14, 35);
+    doc.text(`Fecha: ${new Date(order.createdAt).toLocaleString()}`, 14, 42);
+
+    // Cliente
+    doc.text('Cliente:', 14, 52);
+    doc.text(order.customer.fullName, 35, 52);
+    doc.text('Email:', 14, 59);
+    doc.text(order.customer.email, 35, 59);
+    doc.text('Teléfono:', 14, 66);
+    doc.text(order.customer.phone, 35, 66);
+
+    doc.line(14, 70, 195, 70);
+    doc.setFontSize(12);
+    doc.text('Detalles del Pedido', 14, 78);
+
+    // Tabla
+    const tableBody = order.items.map((i: any) => {
+      const product = this.products.find((p) => p.id === i.productId);
+      return [
+        product?.name || `Producto #${i.productId}`,
+        product?.categoryName || '-',
+        i.quantity,
+        i.price.toFixed(2),
+        i.subtotal.toFixed(2),
+      ];
+    });
+
+    autoTable(doc, {
+      startY: 82,
+      head: [
+        ['Producto', 'Categoría', 'Cantidad', 'Precio (S/)', 'Subtotal (S/)'],
+      ],
+      body: tableBody,
+      theme: 'striped',
+      headStyles: { fillColor: [46, 47, 55], textColor: [255, 255, 255] }, // #2e2f37
+      styles: { fontSize: 10, cellPadding: 2 },
+    });
+
+    const finalY = (doc as any).lastAutoTable.finalY || 100;
+    doc.setFontSize(11);
+    doc.text(`Total ítems: ${order.totalItems}`, 14, finalY + 10);
+    doc.text(
+      `Total pagado: S/ ${order.totalAmount.toFixed(2)}`,
+      14,
+      finalY + 16
+    );
+    doc.text(`Método de entrega: ${order.deliveryMethod}`, 14, finalY + 22);
+    doc.text(`Estado: ${order.orderStatus}`, 14, finalY + 28);
+    doc.text(`Pagado: Sí`, 14, finalY + 34);
+
+    if (order.paymentDate) {
+      doc.text(
+        `Fecha de pago: ${new Date(order.paymentDate).toLocaleString()}`,
+        14,
+        finalY + 40
+      );
+    }
+
+    doc.setTextColor(46, 47, 55);
+    doc.setFontSize(13);
+    doc.text('PAGO CONFIRMADO', 14, finalY + 55);
+
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    window.open(pdfUrl, '_blank');
+  }
+  async printPendingOrderPDF() {
+    if (!this.orderDetails) return;
+
+    const order = this.orderDetails;
+    const doc = new jsPDF();
+    // Agregar esto justo antes de insertar el logo
+    const logoX = 14;
+    const logoY = 8;
+    const logoWidth = 20;
+    const logoHeight = 20;
+
+    // Dibujar fondo negro detrás del logo
+    doc.setFillColor(0, 0, 0); // negro
+    doc.rect(logoX, logoY, logoWidth, logoHeight, 'F'); // 'F' = fill
+    // Cargar logo PNG
+    const logo = await fetch('assets/ico-logo.png')
+      .then((res) => res.blob())
+      .then((blob) => {
+        return new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(blob);
+        });
+      });
+
+    // Insertar logo
+    doc.addImage(logo, 'PNG', 14, 8, 20, 20);
+
+    // Encabezado
+    doc.setFontSize(16);
+    doc.text('ROMA HAIR - Orden Pendiente de Pago', 40, 20);
+    doc.setFontSize(11);
+    doc.text(`Pedido #${order.id}`, 14, 35);
+    doc.text(`Fecha: ${new Date(order.createdAt).toLocaleString()}`, 14, 42);
+
+    // Cliente
+    doc.text('Cliente:', 14, 52);
+    doc.text(order.customer.fullName, 35, 52);
+    doc.text('Email:', 14, 59);
+    doc.text(order.customer.email, 35, 59);
+    doc.text('Teléfono:', 14, 66);
+    doc.text(order.customer.phone, 35, 66);
+
+    doc.line(14, 70, 195, 70);
+    doc.setFontSize(12);
+    doc.text('Detalles del Pedido', 14, 78);
+
+    // Tabla
+    const tableBody = order.items.map((i: any) => {
+      const product = this.products.find((p) => p.id === i.productId);
+      return [
+        product?.name || `Producto #${i.productId}`,
+        product?.categoryName || '-',
+        i.quantity,
+        i.price.toFixed(2),
+        i.subtotal.toFixed(2),
+      ];
+    });
+
+    autoTable(doc, {
+      startY: 82,
+      head: [
+        ['Producto', 'Categoría', 'Cantidad', 'Precio (S/)', 'Subtotal (S/)'],
+      ],
+      body: tableBody,
+      theme: 'striped',
+      headStyles: { fillColor: [46, 47, 55], textColor: [255, 255, 255] },
+      styles: { fontSize: 10, cellPadding: 2 },
+    });
+
+    const finalY = (doc as any).lastAutoTable.finalY || 100;
+    doc.setFontSize(11);
+    doc.text(`Total ítems: ${order.totalItems}`, 14, finalY + 10);
+    doc.text(
+      `Total a pagar: S/ ${order.totalAmount.toFixed(2)}`,
+      14,
+      finalY + 16
+    );
+    doc.text(`Método de entrega: ${order.deliveryMethod}`, 14, finalY + 22);
+    doc.text(`Estado: ${order.orderStatus}`, 14, finalY + 28);
+    doc.text(`Pagado: No`, 14, finalY + 34);
+
+    doc.setTextColor(255, 0, 0);
+    doc.setFontSize(13);
+    doc.text('PAGO PENDIENTE', 14, finalY + 50);
+
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    window.open(pdfUrl, '_blank');
+  }
+
+  refreshProducts() {
+    this.ApiService.getProducts().subscribe({
+      next: (data) => {
+        this.products = data;
+        console.log('Productos =>', this.products);
+      },
+    });
+  }
+  selectedImage: string | null = null;
+
+  openImage(imageUrl: string | undefined) {
+    if (imageUrl) {
+      this.selectedImage = imageUrl;
+    }
+  }
+
+  closeImage() {
+    this.selectedImage = null;
+  }
+
+  payOrder(orderId: number) {
+    this.loading = true;
+    const modalElement = document.getElementById('orderDetailsModal');
+    this.ApiService.putOrderPayment(orderId).subscribe({
+      next: (response) => {
+        this.loading = false;
+        modalElement && bootstrap.Modal.getInstance(modalElement)?.hide();
+        this.refreshgetOrders();
+        console.log('Pago confirmado:', response);
+      },
+      error: (error) => {
+        this.loading = false;
+        console.error('Error al confirmar pago:', error);
+      },
+    });
+  }
+
+  async generateCombinedPDF() {
+    if (!this.filteredReservations || this.filteredReservations.length === 0)
+      return;
+
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+    });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const marginLeft = 14;
+    const marginRight = 14;
+    const marginTop = 20;
+    const rowHeight = 12;
+    const blockMinutes = 30;
+    const colWidthMin = 30;
+    const lineHeight = 8;
+
+    const reservationsByDate = this.groupBy(this.filteredReservations, (res) =>
+      res.reservedAt.slice(0, 10)
+    );
+
+    const statusMap: Record<number, string> = {
+      1: 'Pendiente',
+      2: 'Confirmado',
+      3: 'Cancelado',
+      4: 'Otro',
+      5: 'Especial',
+      6: 'Otro2',
+    };
+
+    for (const date in reservationsByDate) {
+      const reservations = reservationsByDate[date];
+
+      // Separar reservas de specialistId 999 y los demás
+      const expressReservations = reservations.filter(
+        (r) => r.specialistId === 999
+      );
+      const normalReservations = reservations.filter(
+        (r) => r.specialistId !== 999
+      );
+
+      // 1️⃣ CALENDARIO para especialistas normales
+      if (normalReservations.length > 0) {
+        const reservationsBySpecialist = this.groupBy(
+          normalReservations,
+          (res) => this.searchSpecialist(res.specialistId)
+        );
+        const specialists = Object.keys(reservationsBySpecialist);
+
+        doc.setFontSize(16);
+        doc.text(`Calendario Diario - ${date}`, marginLeft, 15);
+
+        const timelineWidth = Math.max(
+          (pageWidth - marginLeft - marginRight) / specialists.length,
+          colWidthMin
+        );
+
+        // Cabecera especialistas
+        doc.setFontSize(12);
+        specialists.forEach((specialist, colIndex) => {
+          const x = marginLeft + colIndex * timelineWidth;
+          doc.text(specialist, x + 2, marginTop);
+          doc.line(x, marginTop + 2, x, pageHeight - marginTop);
+        });
+
+        // Filas horarias de 08:00 a 20:00
+        const startHour = 9;
+        const endHour = 20;
+        const totalBlocks = ((endHour - startHour) * 60) / blockMinutes;
+
+        for (let b = 0; b < totalBlocks; b++) {
+          const hourDecimal = startHour + (b * blockMinutes) / 60;
+          const hourLabel = `${Math.floor(hourDecimal)
+            .toString()
+            .padStart(2, '0')}:${hourDecimal % 1 === 0 ? '00' : '30'}`;
+          const y = marginTop + 5 + b * rowHeight;
+
+          doc.setFontSize(10);
+          doc.text(hourLabel, marginLeft - 10, y + rowHeight / 2);
+
+          specialists.forEach((specialist, colIndex) => {
+            const x = marginLeft + colIndex * timelineWidth;
+            const specialistReservations =
+              reservationsBySpecialist[specialist] || [];
+
+            const resInBlock = specialistReservations.find((res) => {
+              const [hourStr, minuteStr] = res.hourAt.split(':');
+              const startDecimal =
+                parseInt(hourStr, 10) + parseInt(minuteStr, 10) / 60;
+              return startDecimal === hourDecimal;
+            });
+
+            if (resInBlock) {
+              const customer = resInBlock.customerId
+                ? this.searchCustomer2(resInBlock.customerId)
+                : null;
+              const clientName = customer
+                ? `${customer.firstName} ${customer.lastName}`
+                : 'Sin cliente';
+              const phone = customer?.phone ? `${customer.phone}` : '';
+              const advice = resInBlock.requiresPersonalAdvice
+                ? ' (Asesoría requerida)'
+                : '';
+              const status = statusMap[resInBlock.statusId] || 'N/A';
+
+              // Primera línea: nombre + estado
+              let text = `${clientName} (${status})`;
+              doc.setFontSize(10);
+              doc.setTextColor(0, 0, 0);
+              doc.text(text, x + 2, y + rowHeight / 2 - 2);
+
+              // Segunda línea: teléfono + asesoría
+              const line2 = [phone, advice].filter(Boolean).join(' - ');
+              if (line2) {
+                doc.setFontSize(8);
+                doc.text(line2, x + 2, y + rowHeight / 2 + 5);
+                doc.setFontSize(10);
+              }
+            }
+          });
+
+          doc.line(marginLeft, y, pageWidth - marginRight, y);
+        }
+      }
+
+      // 2️⃣ LISTA DIARIA para specialistId 999
+      if (expressReservations.length > 0) {
+        const reservationsBySpecialist = this.groupBy(
+          expressReservations,
+          (res) => this.searchSpecialist(res.specialistId)
+        );
+        const specialists = Object.keys(reservationsBySpecialist);
+
+        doc.addPage();
+        doc.setFontSize(16);
+        doc.text(`Reservas Expres - ${date}`, marginLeft, 15);
+
+        let y = marginTop + 10;
+
+        for (const specialist of specialists) {
+          const specialistReservations = reservationsBySpecialist[specialist];
+          doc.setFontSize(12);
+          doc.setTextColor(0, 0, 0);
+          doc.text(specialist, marginLeft, y);
+          y += lineHeight;
+
+          const sortedRes = specialistReservations.sort((a, b) => {
+            const [aH, aM] = a.hourAt.split(':').map(Number);
+            const [bH, bM] = b.hourAt.split(':').map(Number);
+            return aH * 60 + aM - (bH * 60 + bM);
+          });
+
+          for (const res of sortedRes) {
+            const customer = res.customerId
+              ? this.searchCustomer2(res.customerId)
+              : null;
+            const clientName = customer
+              ? `${customer.firstName} ${customer.lastName}`
+              : 'Sin cliente';
+            const phone = customer?.phone ? ` - ${customer.phone}` : '';
+            const advice = res.requiresPersonalAdvice
+              ? ' (Asesoría requerida)'
+              : '';
+            const status = statusMap[res.statusId] || 'N/A';
+
+            const text = `${res.hourAt} – Cliente: ${clientName} (${status})${phone}${advice}`;
+
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            doc.text(text, marginLeft + 4, y);
+            y += lineHeight;
+
+            if (y > doc.internal.pageSize.getHeight() - 20) {
+              doc.addPage();
+              y = marginTop;
+            }
+          }
+
+          y += lineHeight; // espacio entre especialistas
+        }
+      }
+    }
+
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    window.open(pdfUrl, '_blank');
+  }
+
+  // Función genérica para agrupar elementos
+  groupBy<T>(array: T[], keyFunc: (item: T) => string): { [key: string]: T[] } {
+    return array.reduce((result, item) => {
+      const key = keyFunc(item);
+      if (!result[key]) result[key] = [];
+      result[key].push(item);
+      return result;
+    }, {} as { [key: string]: T[] });
+  }
+
+  searchCustomer2(id: number) {
+    return this.customers.find((c) => c.id === id) || null;
   }
 }
