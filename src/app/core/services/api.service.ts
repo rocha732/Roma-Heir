@@ -7,7 +7,7 @@ import { environment } from '../environment/environment';
   providedIn: 'root',
 })
 export class ApiService {
-  private apiUrl = environment.apiUrl;
+  private apiUrl = 'https://api-roma-mahair-dev-cqgmfch0fgf9fyev.canadacentral-01.azurewebsites.net/api';
   constructor(private http: HttpClient) {}
 
   getReservations(): Observable<any> {
