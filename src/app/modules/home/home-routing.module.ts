@@ -1,15 +1,20 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { LoginComponent } from '../auth/login/login.component';
 import { HomeComponent } from './pages/home/home.component';
-import { LoginComponent } from './pages/login/login.component';
-import { ReservarCitaClienteComponent } from '../appointments/reservar-cita-cliente/reservar-cita-cliente.component';
+import { DashboardComponent } from './pages/home/dashboard/dashboard.component';
 
-const routes: Routes = [  
-  { path: 'dashboard', component: HomeComponent},
-  {path: 'reservar-cita-cliente', component: ReservarCitaClienteComponent},
-{ path: '', redirectTo: 'home', pathMatch: 'full' }, // redirigir al home por defecto
-  { path: '', component: LoginComponent } // este se carga cuando visitas /home
+const routes: Routes = [
+  {
+    path: '',
+    component: HomeComponent,
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', component: DashboardComponent },
+    ]
+  }
 ];
+
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],

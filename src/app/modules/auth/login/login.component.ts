@@ -50,7 +50,7 @@ export class LoginComponent {
         if (res.isValid) {
           this.modalRef?.hide();
           localStorage.setItem('token', res.data.accessToken.token);
-          this.router.navigate(['/home/dashboard']);
+         this.router.navigate(['/home']);
         } else {
           alert('Código incorrecto');
         }
