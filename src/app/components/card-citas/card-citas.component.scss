@@ -1,85 +1,106 @@
 .card {
   width: 100%;
-  padding: 20px 18px;
-  border-radius: 16px;
+  padding: 22px 24px;
+  border-radius: 20px;
   background: #ffffff;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  transition: 0.25s ease-in-out;
-  cursor: pointer;
-  border: 1px solid transparent;
+  justify-content: space-between;
+  gap: 12px;
+height: 100%;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+flex-direction: row;
+  transition: transform .25s ease, box-shadow .25s ease;
 
   &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .12);
   }
 
-  .left {
+  .content {
     display: flex;
     flex-direction: column;
+    gap: 4px;
 
-    h3 {
+    .title {
       margin: 0;
       font-size: 15px;
-      font-weight: 600;
-      color: #4A4A4A;
-      line-height: 1.2;
+      font-weight: 500;
+      color: #505050;
+      letter-spacing: .2px;
     }
 
     .value {
-      margin: 8px 0 0;
-      font-size: 32px;
+      margin: 0;
+      font-size: 36px;
       font-weight: 800;
-      color: #1F1F1F;
-      letter-spacing: -0.5px;
+      color: #232323;
+      letter-spacing: -1px;
     }
   }
 
   .icon-wrapper {
-    width: 54px;
-    height: 54px;
-    border-radius: 14px;
+    min-width: 60px;
+    min-height: 60px;
+    border-radius: 16px;
+
     display: flex;
     align-items: center;
     justify-content: center;
 
     .icon {
-      font-size: 30px;
-      color: white;
+      font-size: 24px;
+      color: #fff;
     }
   }
 }
+.card.confirmadas {
+  background: #e8f8ec;
+  border-left: 6px solid #32a852;
+  color: #1f7a3b;
 
-/* 🎨 Colores por tipo */
+  .icon-wrapper {
+    background: #32a85222;
+  }
+}
+
+/* Colores por tipo */
 .card.total .icon-wrapper {
-  background: linear-gradient(135deg, #1E88E5, #1565C0); // Azul
+  background: linear-gradient(135deg, #2196F3, #1976D2);
 }
 
 .card.hoy .icon-wrapper {
-  background: linear-gradient(135deg, #43A047, #2E7D32); // Verde
+  background: linear-gradient(135deg, #4CAF50, #388E3C);
 }
 
 .card.pendientes .icon-wrapper {
-  background: linear-gradient(135deg, #FB8C00, #EF6C00); // Naranja
+  background: linear-gradient(135deg, #FF9800, #F57C00);
+}
+.card.canceladas {
+  background: #ffe5e5;
+  color: #c62828;
 }
 
-/* 📱 Responsive pequeño */
+.card.canceladas .icon-wrapper {
+  background: #ffcccc;
+}
+
+/* Responsive */
 @media (max-width: 575px) {
   .card {
-    padding: 16px;
+    padding: 16px 18px;
 
-    .left .value {
-      font-size: 26px;
+    .content .value {
+      font-size: 28px;
     }
 
     .icon-wrapper {
-      width: 48px;
-      height: 48px;
+      width: 52px;
+      height: 52px;
 
       .icon {
-        font-size: 26px;
+        font-size: 28px;
       }
     }
   }

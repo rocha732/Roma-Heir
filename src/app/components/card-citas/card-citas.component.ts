@@ -9,6 +9,6 @@ export class CardCitasComponent {
   @Input() title = '';
   @Input() value: number | string = 0;
 
-  /** Tipos permitidos: 'total' | 'hoy' | 'pendientes' */
-  @Input() type: 'total' | 'hoy' | 'pendientes' = 'total';
+  /** Tipos permitidos: 'total' | 'hoy' | 'pendientes' | 'canceladas' | 'confirmadas' */
+  @Input() type: 'total' | 'hoy' | 'pendientes' |'canceladas' |'confirmadas' = 'total';
 }

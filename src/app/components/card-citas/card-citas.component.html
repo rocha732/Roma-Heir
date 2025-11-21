@@ -1,12 +1,24 @@
 <div class="card" [ngClass]="type">
-  <div class="left">
-    <h3>{{ title }}</h3>
+  <div class="content">
+    <h3 class="title">{{ title }}</h3>
     <p class="value">{{ value }}</p>
   </div>
 
   <div class="icon-wrapper">
     <mat-icon class="icon">
-      {{ type === 'total' ? 'event_note' : type === 'hoy' ? 'schedule' : 'pending_actions' }}
+      {{
+        type === "total"
+          ? "event_note"
+          : type === "hoy"
+          ? "schedule"
+          : type === "pendientes"
+          ? "pending_actions"
+          : type === "canceladas"
+          ? "cancel" 
+          : type === "confirmadas"
+          ? "check_circle"
+          : "event"
+      }}
     </mat-icon>
   </div>
 </div>

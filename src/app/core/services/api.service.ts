@@ -42,9 +42,7 @@ export class ApiService {
     return this.http.post<any>(`${this.apiUrl}/Reservations`, data);
   }
 
-  getStatusReservations(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/reservation-statuses`);
-  }
+
 
   patchReservationStatus(
     reservationId: number,
