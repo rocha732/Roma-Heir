@@ -1,0 +1,86 @@
+.card {
+  width: 100%;
+  padding: 20px 18px;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: 0.25s ease-in-out;
+  cursor: pointer;
+  border: 1px solid transparent;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  }
+
+  .left {
+    display: flex;
+    flex-direction: column;
+
+    h3 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 600;
+      color: #4A4A4A;
+      line-height: 1.2;
+    }
+
+    .value {
+      margin: 8px 0 0;
+      font-size: 32px;
+      font-weight: 800;
+      color: #1F1F1F;
+      letter-spacing: -0.5px;
+    }
+  }
+
+  .icon-wrapper {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .icon {
+      font-size: 30px;
+      color: white;
+    }
+  }
+}
+
+/* 🎨 Colores por tipo */
+.card.total .icon-wrapper {
+  background: linear-gradient(135deg, #1E88E5, #1565C0); // Azul
+}
+
+.card.hoy .icon-wrapper {
+  background: linear-gradient(135deg, #43A047, #2E7D32); // Verde
+}
+
+.card.pendientes .icon-wrapper {
+  background: linear-gradient(135deg, #FB8C00, #EF6C00); // Naranja
+}
+
+/* 📱 Responsive pequeño */
+@media (max-width: 575px) {
+  .card {
+    padding: 16px;
+
+    .left .value {
+      font-size: 26px;
+    }
+
+    .icon-wrapper {
+      width: 48px;
+      height: 48px;
+
+      .icon {
+        font-size: 26px;
+      }
+    }
+  }
+}

@@ -20,7 +20,7 @@ import { MatNativeDateModule } from '@angular/material/core';
     HttpClientModule,
     NgChartsModule,
     FormsModule,
-    BrowserAnimationsModule,
+    BrowserAnimationsModule
   ],
  providers: [
     {

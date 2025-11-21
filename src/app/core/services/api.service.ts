@@ -10,13 +10,9 @@ export class ApiService {
   private apiUrl = 'https://api-roma-mahair-dev-cqgmfch0fgf9fyev.canadacentral-01.azurewebsites.net/api';
   constructor(private http: HttpClient) {}
 
-  getReservations(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/Reservations`);
-  }
+ 
 
-  getSpecialists(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/Specialists`);
-  }
+ 
 
   postRegisterClient(client: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/Account/register`, client);

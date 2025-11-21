@@ -13,9 +13,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { NgChartsModule } from 'ng2-charts';
 import { DashboardComponent } from './pages/home/dashboard/dashboard.component';
+import { CardCitasComponent } from 'src/app/components/card-citas/card-citas.component';
 
 @NgModule({
-  declarations: [HomeComponent, LoginComponent, DashboardComponent],
+  declarations: [HomeComponent, LoginComponent, DashboardComponent, CardCitasComponent],
   imports: [
     CommonModule,
     HomeRoutingModule,
