@@ -1,26 +1,34 @@
 <div class="d-flex">
 
   <!-- Sidebar -->
-  <aside class="bg-dark text-white p-3 vh-100" style="width: 250px;">
-    <h4 class="text-center mb-4">Mi Dashboard</h4>
+  <aside class="sidebar bg-dark text-white p-3">
+    <div class="text-center mb-4">
+      <img src="assets/ico-logo.svg" alt="Logo" class="img-fluid" style="max-width: 140px;">
+    </div>
 
-    <nav class="nav flex-column">
-      <a class="nav-link text-white" routerLink="dashboard" routerLinkActive="active bg-secondary rounded px-2">
-        Dashboard
+    <nav class="nav flex-column gap-2">
+      <a class="nav-link text-white sidebar-link" 
+         routerLink="dashboard" 
+         routerLinkActive="active-link">
+        <i class="bi bi-speedometer2 me-2"></i> Dashboard
       </a>
 
-      <a class="nav-link text-white" routerLink="profile" routerLinkActive="active bg-secondary rounded px-2">
-        Perfil
+      <a class="nav-link text-white sidebar-link" 
+         routerLink="profile" 
+         routerLinkActive="active-link">
+        <i class="bi bi-person-circle me-2"></i> Perfil
       </a>
 
-      <a class="nav-link text-white" routerLink="settings" routerLinkActive="active bg-secondary rounded px-2">
-        Configuración
+      <a class="nav-link text-white sidebar-link" 
+         routerLink="settings" 
+         routerLinkActive="active-link">
+        <i class="bi bi-gear-fill me-2"></i> Configuración
       </a>
     </nav>
   </aside>
 
   <!-- Content -->
-  <main class="flex-grow-1 p-4">
+  <main class="content flex-grow-1 p-4">
     <router-outlet></router-outlet>
   </main>
 
