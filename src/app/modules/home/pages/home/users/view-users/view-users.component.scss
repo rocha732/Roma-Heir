@@ -1,0 +1,135 @@
+/* Inputs modernos */
+.modern-input {
+  border-radius: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  transition: 0.2s ease;
+}
+
+.modern-input:focus {
+  border-color: #4c8bf5;
+  box-shadow: 0 0 4px rgba(76, 139, 245, 0.4);
+}
+
+/* Tabla */
+.modern-table tbody tr:hover {
+  background: #f8f9fa !important;
+}
+
+/* Paginación elegante */
+.modern-pagination .page-link {
+  border-radius: 8px;
+  margin: 0 3px;
+}
+
+.stats-card {
+  position: sticky;
+  top: 20px;
+}
+
+/* Skeletons */
+@keyframes skeleton-loading {
+  0% {
+    background-color: #e1e4e8;
+  }
+  100% {
+    background-color: #f0f0f0;
+  }
+}
+
+.skeleton-input {
+  height: 40px;
+  border-radius: 8px;
+  animation: skeleton-loading 1s infinite alternate;
+}
+
+.skeleton-row {
+  height: 45px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  animation: skeleton-loading 1s infinite alternate;
+}
+
+.skeleton-chart {
+  height: 220px;
+  border-radius: 12px;
+  animation: skeleton-loading 1s infinite alternate;
+}
+
+.table-container {
+  overflow-y: auto;
+}
+
+.chart-container {
+  width: 100%;
+    canvas{
+        width: 100% !important;
+      
+    }
+}
+
+/* Floating Action Button */
+/* Floating Action Button */
+/* Floating Action Button */
+.fab-btn {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+
+  background: #007bff;
+  color: #fff;
+  text-decoration: none;
+
+  display: flex;
+  align-items: center;
+  justify-content: center; /* CENTRA EL + */
+
+  gap: 0;
+  padding: 14px;
+
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+
+  font-size: 16px;
+  font-weight: 500;
+
+  cursor: pointer;
+  z-index: 999;
+
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+  transition: all 0.3s ease;
+  overflow: hidden; /* permite animación pero no oculta el + */
+}
+
+/* ÍCONO + CENTRADO */
+.fab-icon {
+  font-size: 28px;
+  font-weight: bold;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Texto oculto inicialmente */
+.fab-text {
+  opacity: 0;
+  max-width: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+/* Animación al pasar mouse */
+.fab-btn:hover {
+  width: 200px;      /* se expande */
+  border-radius: 50px;
+  justify-content: flex-start;
+  padding-left: 20px;
+  background: #005fcc; gap:10px;
+}
+
+.fab-btn:hover .fab-text {
+  opacity: 1;
+  max-width: 160px;
+}

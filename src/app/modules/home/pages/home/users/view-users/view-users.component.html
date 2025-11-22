@@ -1,1 +1,190 @@
-<p>view-users works!</p>
+<div class="row">
+
+  <!-- IZQUIERDA: FILTROS + TABLA -->
+  <div class="col-lg-8">
+
+    <!-- CARD FILTROS -->
+    <div class="card shadow-sm p-4 mb-4 rounded-4">
+      <h4 class="mb-4 fw-semibold text-center">Filtros de Usuarios</h4>
+
+      <ng-container *ngIf="!loading; else filterSkeleton">
+        <div class="row g-3">
+
+          <div class="col-md-4">
+            <input
+              type="text"
+              class="form-control modern-input"
+              placeholder="Buscar por nombre"
+              [(ngModel)]="filterName"
+              (input)="applyFilters()"
+            />
+          </div>
+
+          <div class="col-md-4">
+            <input
+              type="text"
+              class="form-control modern-input"
+              placeholder="Buscar por apellido"
+              [(ngModel)]="filterLastName"
+              (input)="applyFilters()"
+            />
+          </div>
+
+          <div class="col-md-4">
+            <input
+              type="text"
+              class="form-control modern-input"
+              placeholder="Buscar por email"
+              [(ngModel)]="filterEmail"
+              (input)="applyFilters()"
+            />
+          </div>
+
+          <div class="col-md-6">
+            <select
+              class="form-select modern-input"
+              [(ngModel)]="filterCountry"
+              (change)="applyFilters()"
+            >
+              <option value="">Todos los países</option>
+              <option *ngFor="let c of countries" [value]="c">
+                {{ c }}
+              </option>
+            </select>
+          </div>
+
+          <div class="col-md-6">
+            <select
+              class="form-select modern-input"
+              [(ngModel)]="filterRole"
+              (change)="applyFilters()"
+            >
+              <option value="">Todos los roles</option>
+              <option *ngFor="let r of roles" [value]="r.name">
+                {{ r.name }}
+              </option>
+            </select>
+          </div>
+
+        </div>
+      </ng-container>
+
+      <!-- Skeleton filtros -->
+      <ng-template #filterSkeleton>
+        <div class="row g-3">
+          <div class="col-md-4" *ngFor="let i of [1,2,3]">
+            <div class="skeleton-input"></div>
+          </div>
+          <div class="col-md-6" *ngFor="let i of [1,2]">
+            <div class="skeleton-input"></div>
+          </div>
+        </div>
+      </ng-template>
+
+    </div>
+
+    <!-- CARD TABLA -->
+    <div class="card shadow-sm p-4 mb-4 rounded-4">
+      <h4 class="mb-3 fw-semibold text-center">Lista de Usuarios</h4>
+
+      <ng-container *ngIf="!loading; else tableSkeleton">
+        <div class="table-container">
+          <table class="table table-hover align-middle modern-table">
+            <thead>
+              <tr>
+                <th>Foto</th>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+                <th>País</th>
+                <th>Rol</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of paginatedUsers">
+                <td>
+                  <img
+                    [src]="user.profileImageUrl"
+                    class="rounded-circle shadow-sm"
+                    width="45"
+                    height="45"
+                    style="object-fit: cover"
+                  />
+                </td>
+                <td>{{ user.firstName }} {{ user.lastName }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.phone }}</td>
+                <td>{{ user.country.name }}</td>
+                <td>{{ user.role.name  }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <!-- Skeleton tabla -->
+      <ng-template #tableSkeleton>
+        <div class="table-container">
+          <div *ngFor="let i of [].constructor(8)" class="skeleton-row"></div>
+        </div>
+      </ng-template>
+
+      <!-- Paginación -->
+      <div class="d-flex justify-content-center mt-3" *ngIf="!loading">
+        <ul class="pagination modern-pagination">
+          <li class="page-item" [class.disabled]="currentPage === 1">
+            <button class="page-link" (click)="goToPage(currentPage - 1)">«</button>
+          </li>
+
+          <li
+            class="page-item"
+            *ngFor="let p of [].constructor(totalPages()); let i = index"
+            [class.active]="currentPage === i + 1"
+          >
+            <button class="page-link" (click)="goToPage(i + 1)">
+              {{ i + 1 }}
+            </button>
+          </li>
+
+          <li class="page-item" [class.disabled]="currentPage === totalPages()">
+            <button class="page-link" (click)="goToPage(currentPage + 1)">»</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- DERECHA: Estadísticas -->
+  <div class="col-lg-4">
+
+    <div class="card shadow-sm p-4 mb-4 rounded-4 stats-card">
+      <h4 class="mb-4 fw-semibold text-center">Estadísticas</h4>
+
+      <ng-container *ngIf="!loading; else chartSkeleton">
+<div class="chart-container">
+  <canvas id="countryChart" height="200"></canvas>
+</div>
+
+<div class="chart-container">
+  <canvas id="roleChart" height="200"></canvas>
+</div>
+
+
+      </ng-container>
+
+      <!-- Skeleton charts -->
+      <ng-template #chartSkeleton>
+        <div class="skeleton-chart mb-4"></div>
+        <div class="skeleton-chart"></div>
+      </ng-template>
+
+    </div>
+  </div>
+</div>
+
+<!-- BOTÓN FLOTANTE PARA CREAR USUARIO -->
+<a class="fab-btn" [routerLink]="['/home/users/create-user']">
+  <span class="fab-icon">+</span>
+  <span class="fab-text">Agregar usuario</span>
+</a>

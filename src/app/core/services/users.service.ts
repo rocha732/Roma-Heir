@@ -1,6 +1,10 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { RequestAccount, RequestVerifyAccount } from '../models/users';
+import {
+  RequestAccount,
+  RequestVerifyAccount,
+  ResponseUsers,
+} from '../models/users';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -16,13 +20,31 @@ export class UsersService {
     return this.http.post(url, user);
   }
 
-postVerifyAccount(user: RequestVerifyAccount): Observable<any> {
+  postVerifyAccount(user: RequestVerifyAccount): Observable<any> {
     const url = `${this.apiUrl}/Account/verify`;
     return this.http.post(url, user);
   }
- 
+
   postResendCode(user: RequestAccount): Observable<any> {
     const url = `${this.apiUrl}/Account/resend-code`;
     return this.http.post(url, user);
+  }
+  getUsers(filters?: {
+    email?: string;
+    name?: string;
+    lastName?: string;
+    roleId?: number;
+  }): Observable<ResponseUsers[]> {
+    let params = new HttpParams();
+
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          params = params.set(key, value);
+        }
+      });
+    }
+
+    return this.http.get<ResponseUsers[]>(`${this.apiUrl}/Users`, { params });
   }
 }
