@@ -17,9 +17,24 @@ import { CardCitasComponent } from 'src/app/components/card-citas/card-citas.com
 import { ViewUsersComponent } from './pages/home/users/view-users/view-users.component';
 import { EditUserComponent } from './pages/home/users/edit-user/edit-user.component';
 import { CreateUserComponent } from './pages/home/users/create-user/create-user.component';
+import { ViewProductsComponent } from './pages/home/products/view-products/view-products.component';
+
+import { ProductCardComponent } from 'src/app/components/product-card/product-card.component';
+import { ProductModalComponent } from 'src/app/components/product-modal-add/product-modal-add.component';
 
 @NgModule({
-  declarations: [HomeComponent, LoginComponent, DashboardComponent, CardCitasComponent, ViewUsersComponent, EditUserComponent, CreateUserComponent],
+  declarations: [
+    HomeComponent, 
+    LoginComponent, 
+    DashboardComponent, 
+    CardCitasComponent, 
+    ViewUsersComponent, 
+    EditUserComponent, 
+    CreateUserComponent,
+    ViewProductsComponent,
+    ProductCardComponent,
+    ProductModalComponent
+  ],
   imports: [
     CommonModule,
     HomeRoutingModule,

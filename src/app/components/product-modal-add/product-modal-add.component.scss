@@ -1,0 +1,66 @@
+.modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.574);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal-content {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  min-width: 320px;
+  max-width: 50rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+}
+// ...existing code...
+.modal-actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+
+  button[type="submit"] {
+    background: #4a6cf7;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: 0 2px 8px rgba(74,108,247,0.08);
+    transition: background 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+  }
+  button[type="submit"]:hover {
+    background: #3556c7;
+    box-shadow: 0 4px 16px rgba(74,108,247,0.18);
+  }
+
+  button[type="button"] {
+    background: #fff;
+    color: #4a6cf7;
+    border: 1.5px solid #4a6cf7;
+    border-radius: 8px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: background 0.2s, color 0.2s, border 0.2s;
+    cursor: pointer;
+  }
+  button[type="button"]:hover {
+    background: #f0f4ff;
+    color: #3556c7;
+    border-color: #3556c7;
+  }
+}
+input[type="text"], input[type="number"] {
+  display: block;
+  width: 100%;
+  margin-bottom: 0.7rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}

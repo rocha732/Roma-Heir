@@ -1,0 +1,39 @@
+<div *ngIf="products && products.length; else noProducts">
+	<div class="products-title">Lista de productos</div>
+
+	<div class="products-actions">
+		<input 
+			#searchBox 
+			type="text" 
+			class="products-search" 
+			placeholder="Buscar producto" 
+			(input)="onSearch(searchBox.value)" />
+		<button 
+			class="products-add-btn"
+			(click)="openModal()">Agregar</button>
+	</div>
+    
+	<app-product-modal 
+		*ngIf="showModal" 
+		[categories]="categoryList"
+		[productTypes]="productTypeList"
+		(save)="onModalSave($event)" 
+		(close)="onModalClose()">
+	</app-product-modal>
+
+	<div class="products-list">
+		<app-product-card
+			*ngFor="let product of filteredProducts"
+			[profileImageUrl]="product.profileImageUrl || 'https://placehold.co/320x160'"
+			[categoryName]="product.categoryName || 'Sin categoría'"
+			[name]="product.name"
+			[description]="product.description"
+			[price]="product.price"
+			[available]="product.available"
+			[productTypeName]="product.productType?.name || 'Tipo desconocido'"
+		></app-product-card>
+	</div>
+</div>
+<ng-template #noProducts>
+	<p>No hay productos para mostrar.</p>
+</ng-template>

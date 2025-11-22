@@ -6,6 +6,7 @@ import { AuthGuard } from '../../core/guards/auth.guard';
 import { ViewUsersComponent } from './pages/home/users/view-users/view-users.component';
 import { CreateUserComponent } from './pages/home/users/create-user/create-user.component';
 import { EditUserComponent } from './pages/home/users/edit-user/edit-user.component';
+import { ViewProductsComponent } from './pages/home/products/view-products/view-products.component';
 
 const routes: Routes = [
   {
@@ -22,6 +23,8 @@ const routes: Routes = [
       { path: 'users/view-users', component: ViewUsersComponent },
       { path: 'users/create-user', component: CreateUserComponent },
       { path: 'users/edit-user', component: EditUserComponent }, // :id para editar
+      { path: 'products/view-products', component: ViewProductsComponent },
+      
     ],
   },
 ];
