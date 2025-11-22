@@ -1,0 +1,13 @@
+<div class="modal-body text-center py-5">
+  <div class="icon-wrapper mb-3">
+    <ng-container *ngIf="type === 'success'">
+      <div class="checkmark animate-check">&#10004;</div>
+    </ng-container>
+    <ng-container *ngIf="type === 'error'">
+      <div class="cross animate-cross">&#10006;</div>
+    </ng-container>
+  </div>
+  <h5>{{ title }}</h5>
+  <p>{{ message }}</p>
+  <button class="btn btn-primary mt-3" (click)="activeModal.close()">Cerrar</button>
+</div>

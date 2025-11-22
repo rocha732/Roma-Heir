@@ -15,6 +15,7 @@ export class HomeComponent {
         localStorage.setItem('specialists', JSON.stringify(specialists));
       });
     }
+    
   }
 
   logout() {

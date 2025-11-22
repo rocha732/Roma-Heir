@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 
 import { HomeRoutingModule } from './home-routing.module';
 import { HomeComponent } from './pages/home/home.component';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { LoginComponent } from '../auth/login/login.component';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
@@ -17,9 +17,10 @@ import { CardCitasComponent } from 'src/app/components/card-citas/card-citas.com
 import { ViewUsersComponent } from './pages/home/users/view-users/view-users.component';
 import { EditUserComponent } from './pages/home/users/edit-user/edit-user.component';
 import { CreateUserComponent } from './pages/home/users/create-user/create-user.component';
+import { FormInputComponent } from 'src/app/components/form-input/form-input.component';
 
 @NgModule({
-  declarations: [HomeComponent, LoginComponent, DashboardComponent, CardCitasComponent, ViewUsersComponent, EditUserComponent, CreateUserComponent],
+  declarations: [HomeComponent, LoginComponent, DashboardComponent, CardCitasComponent, ViewUsersComponent, EditUserComponent, CreateUserComponent,FormInputComponent],
   imports: [
     CommonModule,
     HomeRoutingModule,
@@ -30,7 +31,7 @@ import { CreateUserComponent } from './pages/home/users/create-user/create-user.
     MatIconModule,
     MatTooltipModule,
     MatMenuModule,
-    NgChartsModule,
+    NgChartsModule,ReactiveFormsModule
   ],
 })
 export class HomeModule {}

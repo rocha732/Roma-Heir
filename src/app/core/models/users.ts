@@ -30,3 +30,17 @@ export interface Role {
     id:   number;
     name: string;
 }
+
+
+export interface RequestAccount{
+        firstName: string;
+    lastName:  string;
+    email:     string;
+    phone:     string;
+    countryId: number;
+}
+
+export interface RequestVerifyAccount{
+    code:  string;
+    email: string;
+}

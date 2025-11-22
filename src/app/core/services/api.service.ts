@@ -14,13 +14,6 @@ export class ApiService {
 
  
 
-  postRegisterClient(client: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/Account/register`, client);
-  }
-
-  postverifyClient(client: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/Account/verify`, client);
-  }
 
   getCustomers(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/Customers`);
