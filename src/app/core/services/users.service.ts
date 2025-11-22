@@ -47,4 +47,12 @@ export class UsersService {
 
     return this.http.get<ResponseUsers[]>(`${this.apiUrl}/Users`, { params });
   }
+  getUserById(id: number): Observable<ResponseUsers> {
+    const url = `${this.apiUrl}/Users/${id}`;
+    return this.http.get<ResponseUsers>(url);
+  }
+  putUpdateUser(formData: FormData, id: number): Observable<any> {
+    const url = `${this.apiUrl}/Users/${id}`;
+    return this.http.put(url, formData);
+  }
 }

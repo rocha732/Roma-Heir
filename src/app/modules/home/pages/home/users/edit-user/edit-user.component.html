@@ -1,1 +1,117 @@
-<p>edit-user works!</p>
+<!-- Buscador solo si entras sin ID -->
+<div class="mb-3">
+  <input
+    type="text"
+    class="form-control"
+    placeholder="Buscar usuario..."
+    [(ngModel)]="searchQuery"
+    (ngModelChange)="onSearchChange()"
+  />
+</div>
+<div class="card shadow p-4" *ngIf="user">
+  <div class="text-center mb-3">
+    <img
+      [src]="user.profileImageUrl"
+      alt="Foto de perfil"
+      class="rounded-circle"
+      width="120"
+      height="120"
+      style="object-fit: cover"
+    />
+  </div>
+
+  <h5 class="text-center mb-4">{{ user.firstName }} {{ user.lastName }}</h5>
+
+  <form>
+    <!-- FirstName -->
+    <div class="mb-3">
+      <label class="form-label">First Name</label>
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="user.firstName"
+        name="firstName"
+      />
+    </div>
+
+    <!-- LastName -->
+    <div class="mb-3">
+      <label class="form-label">Last Name</label>
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="user.lastName"
+        name="lastName"
+      />
+    </div>
+
+    <!-- Email -->
+    <div class="mb-3">
+      <label class="form-label">Email</label>
+      <input
+        type="email"
+        class="form-control"
+        [(ngModel)]="user.email"
+        name="email"
+      />
+    </div>
+
+    <!-- Phone -->
+    <div class="mb-3">
+      <label class="form-label">Phone</label>
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="user.phone"
+        name="phone"
+      />
+    </div>
+
+    <!-- Country -->
+    <div class="mb-3">
+      <label class="form-label">Country</label>
+      <select
+        class="form-select"
+        [(ngModel)]="user.country.id"
+        name="countryId"
+      >
+        <!-- Ejemplo: agregar opciones reales -->
+        <option value="1">Argentina</option>
+        <option value="2">Perú</option>
+        <option value="3">Chile</option>
+        <option value="4">México</option>
+      </select>
+    </div>
+
+    <!-- Role -->
+    <div class="mb-3">
+      <label class="form-label">Role</label>
+      <select class="form-select" [(ngModel)]="user.role.id" name="roleId">
+        <option value="1">Admin</option>
+        <option value="2">Specialist</option>
+        <option value="3">User</option>
+      </select>
+    </div>
+    <img
+      [src]="previewImage ? previewImage : user.profileImageUrl"
+      alt="Foto de perfil"
+      class="rounded-circle"
+      width="120"
+      height="120"
+      style="object-fit: cover"
+    />
+    <!-- Picture -->
+    <div class="mb-3">
+      <label class="form-label">Profile Picture</label>
+      <input
+        type="file"
+        class="form-control"
+        (change)="onSelectPicture($event)"
+      />
+    </div>
+
+    <button class="btn btn-primary w-100 mt-3" (click)="saveUser()">
+      Guardar cambios
+    </button>
+  </form>
+</div>

@@ -1,15 +1,12 @@
 <div class="row">
-
   <!-- IZQUIERDA: FILTROS + TABLA -->
   <div class="col-lg-8">
-
     <!-- CARD FILTROS -->
     <div class="card shadow-sm p-4 mb-4 rounded-4">
       <h4 class="mb-4 fw-semibold text-center">Filtros de Usuarios</h4>
 
       <ng-container *ngIf="!loading; else filterSkeleton">
         <div class="row g-3">
-
           <div class="col-md-4">
             <input
               type="text"
@@ -65,22 +62,20 @@
               </option>
             </select>
           </div>
-
         </div>
       </ng-container>
 
       <!-- Skeleton filtros -->
       <ng-template #filterSkeleton>
         <div class="row g-3">
-          <div class="col-md-4" *ngFor="let i of [1,2,3]">
+          <div class="col-md-4" *ngFor="let i of [1, 2, 3]">
             <div class="skeleton-input"></div>
           </div>
-          <div class="col-md-6" *ngFor="let i of [1,2]">
+          <div class="col-md-6" *ngFor="let i of [1, 2]">
             <div class="skeleton-input"></div>
           </div>
         </div>
       </ng-template>
-
     </div>
 
     <!-- CARD TABLA -->
@@ -90,35 +85,50 @@
       <ng-container *ngIf="!loading; else tableSkeleton">
         <div class="table-container">
           <table class="table table-hover align-middle modern-table">
-            <thead>
-              <tr>
-                <th>Foto</th>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Teléfono</th>
-                <th>País</th>
-                <th>Rol</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let user of paginatedUsers">
-                <td>
-                  <img
-                    [src]="user.profileImageUrl"
-                    class="rounded-circle shadow-sm"
-                    width="45"
-                    height="45"
-                    style="object-fit: cover"
-                  />
-                </td>
-                <td>{{ user.firstName }} {{ user.lastName }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.phone }}</td>
-                <td>{{ user.country.name }}</td>
-                <td>{{ user.role.name  }}</td>
-              </tr>
-            </tbody>
-          </table>
+  <thead>
+    <tr>
+      <th>Foto</th>
+      <th>Nombre</th>
+      <th>Email</th>
+      <th>Teléfono</th>
+      <th>País</th>
+      <th>Rol</th>
+      <th style="width: 120px;">Acciones</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr *ngFor="let user of paginatedUsers">
+      <td>
+        <img
+          [src]="user.profileImageUrl"
+          class="rounded-circle shadow-sm"
+          width="45"
+          height="45"
+          style="object-fit: cover"
+        />
+      </td>
+
+      <td>{{ user.firstName }} {{ user.lastName }}</td>
+      <td>{{ user.email }}</td>
+      <td>{{ user.phone }}</td>
+      <td>{{ user.country.name }}</td>
+      <td>{{ user.role.name }}</td>
+
+      <!-- Botón Editar -->
+      <td>
+        <button
+          class="btn btn-sm btn-primary d-flex align-items-center gap-1"
+          [routerLink]="['/home/users/edit-user', user.id]"
+        >
+          <i class="bi bi-pencil-square"></i>
+          Editar
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
         </div>
       </ng-container>
 
@@ -133,7 +143,9 @@
       <div class="d-flex justify-content-center mt-3" *ngIf="!loading">
         <ul class="pagination modern-pagination">
           <li class="page-item" [class.disabled]="currentPage === 1">
-            <button class="page-link" (click)="goToPage(currentPage - 1)">«</button>
+            <button class="page-link" (click)="goToPage(currentPage - 1)">
+              «
+            </button>
           </li>
 
           <li
@@ -147,30 +159,28 @@
           </li>
 
           <li class="page-item" [class.disabled]="currentPage === totalPages()">
-            <button class="page-link" (click)="goToPage(currentPage + 1)">»</button>
+            <button class="page-link" (click)="goToPage(currentPage + 1)">
+              »
+            </button>
           </li>
         </ul>
       </div>
     </div>
-
   </div>
 
   <!-- DERECHA: Estadísticas -->
   <div class="col-lg-4">
-
     <div class="card shadow-sm p-4 mb-4 rounded-4 stats-card">
       <h4 class="mb-4 fw-semibold text-center">Estadísticas</h4>
 
       <ng-container *ngIf="!loading; else chartSkeleton">
-<div class="chart-container">
-  <canvas id="countryChart" height="200"></canvas>
-</div>
+        <div class="chart-container">
+          <canvas id="countryChart" height="200"></canvas>
+        </div>
 
-<div class="chart-container">
-  <canvas id="roleChart" height="200"></canvas>
-</div>
-
-
+        <div class="chart-container">
+          <canvas id="roleChart" height="200"></canvas>
+        </div>
       </ng-container>
 
       <!-- Skeleton charts -->
@@ -178,7 +188,6 @@
         <div class="skeleton-chart mb-4"></div>
         <div class="skeleton-chart"></div>
       </ng-template>
-
     </div>
   </div>
 </div>

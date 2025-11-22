@@ -19,9 +19,18 @@ const routes: Routes = [
         component: DashboardComponent,
         canActivate: [AuthGuard],
       },
-      { path: 'users/view-users', component: ViewUsersComponent },
-      { path: 'users/create-user', component: CreateUserComponent },
-      { path: 'users/edit-user', component: EditUserComponent }, // :id para editar
+      { path: 'users/view-users', component: ViewUsersComponent ,
+        canActivate: [AuthGuard], },
+      { path: 'users/create-user', component: CreateUserComponent ,
+        canActivate: [AuthGuard],},
+      {
+  path: 'users/edit-user',
+  component: EditUserComponent,
+},
+{
+  path: 'users/edit-user/:id',
+  component: EditUserComponent,
+} // :id para editar
     ],
   },
 ];
