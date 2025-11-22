@@ -7,6 +7,7 @@ import { SpecialistsService } from 'src/app/core/services/specialists.service';
   styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent {
+  isSpecialistOpen = false;
   constructor(private specialistsService: SpecialistsService, private router: Router) {}
   ngOnInit(): void {
     if (!localStorage.getItem('specialists')) {
@@ -19,6 +20,11 @@ export class HomeComponent {
   logout() {
   localStorage.clear();  // o solo removeItem('token')
   this.router.navigate(['/']); // vuelve al login
+}
+
+
+toggleSpecialistDropdown() {
+  this.isSpecialistOpen = !this.isSpecialistOpen;
 }
 
 }

@@ -14,9 +14,12 @@ import { MatMenuModule } from '@angular/material/menu';
 import { NgChartsModule } from 'ng2-charts';
 import { DashboardComponent } from './pages/home/dashboard/dashboard.component';
 import { CardCitasComponent } from 'src/app/components/card-citas/card-citas.component';
+import { ViewUsersComponent } from './pages/home/users/view-users/view-users.component';
+import { EditUserComponent } from './pages/home/users/edit-user/edit-user.component';
+import { CreateUserComponent } from './pages/home/users/create-user/create-user.component';
 
 @NgModule({
-  declarations: [HomeComponent, LoginComponent, DashboardComponent, CardCitasComponent],
+  declarations: [HomeComponent, LoginComponent, DashboardComponent, CardCitasComponent, ViewUsersComponent, EditUserComponent, CreateUserComponent],
   imports: [
     CommonModule,
     HomeRoutingModule,
