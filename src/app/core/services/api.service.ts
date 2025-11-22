@@ -63,12 +63,7 @@ export class ApiService {
       updatedReservation
     );
   }
-  getOrders(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/Orders`);
-  }
-  getOrderDetails(orderId: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/Orders/${orderId}/details`);
-  }
+  
    getProducts(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/Products`);
   }
