@@ -8,18 +8,19 @@
 			class="products-search" 
 			placeholder="Buscar producto" 
 			(input)="onSearch(searchBox.value)" />
-		<button 
-			class="products-add-btn"
-			(click)="openModal()">Agregar</button>
+
+		<div class="products-filters">
+			<select class="products-search" [(ngModel)]="selectedCategory" (change)="onFilterChange()">
+				<option [ngValue]="null">Todas las categorías</option>
+				<option *ngFor="let cat of categoryList" [ngValue]="cat.name">{{ cat.name }}</option>
+			</select>
+
+			<select class="products-search" [(ngModel)]="selectedProductType" (change)="onFilterChange()">
+				<option [ngValue]="null">Todos los tipos</option>
+				<option *ngFor="let type of productTypeList" [ngValue]="type.id">{{ type.name }}</option>
+			</select>
+		</div>
 	</div>
-    
-	<app-product-modal 
-		*ngIf="showModal" 
-		[categories]="categoryList"
-		[productTypes]="productTypeList"
-		(save)="onModalSave($event)" 
-		(close)="onModalClose()">
-	</app-product-modal>
 
 	<div class="products-list">
 		<app-product-card
@@ -31,6 +32,8 @@
 			[price]="product.price"
 			[available]="product.available"
 			[productTypeName]="product.productType?.name || 'Tipo desconocido'"
+			[onEditCallback]="onEditProduct"
+      [id]="product.id"
 		></app-product-card>
 	</div>
 </div>

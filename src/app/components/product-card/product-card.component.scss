@@ -106,8 +106,9 @@
 .product-card__price {
     display: flex;
     flex-direction: row;
-    justify-content: flex-end;
+    justify-content: space-between;
     font-size: 0.98rem;
     font-weight: 600;
     padding-bottom: 0.5rem;
+    align-items: center;
 }

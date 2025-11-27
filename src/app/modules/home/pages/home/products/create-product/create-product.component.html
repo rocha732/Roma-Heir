@@ -1,0 +1,57 @@
+<div class="create-product-container">
+  <h2>Crear nuevo producto</h2>
+  <div *ngIf="successMessage" class="alert alert-success" style="margin-bottom: 1rem;">
+    {{ successMessage }}
+  </div>
+  <form (ngSubmit)="onSubmit()" #productForm="ngForm" class="create-product-form">
+    <div class="form-group">
+      <label class="form-group-label">Nombre</label>
+      <input type="text" class="form-control" name="name" [(ngModel)]="product.name" required />
+    </div>
+    <div class="form-group">
+      <label class="form-group-label">Descripción</label>
+      <textarea class="form-control" name="description" [(ngModel)]="product.description" required></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-group-label">Precio</label>
+      <input type="number" class="form-control" name="price" [(ngModel)]="product.price" required min="1" />
+    </div>
+    <div class="form-group">
+      <label class="form-group-label">Categoría</label>
+      <select class="form-control" name="categoryId" [(ngModel)]="product.categoryId" required>
+        <option [ngValue]="null">Selecciona una categoría</option>
+        <option *ngFor="let cat of categoryList" [ngValue]="cat.id">{{ cat.name }}</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-group-label">Tipo de producto</label>
+      <select class="form-control" name="productType" [(ngModel)]="product.productType" required>
+        <option [ngValue]="null">Selecciona un tipo</option>
+        <option *ngFor="let type of productTypeList" [ngValue]="type.id">{{ type.name }}</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-group-label">Imagen</label>
+      <div 
+        class="image-drop-area"
+        (dragover)="$event.preventDefault()"
+        (drop)="onDrop($event)"
+        (dragleave)="onDragLeave($event)"
+        (dragenter)="onDragEnter($event)"
+        [class.dragover]="isDragOver"
+      >
+        <input type="file" class="form-control" (change)="onFileChange($event)" style="display:none;" #fileInput />
+        <div (click)="fileInput.click()" class="drop-text">
+          <ng-container *ngIf="!imagePreview">Arrastra una imagen aquí o haz clic para seleccionar</ng-container>
+          <img *ngIf="imagePreview" [src]="imagePreview" alt="Vista previa" class="image-preview" />
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-group-label">
+        <input type="checkbox" name="available" [(ngModel)]="product.available" /> Disponible
+      </label>
+    </div>
+    <button type="submit" class="btn btn-primary" [disabled]="!productForm.form.valid">Guardar producto</button>
+  </form>
+</div>

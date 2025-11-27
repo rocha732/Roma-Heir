@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { ProductsService } from 'src/app/core/services/products.service';
 import { CategoriesService } from 'src/app/core/services/categories.service';
 
@@ -7,7 +8,6 @@ import { CategoriesService } from 'src/app/core/services/categories.service';
   templateUrl: './view-products.component.html',
   styleUrls: ['./view-products.component.scss']
 })
-
 export class ViewProductsComponent {
   products: any[] = [];
   filteredProducts: any[] = [];
@@ -15,10 +15,13 @@ export class ViewProductsComponent {
   showModal: boolean = false;
   categoryList: { id: number, name: string }[] = [];
   productTypeList: { id: number, name: string }[] = [];
+  selectedCategory: string | null = null;
+  selectedProductType: number | null = null;
 
   constructor(
     private productsService: ProductsService,
-    private categoriesService: CategoriesService
+    private categoriesService: CategoriesService,
+    private router: Router
   ) {
     // Cargar categorías desde el backend
     this.categoriesService.getCategories().subscribe((categories) => {
@@ -41,10 +44,28 @@ export class ViewProductsComponent {
 
   onSearch(term: string) {
     this.searchTerm = term.toLowerCase();
+    this.applyFilters();
+  }
+
+  onFilterChange() {
+    this.applyFilters();
+  }
+
+  applyFilters() {
     this.filteredProducts = this.products.filter(product => {
       const name = (product.name || '').toLowerCase();
       const category = (product.categoryName || '').toLowerCase();
-      return name.includes(this.searchTerm) || category.includes(this.searchTerm);
+      const matchesSearch = !this.searchTerm || name.includes(this.searchTerm) || category.includes(this.searchTerm);
+      // Filtrar por categoryName en vez de categoryId
+      const matchesCategory = this.selectedCategory == null || product.categoryName === this.selectedCategory;
+      const matchesType = this.selectedProductType == null || (product.productType && product.productType.id == this.selectedProductType);
+      return matchesSearch && matchesCategory && matchesType;
+    });
+    console.log('Filtro aplicado:', {
+      searchTerm: this.searchTerm,
+      selectedCategory: this.selectedCategory,
+      selectedProductType: this.selectedProductType,
+      filteredProducts: this.filteredProducts
     });
   }
 
@@ -75,5 +96,11 @@ export class ViewProductsComponent {
 
   onModalClose() {
     this.showModal = false;
+  }
+
+  onEditProduct(id: number) {
+    if (id !== undefined && id !== null) {
+      this.router.navigate(['/home/products/edit-product', id]);
+    }
   }
 }

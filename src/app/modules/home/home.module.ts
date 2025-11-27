@@ -18,9 +18,10 @@ import { ViewUsersComponent } from './pages/home/users/view-users/view-users.com
 import { EditUserComponent } from './pages/home/users/edit-user/edit-user.component';
 import { CreateUserComponent } from './pages/home/users/create-user/create-user.component';
 import { ViewProductsComponent } from './pages/home/products/view-products/view-products.component';
+import { CreateProductComponent } from './pages/home/products/create-product/create-product.component';
+import { EditProductComponent } from './pages/home/products/edit-product/edit-product.component';
 
 import { ProductCardComponent } from 'src/app/components/product-card/product-card.component';
-import { ProductModalComponent } from 'src/app/components/product-modal-add/product-modal-add.component';
 
 @NgModule({
   declarations: [
@@ -33,7 +34,8 @@ import { ProductModalComponent } from 'src/app/components/product-modal-add/prod
     CreateUserComponent,
     ViewProductsComponent,
     ProductCardComponent,
-    ProductModalComponent
+    CreateProductComponent,
+    EditProductComponent
   ],
   imports: [
     CommonModule,
