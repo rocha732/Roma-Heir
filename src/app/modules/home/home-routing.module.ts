@@ -6,6 +6,9 @@ import { AuthGuard } from '../../core/guards/auth.guard';
 import { ViewUsersComponent } from './pages/home/users/view-users/view-users.component';
 import { CreateUserComponent } from './pages/home/users/create-user/create-user.component';
 import { EditUserComponent } from './pages/home/users/edit-user/edit-user.component';
+import { ViewProductsComponent } from './pages/home/products/view-products/view-products.component';
+import { CreateProductComponent } from './pages/home/products/create-product/create-product.component';
+import { EditProductComponent } from './pages/home/products/edit-product/edit-product.component';
 
 const routes: Routes = [
   {
@@ -19,18 +22,31 @@ const routes: Routes = [
         component: DashboardComponent,
         canActivate: [AuthGuard],
       },
-      { path: 'users/view-users', component: ViewUsersComponent ,
-        canActivate: [AuthGuard], },
-      { path: 'users/create-user', component: CreateUserComponent ,
-        canActivate: [AuthGuard],},
       {
-  path: 'users/edit-user',
-  component: EditUserComponent,
-},
-{
-  path: 'users/edit-user/:id',
-  component: EditUserComponent,
-} // :id para editar
+        path: 'users/view-users',
+        component: ViewUsersComponent,
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'users/create-user',
+        component: CreateUserComponent,
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'users/edit-user',
+        component: EditUserComponent,
+      },
+      {
+        path: 'users/edit-user/:id',
+        component: EditUserComponent,
+      },
+      { path: 'users/view-users', component: ViewUsersComponent },
+      { path: 'users/create-user', component: CreateUserComponent },
+      { path: 'users/edit-user', component: EditUserComponent }, // :id para editar
+      { path: 'products/view-products', component: ViewProductsComponent },
+      { path: 'products/create-product', component: CreateProductComponent },
+      { path: 'products/edit-product', component: EditProductComponent },
+      { path: 'products/edit-product/:id', component: EditProductComponent },
     ],
   },
 ];

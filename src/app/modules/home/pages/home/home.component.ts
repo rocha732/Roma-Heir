@@ -8,7 +8,10 @@ import { SpecialistsService } from 'src/app/core/services/specialists.service';
 })
 export class HomeComponent {
   isSpecialistOpen = false;
+  isProductOpen = false;
+
   constructor(private specialistsService: SpecialistsService, private router: Router) {}
+
   ngOnInit(): void {
     if (!localStorage.getItem('specialists')) {
       this.specialistsService.getSpecialists().subscribe((specialists) => {
@@ -19,13 +22,15 @@ export class HomeComponent {
   }
 
   logout() {
-  localStorage.clear();  // o solo removeItem('token')
-  this.router.navigate(['/']); // vuelve al login
-}
+    localStorage.clear();  // o solo removeItem('token')
+    this.router.navigate(['/']); // vuelve al login
+  }
 
+  toggleSpecialistDropdown() {
+    this.isSpecialistOpen = !this.isSpecialistOpen;
+  }
 
-toggleSpecialistDropdown() {
-  this.isSpecialistOpen = !this.isSpecialistOpen;
-}
-
+  toggleProductDropdown() {
+    this.isProductOpen = !this.isProductOpen;
+  }
 }

@@ -18,9 +18,26 @@ import { ViewUsersComponent } from './pages/home/users/view-users/view-users.com
 import { EditUserComponent } from './pages/home/users/edit-user/edit-user.component';
 import { CreateUserComponent } from './pages/home/users/create-user/create-user.component';
 import { FormInputComponent } from 'src/app/components/form-input/form-input.component';
+import { ViewProductsComponent } from './pages/home/products/view-products/view-products.component';
+import { CreateProductComponent } from './pages/home/products/create-product/create-product.component';
+import { EditProductComponent } from './pages/home/products/edit-product/edit-product.component';
+import { ProductCardComponent } from 'src/app/components/product-card/product-card.component';
 
 @NgModule({
-  declarations: [HomeComponent, LoginComponent, DashboardComponent, CardCitasComponent, ViewUsersComponent, EditUserComponent, CreateUserComponent,FormInputComponent],
+  declarations: [
+    HomeComponent,
+    LoginComponent,
+    DashboardComponent,
+    CardCitasComponent,
+    ViewUsersComponent,
+    EditUserComponent,
+    CreateUserComponent,
+    ViewProductsComponent,
+    ProductCardComponent,
+    CreateProductComponent,
+    EditProductComponent,
+    FormInputComponent,
+  ],
   imports: [
     CommonModule,
     HomeRoutingModule,
@@ -31,7 +48,8 @@ import { FormInputComponent } from 'src/app/components/form-input/form-input.com
     MatIconModule,
     MatTooltipModule,
     MatMenuModule,
-    NgChartsModule,ReactiveFormsModule
+    NgChartsModule,
+    ReactiveFormsModule,
   ],
 })
 export class HomeModule {}

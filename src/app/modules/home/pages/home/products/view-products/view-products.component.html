@@ -1,0 +1,42 @@
+<div *ngIf="products && products.length; else noProducts">
+	<div class="products-title">Lista de productos</div>
+
+	<div class="products-actions">
+		<input 
+			#searchBox 
+			type="text" 
+			class="products-search" 
+			placeholder="Buscar producto" 
+			(input)="onSearch(searchBox.value)" />
+
+		<div class="products-filters">
+			<select class="products-search" [(ngModel)]="selectedCategory" (change)="onFilterChange()">
+				<option [ngValue]="null">Todas las categorías</option>
+				<option *ngFor="let cat of categoryList" [ngValue]="cat.name">{{ cat.name }}</option>
+			</select>
+
+			<select class="products-search" [(ngModel)]="selectedProductType" (change)="onFilterChange()">
+				<option [ngValue]="null">Todos los tipos</option>
+				<option *ngFor="let type of productTypeList" [ngValue]="type.id">{{ type.name }}</option>
+			</select>
+		</div>
+	</div>
+
+	<div class="products-list">
+		<app-product-card
+			*ngFor="let product of filteredProducts"
+			[profileImageUrl]="product.profileImageUrl || 'https://placehold.co/320x160'"
+			[categoryName]="product.categoryName || 'Sin categoría'"
+			[name]="product.name"
+			[description]="product.description"
+			[price]="product.price"
+			[available]="product.available"
+			[productTypeName]="product.productType?.name || 'Tipo desconocido'"
+			[onEditCallback]="onEditProduct"
+      [id]="product.id"
+		></app-product-card>
+	</div>
+</div>
+<ng-template #noProducts>
+	<p>No hay productos para mostrar.</p>
+</ng-template>

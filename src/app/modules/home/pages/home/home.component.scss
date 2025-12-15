@@ -1,5 +1,6 @@
 .sidebar {
   width: 250px;
+  min-width: 250px;
   min-height: 100vh;
   position: sticky;
   top: 0;
@@ -20,3 +21,70 @@
   font-weight: 600;
   border-radius: 8px;
 }
+/* Dropdown tipo menú lateral: mismo alto cerrado, crece al abrir */
+.sidebar .nav-item.dropdown {
+  height: 44px;
+  overflow: hidden;
+  transition: height 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.sidebar .nav-item.dropdown.open {
+  height: auto;
+  overflow: visible;
+}
+.sidebar .nav-item.dropdown > .collapse {
+  margin-top: 0.25rem;
+}
+.sidebar .nav-item.dropdown .nav-link {
+  height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+/* Layout principal ocupa 100vh y oculta overflow */
+.d-flex {
+  display: flex;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 250px;
+  min-height: 100vh;
+  max-height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
+}
+
+.content {
+  flex-grow: 1;
+  padding: 1.5rem;
+  height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.sidebar {
+  width: 250px;
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+}
+
+.sidebar-link {
+  padding: 10px 12px;
+  border-radius: 8px;
+  transition: 0.2s;
+}
+
+.sidebar-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.active-link {
+  background-color: #495057 !important;
+  font-weight: 600;
+  border-radius: 8px;
+}
+

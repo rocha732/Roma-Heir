@@ -1,0 +1,18 @@
+<div class="product-card">
+  <div class="product-card__image-wrapper">
+    <div class="product-card__category" [ngClass]="'category-' + (categoryName | lowercase)">{{ categoryName }}</div>
+    <img [src]="profileImageUrl" alt="Product image" class="product-card__image" />
+  </div>
+  
+  <div class="product-detail">
+    <div class="product-card__title">{{ name }}</div>
+    <div class="product-card__description">{{ description }}</div>
+    <div class="product-card__price">
+      <span *ngIf="available; else notAvailable">S/.{{ price | number:'1.2-2' }}</span>
+      <ng-template #notAvailable><span class="not-available">No disponible</span></ng-template>
+      <button class="btn btn-outline-primary btn-edit" (click)="onEdit()">Editar</button>
+    </div>
+    
+    <!--<div class="product-card__type">{{ productTypeName }}</div>-->
+  </div>
+</div>
