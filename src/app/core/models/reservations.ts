@@ -23,3 +23,10 @@ export interface Service {
   description: null;
   price: number;
 }
+export interface PutUpdateReservationDate {
+  reservedAt: string; // Formato: YYYY-MM-DD
+  hourAt: string;     // Formato: HH:mm:ss
+}
+export interface PutUpdateReservationStatus {
+  newStatusId: number;
+}

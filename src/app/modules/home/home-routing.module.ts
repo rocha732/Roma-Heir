@@ -12,6 +12,7 @@ import { EditProductComponent } from './pages/home/products/edit-product/edit-pr
 import { ViewReservationsComponent } from './pages/home/reservations/view-reservations/view-reservations.component';
 import { EditReserveComponent } from './pages/home/reservations/edit-reserve/edit-reserve.component';
 import { CreateReserveComponent } from './pages/home/reservations/create-reserve/create-reserve.component';
+import { CalendarReservationsComponent } from './pages/home/reservations/calendar-reservations/calendar-reservations.component';
 
 const routes: Routes = [
   {
@@ -54,6 +55,7 @@ const routes: Routes = [
       { path: 'reservations/edit-reserve/:id', component: EditReserveComponent},
       { path: 'reservations/edit-reserve', component: EditReserveComponent},
       { path: 'reservations/create-reserve', component: CreateReserveComponent },
+      {path: 'reservations/calendar-reservations', component: CalendarReservationsComponent}
     ],
   },
 ];

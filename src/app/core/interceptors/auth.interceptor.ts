@@ -35,7 +35,11 @@ export class AuthInterceptor implements HttpInterceptor {
           console.warn('⚠️ Sesión expirada. Redirigiendo al inicio...');
           localStorage.clear(); // 🔹 limpia sesión
           this.router.navigate(['/']); // 🔹 redirige al inicio
-        }
+        } else {
+        alert('Error al actualizar la reserva.');
+        console.error(error);
+      }
+
         return throwError(() => error);
       })
     );

@@ -25,6 +25,9 @@ import { ProductCardComponent } from 'src/app/components/product-card/product-ca
 import { CreateReserveComponent } from './pages/home/reservations/create-reserve/create-reserve.component';
 import { EditReserveComponent } from './pages/home/reservations/edit-reserve/edit-reserve.component';
 import { ViewReservationsComponent } from './pages/home/reservations/view-reservations/view-reservations.component';
+import { CalendarReservationsComponent } from './pages/home/reservations/calendar-reservations/calendar-reservations.component';
+import { CalendarModule, DateAdapter } from 'angular-calendar';
+import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 
 @NgModule({
   declarations: [
@@ -43,6 +46,7 @@ import { ViewReservationsComponent } from './pages/home/reservations/view-reserv
     CreateReserveComponent,
     EditReserveComponent,
     ViewReservationsComponent,
+    CalendarReservationsComponent,
   ],
   imports: [
     CommonModule,
@@ -56,6 +60,10 @@ import { ViewReservationsComponent } from './pages/home/reservations/view-reserv
     MatMenuModule,
     NgChartsModule,
     ReactiveFormsModule,
+    CalendarModule.forRoot({
+      provide: DateAdapter,
+      useFactory: adapterFactory,
+    }),
   ],
 })
 export class HomeModule {}
