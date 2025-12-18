@@ -48,12 +48,14 @@ export class LoginComponent {
     this.ApiService.verifyCode(payload).subscribe({
       next: (res) => {
         this.loading = false;
-        if (res.isValid) {
+        console.log('[Login] Respuesta verifyCode:', res);
+        if (res.isValid && res.data && res.data.accessToken && res.data.accessToken.token) {
           this.showModal = false;
           localStorage.setItem('token', res.data.accessToken.token);
+          console.log('[Login] Token guardado en localStorage:', res.data.accessToken.token);
           this.router.navigate(['/home']);
         } else {
-          alert('Código incorrecto');
+          alert('Código incorrecto o token no recibido');
         }
       },
       error: (err) => {
