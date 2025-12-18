@@ -9,8 +9,12 @@ import { SpecialistsService } from 'src/app/core/services/specialists.service';
 export class HomeComponent {
   isSpecialistOpen = false;
   isProductOpen = false;
+  isReservationsOpen = false;
 
-  constructor(private specialistsService: SpecialistsService, private router: Router) {}
+  constructor(
+    private specialistsService: SpecialistsService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     if (!localStorage.getItem('specialists')) {
@@ -18,11 +22,10 @@ export class HomeComponent {
         localStorage.setItem('specialists', JSON.stringify(specialists));
       });
     }
-    
   }
 
   logout() {
-    localStorage.clear();  // o solo removeItem('token')
+    localStorage.clear(); // o solo removeItem('token')
     this.router.navigate(['/']); // vuelve al login
   }
 
@@ -32,5 +35,9 @@ export class HomeComponent {
 
   toggleProductDropdown() {
     this.isProductOpen = !this.isProductOpen;
+  }
+
+  toggleReservationsDropdown() {
+    this.isReservationsOpen = !this.isReservationsOpen;
   }
 }

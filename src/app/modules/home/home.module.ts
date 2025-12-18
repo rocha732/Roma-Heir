@@ -22,6 +22,9 @@ import { ViewProductsComponent } from './pages/home/products/view-products/view-
 import { CreateProductComponent } from './pages/home/products/create-product/create-product.component';
 import { EditProductComponent } from './pages/home/products/edit-product/edit-product.component';
 import { ProductCardComponent } from 'src/app/components/product-card/product-card.component';
+import { CreateReserveComponent } from './pages/home/reservations/create-reserve/create-reserve.component';
+import { EditReserveComponent } from './pages/home/reservations/edit-reserve/edit-reserve.component';
+import { ViewReservationsComponent } from './pages/home/reservations/view-reservations/view-reservations.component';
 
 @NgModule({
   declarations: [
@@ -37,6 +40,9 @@ import { ProductCardComponent } from 'src/app/components/product-card/product-ca
     CreateProductComponent,
     EditProductComponent,
     FormInputComponent,
+    CreateReserveComponent,
+    EditReserveComponent,
+    ViewReservationsComponent,
   ],
   imports: [
     CommonModule,

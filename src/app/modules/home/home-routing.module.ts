@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { Component, NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './pages/home/home.component';
 import { DashboardComponent } from './pages/home/dashboard/dashboard.component';
@@ -9,6 +9,9 @@ import { EditUserComponent } from './pages/home/users/edit-user/edit-user.compon
 import { ViewProductsComponent } from './pages/home/products/view-products/view-products.component';
 import { CreateProductComponent } from './pages/home/products/create-product/create-product.component';
 import { EditProductComponent } from './pages/home/products/edit-product/edit-product.component';
+import { ViewReservationsComponent } from './pages/home/reservations/view-reservations/view-reservations.component';
+import { EditReserveComponent } from './pages/home/reservations/edit-reserve/edit-reserve.component';
+import { CreateReserveComponent } from './pages/home/reservations/create-reserve/create-reserve.component';
 
 const routes: Routes = [
   {
@@ -47,6 +50,10 @@ const routes: Routes = [
       { path: 'products/create-product', component: CreateProductComponent },
       { path: 'products/edit-product', component: EditProductComponent },
       { path: 'products/edit-product/:id', component: EditProductComponent },
+      { path: 'reservations/view-reservations', component: ViewReservationsComponent},
+      { path: 'reservations/edit-reserve/:id', component: EditReserveComponent},
+      { path: 'reservations/edit-reserve', component: EditReserveComponent},
+      { path: 'reservations/create-reserve', component: CreateReserveComponent },
     ],
   },
 ];
