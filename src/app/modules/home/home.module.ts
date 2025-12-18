@@ -22,6 +22,9 @@ import { ViewProductsComponent } from './pages/home/products/view-products/view-
 import { CreateProductComponent } from './pages/home/products/create-product/create-product.component';
 import { EditProductComponent } from './pages/home/products/edit-product/edit-product.component';
 import { ProductCardComponent } from 'src/app/components/product-card/product-card.component';
+import { CreateOrdersComponent } from './pages/home/orders/create-orders/create-orders.component';
+import { EditOrdersComponent } from './pages/home/orders/edit-orders/edit-orders.component';
+import { ViewOrdersComponent } from './pages/home/orders/view-orders/view-orders.component';
 
 @NgModule({
   declarations: [
@@ -37,6 +40,9 @@ import { ProductCardComponent } from 'src/app/components/product-card/product-ca
     CreateProductComponent,
     EditProductComponent,
     FormInputComponent,
+    CreateOrdersComponent,
+    EditOrdersComponent,
+    ViewOrdersComponent,
   ],
   imports: [
     CommonModule,

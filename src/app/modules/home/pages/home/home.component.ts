@@ -9,6 +9,7 @@ import { SpecialistsService } from 'src/app/core/services/specialists.service';
 export class HomeComponent {
   isSpecialistOpen = false;
   isProductOpen = false;
+  isOrderOpen = false;
 
   constructor(private specialistsService: SpecialistsService, private router: Router) {}
 
@@ -32,5 +33,9 @@ export class HomeComponent {
 
   toggleProductDropdown() {
     this.isProductOpen = !this.isProductOpen;
+  }
+
+  toggleOrderDropdown() {
+    this.isOrderOpen = !this.isOrderOpen;
   }
 }

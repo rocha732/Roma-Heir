@@ -1,0 +1,115 @@
+.orders-container {
+	max-width: 1000px;
+	margin: 2rem auto;
+	background: #fff;
+	border-radius: 10px;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+	padding: 2rem;
+}
+.orders-title {
+	margin-bottom: 1.5rem;
+	font-size: 2rem;
+	font-weight: 600;
+	color: #2c3e50;
+}
+.orders-loading, .orders-error, .orders-empty {
+	text-align: center;
+	margin: 2rem 0;
+	font-size: 1.1rem;
+}
+.spinner {
+	display: inline-block;
+	width: 1.2em;
+	height: 1.2em;
+	border: 2px solid #ccc;
+	border-top: 2px solid #007bff;
+	border-radius: 50%;
+	animation: spin 0.8s linear infinite;
+	margin-right: 0.5em;
+}
+@keyframes spin {
+	to { transform: rotate(360deg); }
+}
+.orders-table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-bottom: 1rem;
+}
+.orders-table th, .orders-table td {
+	padding: 0.7em 0.5em;
+	border-bottom: 1px solid #eaeaea;
+	text-align: left;
+}
+.orders-table th {
+	background: #f8f9fa;
+	font-weight: 600;
+}
+.badge {
+	display: inline-block;
+	padding: 0.25em 0.7em;
+	border-radius: 12px;
+	font-size: 0.95em;
+	font-weight: 500;
+}
+.badge-total {
+	background: #eaf6ff;
+	color: #007bff;
+}
+.badge-status-pending {
+	background: #fff3cd;
+	color: #856404;
+}
+.badge-status-done {
+	background: #d4edda;
+	color: #155724;
+}
+.badge-status-other {
+	background: #f8d7da;
+	color: #721c24;
+}
+.badge-paid {
+	background: #d4edda;
+	color: #155724;
+}
+.badge-unpaid {
+	background: #f8d7da;
+	color: #721c24;
+}
+.btn {
+	padding: 0.3em 0.8em;
+	border-radius: 5px;
+	border: 1px solid #007bff;
+	background: #fff;
+	color: #007bff;
+	cursor: pointer;
+	transition: background 0.2s, color 0.2s;
+}
+.btn:hover {
+	background: #007bff;
+	color: #fff;
+}
+.btn-outline-info {
+	border-color: #17a2b8;
+	color: #17a2b8;
+}
+.btn-outline-info:hover {
+	background: #17a2b8;
+	color: #fff;
+}
+.order-details-row td {
+	background: #f6f8fa;
+	padding: 1em 2em;
+}
+.order-items-list {
+	list-style: none;
+	padding: 0;
+	margin: 0.5em 0 0 0;
+}
+.order-items-list li {
+	margin-bottom: 0.3em;
+	font-size: 0.98em;
+}
+.icon-empty {
+	font-size: 2em;
+	vertical-align: middle;
+}

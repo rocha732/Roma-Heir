@@ -141,6 +141,59 @@
         </div>
       </div>
 
+      <!-- Especialistas Ordenes Dropdown -->
+      <div class="nav-item dropdown" [class.open]="isOrderOpen">
+        <a
+          class="nav-link text-white sidebar-link d-flex justify-content-between align-items-center"
+          href="#"
+          role="button"
+          data-bs-toggle="collapse"
+          [attr.aria-expanded]="false"
+          (click)="toggleOrderDropdown()"
+        >
+          <span><i class="bi bi-people-fill me-2"></i>Ordenes</span>
+          <i
+            class="bi"
+            [ngClass]="{
+              'bi-caret-down-fill': !isOrderOpen,
+              'bi-caret-up-fill': isOrderOpen
+            }"
+          ></i>
+        </a>
+
+        <div class="collapse" [ngClass]="{ show: isOrderOpen }">
+          <ul class="nav flex-column ms-3 mt-1">
+            <li>
+              <a
+                class="nav-link text-white sidebar-link"
+                routerLink="orders/view-orders"
+                routerLinkActive="active-link"
+              >
+                Ver Ordenes
+              </a>
+            </li>
+            <li>
+              <a
+                class="nav-link text-white sidebar-link"
+                routerLink="orders/create-orders"
+                routerLinkActive="active-link"
+              >
+                Crear Ordenes
+              </a>
+            </li>
+            <li>
+              <a
+                class="nav-link text-white sidebar-link"
+                routerLink="orders/edit-orders"
+                routerLinkActive="active-link"
+              >
+                Modificar Ordenes
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
       <!-- 🔴 Cerrar sesión -->
       <a
         class="nav-link text-white sidebar-link mt-4 text-danger fw-bold"

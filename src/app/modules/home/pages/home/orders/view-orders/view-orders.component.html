@@ -1,0 +1,90 @@
+
+
+<div class="orders-container">
+	<h2 class="orders-title">Órdenes de la peluquería</h2>
+	<div *ngIf="loading" class="orders-loading">
+		<span class="spinner"></span> Cargando órdenes...
+	</div>
+	<div *ngIf="error" class="orders-error">{{ error }}</div>
+	<table *ngIf="!loading && !error && orders.length" class="orders-table">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Cliente</th>
+				<th>Teléfono</th>
+				<th>Total</th>
+				<th>Estado</th>
+				<th>Pagado</th>
+				<th>Fecha</th>
+				<th>Acciones</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr *ngFor="let order of orders; let i = index">
+				<td>{{ order.id }}</td>
+				<td>{{ order.customer?.fullName || 'N/A' }}</td>
+				<td>{{ order.customer?.phone || 'N/A' }}</td>
+				<td><span class="badge badge-total">S/. {{ order.totalAmount | number:'1.2-2' }}</span></td>
+				<td>
+					<span class="badge" [ngClass]="{
+						'badge-status-pending': !order.orderStatus,
+						'badge-status-done': order.orderStatus === 'Completado',
+						'badge-status-other': order.orderStatus && order.orderStatus !== 'Completado'
+					}">
+						{{ order.orderStatus || 'Pendiente' }}
+					</span>
+				</td>
+				<td>
+					<span class="badge" [ngClass]="order.paid ? 'badge-paid' : 'badge-unpaid'">
+						{{ order.paid ? 'Sí' : 'No' }}
+					</span>
+				</td>
+				<td>{{ order.createdAt | date:'short' }}</td>
+				<td>
+					<button class="btn btn-sm btn-outline-info" (click)="order.showDetails = !order.showDetails">
+						{{ order.showDetails ? 'Ocultar' : 'Ver productos' }}
+					</button>
+				</td>
+			</tr>
+			<tr *ngIf="order.showDetails" class="order-details-row">
+				<td colspan="8">
+					<div *ngIf="order.items?.length; else noItems">
+						<strong>Productos de la orden:</strong>
+						<ul class="order-items-list">
+							<li *ngFor="let item of order.items">
+								<span>Producto ID: {{ item.productId }}</span> |
+								<span>Cantidad: {{ item.quantity }}</span> |
+								<span>Precio: S/. {{ item.price | number:'1.2-2' }}</span> |
+								<span>Subtotal: S/. {{ item.subtotal | number:'1.2-2' }}</span>
+							</li>
+						</ul>
+					</div>
+					<ng-template #noItems>
+						<em>No hay productos en esta orden.</em>
+					</ng-template>
+				</td>
+			</tr>
+			<tr *ngIf="order.showDetails" class="order-details-row">
+				<td colspan="8">
+					<div *ngIf="order.items?.length; else noItems">
+						<strong>Productos de la orden:</strong>
+						<ul class="order-items-list">
+							<li *ngFor="let item of order.items">
+								<span>Producto ID: {{ item.productId }}</span> |
+								<span>Cantidad: {{ item.quantity }}</span> |
+								<span>Precio: S/. {{ item.price | number:'1.2-2' }}</span> |
+								<span>Subtotal: S/. {{ item.subtotal | number:'1.2-2' }}</span>
+							</li>
+						</ul>
+					</div>
+					<ng-template #noItems>
+						<em>No hay productos en esta orden.</em>
+					</ng-template>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<div *ngIf="!loading && !error && !orders.length" class="orders-empty">
+		<span class="icon-empty">🗒️</span> No hay órdenes para mostrar.
+	</div>
+</div>

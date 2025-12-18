@@ -9,6 +9,9 @@ import { EditUserComponent } from './pages/home/users/edit-user/edit-user.compon
 import { ViewProductsComponent } from './pages/home/products/view-products/view-products.component';
 import { CreateProductComponent } from './pages/home/products/create-product/create-product.component';
 import { EditProductComponent } from './pages/home/products/edit-product/edit-product.component';
+import { ViewOrdersComponent } from './pages/home/orders/view-orders/view-orders.component';
+import { CreateOrdersComponent } from './pages/home/orders/create-orders/create-orders.component';
+import { EditOrdersComponent } from './pages/home/orders/edit-orders/edit-orders.component';
 
 const routes: Routes = [
   {
@@ -47,6 +50,10 @@ const routes: Routes = [
       { path: 'products/create-product', component: CreateProductComponent },
       { path: 'products/edit-product', component: EditProductComponent },
       { path: 'products/edit-product/:id', component: EditProductComponent },
+      { path: 'orders/view-orders', component: ViewOrdersComponent },
+      { path: 'orders/create-orders', component: CreateOrdersComponent },
+      { path: 'orders/edit-orders', component: EditOrdersComponent },
+      { path: 'orders/edit-orders/:id', component: EditOrdersComponent }
     ],
   },
 ];
