@@ -1,17 +1,135 @@
+<div class="orders-title">Lista de órdenes</div>
 
+<!-- Shimmer Stats -->
+<div *ngIf="loading" class="orders-stats">
+	<div class="stat-card shimmer-stat">
+		<div class="shimmer shimmer-icon"></div>
+		<div class="shimmer-info">
+			<div class="shimmer shimmer-stat-value"></div>
+			<div class="shimmer shimmer-stat-label"></div>
+		</div>
+	</div>
+	<div class="stat-card shimmer-stat">
+		<div class="shimmer shimmer-icon"></div>
+		<div class="shimmer-info">
+			<div class="shimmer shimmer-stat-value"></div>
+			<div class="shimmer shimmer-stat-label"></div>
+		</div>
+	</div>
+	<div class="stat-card shimmer-stat">
+		<div class="shimmer shimmer-icon"></div>
+		<div class="shimmer-info">
+			<div class="shimmer shimmer-stat-value"></div>
+			<div class="shimmer shimmer-stat-label"></div>
+		</div>
+	</div>
+	<div class="stat-card shimmer-stat">
+		<div class="shimmer shimmer-icon"></div>
+		<div class="shimmer-info">
+			<div class="shimmer shimmer-stat-value"></div>
+			<div class="shimmer shimmer-stat-label"></div>
+		</div>
+	</div>
+</div>
+
+<!-- Statistics -->
+<div *ngIf="!loading && !error" class="orders-stats">
+	<div class="stat-card stat-total">
+		<div class="stat-icon">📋</div>
+		<div class="stat-info">
+			<div class="stat-value">{{ totalOrders }}</div>
+			<div class="stat-label">Total Órdenes</div>
+		</div>
+	</div>
+	<div class="stat-card stat-paid">
+		<div class="stat-icon">✅</div>
+		<div class="stat-info">
+			<div class="stat-value">{{ paidOrders }}</div>
+			<div class="stat-label">Pagadas</div>
+			<div class="stat-extra">S/. {{ paidRevenue | number:'1.2-2' }}</div>
+		</div>
+	</div>
+	<div class="stat-card stat-unpaid">
+		<div class="stat-icon">⏳</div>
+		<div class="stat-info">
+			<div class="stat-value">{{ unpaidOrders }}</div>
+			<div class="stat-label">Sin Pagar</div>
+		</div>
+	</div>
+	<div class="stat-card stat-pending">
+		<div class="stat-icon">🕐</div>
+		<div class="stat-info">
+			<div class="stat-value">{{ getOrdersByStatus('Pendiente') }}</div>
+			<div class="stat-label">Pendientes</div>
+		</div>
+	</div>
+</div>
+
+<!-- Shimmer Filters -->
+<div *ngIf="loading" class="orders-filters">
+	<div class="shimmer shimmer-input"></div>
+	<div class="shimmer shimmer-select"></div>
+	<div class="shimmer shimmer-input"></div>
+</div>
+
+<!-- Filters -->
+<div *ngIf="!loading && !error" class="orders-filters">
+	<input 
+		type="text" 
+		class="orders-filter-input" 
+		placeholder="Buscar por cliente..."
+		[(ngModel)]="searchClient"
+		(input)="onFilterChange()" />
+	
+	<select 
+		class="orders-filter-select" 
+		[(ngModel)]="selectedStatus" 
+		(change)="onFilterChange()">
+		<option [ngValue]="null">Todos los estados</option>
+		<option *ngFor="let status of statusList" [ngValue]="status">{{ status }}</option>
+	</select>
+	
+	<input 
+		type="date" 
+		class="orders-filter-input" 
+		[(ngModel)]="filterDate"
+		(change)="onFilterChange()" />
+	
+	<button class="btn-clear-filters" (click)="clearFilters()" *ngIf="searchClient || selectedStatus || filterDate">
+		Limpiar
+	</button>
+</div>
 
 <div class="orders-container">
-	<h2 class="orders-title">Órdenes de la peluquería</h2>
-	<div *ngIf="loading" class="orders-loading">
-		<span class="spinner"></span> Cargando órdenes...
-	</div>
+	<!-- Shimmer Table -->
+	<table *ngIf="loading" class="orders-table shimmer-table">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Total</th>
+					<th>Estado</th>
+					<th>Pagado</th>
+					<th>Fecha</th>
+					<th>Acciones</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr *ngFor="let item of [1,2,3,4,5]">
+					<td><div class="shimmer shimmer-text shimmer-sm"></div></td>
+					<td><div class="shimmer shimmer-badge"></div></td>
+					<td><div class="shimmer shimmer-badge"></div></td>
+					<td><div class="shimmer shimmer-badge shimmer-sm"></div></td>
+					<td><div class="shimmer shimmer-text"></div></td>
+					<td><div class="shimmer shimmer-btn"></div></td>
+				</tr>
+			</tbody>
+		</table>
+
 	<div *ngIf="error" class="orders-error">{{ error }}</div>
-	<table *ngIf="!loading && !error && orders.length" class="orders-table">
+	<table *ngIf="!loading && !error && filteredOrders.length" class="orders-table">
 		<thead>
 			<tr>
 				<th>ID</th>
-				<th>Cliente</th>
-				<th>Teléfono</th>
 				<th>Total</th>
 				<th>Estado</th>
 				<th>Pagado</th>
@@ -20,71 +138,114 @@
 			</tr>
 		</thead>
 		<tbody>
-			<tr *ngFor="let order of orders; let i = index">
-				<td>{{ order.id }}</td>
-				<td>{{ order.customer?.fullName || 'N/A' }}</td>
-				<td>{{ order.customer?.phone || 'N/A' }}</td>
-				<td><span class="badge badge-total">S/. {{ order.totalAmount | number:'1.2-2' }}</span></td>
-				<td>
-					<span class="badge" [ngClass]="{
-						'badge-status-pending': !order.orderStatus,
-						'badge-status-done': order.orderStatus === 'Completado',
-						'badge-status-other': order.orderStatus && order.orderStatus !== 'Completado'
-					}">
-						{{ order.orderStatus || 'Pendiente' }}
-					</span>
-				</td>
-				<td>
-					<span class="badge" [ngClass]="order.paid ? 'badge-paid' : 'badge-unpaid'">
-						{{ order.paid ? 'Sí' : 'No' }}
-					</span>
-				</td>
-				<td>{{ order.createdAt | date:'short' }}</td>
-				<td>
-					<button class="btn btn-sm btn-outline-info" (click)="order.showDetails = !order.showDetails">
-						{{ order.showDetails ? 'Ocultar' : 'Ver productos' }}
-					</button>
-				</td>
-			</tr>
-			<tr *ngIf="order.showDetails" class="order-details-row">
-				<td colspan="8">
-					<div *ngIf="order.items?.length; else noItems">
-						<strong>Productos de la orden:</strong>
-						<ul class="order-items-list">
-							<li *ngFor="let item of order.items">
-								<span>Producto ID: {{ item.productId }}</span> |
-								<span>Cantidad: {{ item.quantity }}</span> |
-								<span>Precio: S/. {{ item.price | number:'1.2-2' }}</span> |
-								<span>Subtotal: S/. {{ item.subtotal | number:'1.2-2' }}</span>
-							</li>
-						</ul>
-					</div>
-					<ng-template #noItems>
-						<em>No hay productos en esta orden.</em>
-					</ng-template>
-				</td>
-			</tr>
-			<tr *ngIf="order.showDetails" class="order-details-row">
-				<td colspan="8">
-					<div *ngIf="order.items?.length; else noItems">
-						<strong>Productos de la orden:</strong>
-						<ul class="order-items-list">
-							<li *ngFor="let item of order.items">
-								<span>Producto ID: {{ item.productId }}</span> |
-								<span>Cantidad: {{ item.quantity }}</span> |
-								<span>Precio: S/. {{ item.price | number:'1.2-2' }}</span> |
-								<span>Subtotal: S/. {{ item.subtotal | number:'1.2-2' }}</span>
-							</li>
-						</ul>
-					</div>
-					<ng-template #noItems>
-						<em>No hay productos en esta orden.</em>
-					</ng-template>
-				</td>
-			</tr>
+			<ng-container *ngFor="let order of filteredOrders; let i = index">
+				<tr>
+					<td>{{ order.id }}</td>
+					<td><span class="badge badge-total">S/. {{ order.totalAmount | number:'1.2-2' }}</span></td>
+					<td>
+						<span class="badge" [ngClass]="{
+							'badge-status-pending': !order.orderStatus,
+							'badge-status-done': order.orderStatus === 'Completado',
+							'badge-status-other': order.orderStatus && order.orderStatus !== 'Completado'
+						}">
+							{{ order.orderStatus || 'Pendiente' }}
+						</span>
+					</td>
+					<td>
+						<span class="badge" [ngClass]="order.paid ? 'badge-paid' : 'badge-unpaid'">
+							{{ order.paid ? 'Sí' : 'No' }}
+						</span>
+					</td>
+					<td>{{ order.createdAt | date:'short' }}</td>
+					<td>
+						<button 
+							class="btn btn-sm btn-outline-info" 
+							(click)="toggleDetails(order)"
+							[disabled]="loadingDetailsId === order.id">
+							<span *ngIf="loadingDetailsId === order.id">Cargando...</span>
+							<span *ngIf="loadingDetailsId !== order.id">
+								{{ order.showDetails ? 'Ocultar' : 'Ver Detalle' }}
+							</span>
+						</button>
+					</td>
+				</tr>
+				<tr *ngIf="order.showDetails" class="order-details-row">
+					<td colspan="6">
+						<!-- Información del cliente -->
+						<div class="customer-info">
+							<div class="customer-detail">
+								<span class="customer-label">Cliente:</span>
+								<span class="customer-value">{{ order.customer?.fullName || 'N/A' }}</span>
+							</div>
+							<div class="customer-detail">
+								<span class="customer-label">Teléfono:</span>
+								<span class="customer-value">{{ order.customer?.phone || 'N/A' }}</span>
+							</div>
+							<div class="customer-detail" *ngIf="order.customer?.email">
+								<span class="customer-label">Email:</span>
+								<span class="customer-value">{{ order.customer?.email }}</span>
+							</div>
+						</div>
+						
+						<!-- Productos de la orden -->
+						<div *ngIf="order.items?.length; else noItems">
+							<strong>Detalle de la orden</strong>
+							<ul class="order-items-list">
+								<li *ngFor="let item of order.items">
+									<span class="item-name">{{ getProductName(item.productId) }}</span>
+									<span class="item-qty">x{{ item.quantity }}</span>
+									<span class="item-price">S/. {{ item.price | number:'1.2-2' }} c/u</span>
+									<span class="item-subtotal">Subtotal: S/. {{ item.subtotal | number:'1.2-2' }}</span>
+								</li>
+							</ul>
+						</div>
+						<ng-template #noItems>
+							<em>No hay productos en esta orden.</em>
+						</ng-template>
+						
+						<!-- Acciones de la orden -->
+						<div class="order-details-actions">
+							<div class="order-total">
+								<span>Total:</span>
+								<strong>S/. {{ order.totalAmount | number:'1.2-2' }}</strong>
+							</div>
+							
+							<!-- Botones de PDF -->
+							<div class="pdf-actions">
+								<button class="btn-pdf btn-boleta" (click)="generatePDF(order, 'boleta')" title="Descargar Boleta">
+									<span class="pdf-icon">📄</span>
+									<span>Boleta</span>
+								</button>
+								<button class="btn-pdf btn-orden" (click)="generatePDF(order, 'orden')" title="Descargar Orden de Compra">
+									<span class="pdf-icon">📋</span>
+									<span>Orden</span>
+								</button>
+								<button class="btn-pdf btn-preview" (click)="previewPDF(order, 'boleta')" title="Vista Previa">
+									<span class="pdf-icon">👁️</span>
+									<span>Ver</span>
+								</button>
+							</div>
+							
+							<!-- Botón de Pago -->
+							<div class="payment-actions">
+								<button 
+									*ngIf="!order.paid"
+									class="btn-pay"
+									(click)="markAsPaid(order)"
+									[disabled]="payingOrderId === order.id">
+									<span *ngIf="payingOrderId === order.id">Procesando...</span>
+									<span *ngIf="payingOrderId !== order.id">💳 Marcar como Pagado</span>
+								</button>
+								<span *ngIf="order.paid" class="paid-label">✓ Pagado</span>
+							</div>
+						</div>
+					</td>
+				</tr>
+			</ng-container>
 		</tbody>
 	</table>
-	<div *ngIf="!loading && !error && !orders.length" class="orders-empty">
-		<span class="icon-empty">🗒️</span> No hay órdenes para mostrar.
+	<div *ngIf="!loading && !error && !filteredOrders.length" class="orders-empty">
+		<span *ngIf="orders.length">No se encontraron órdenes con los filtros seleccionados.</span>
+		<span *ngIf="!orders.length">No hay órdenes para mostrar.</span>
 	</div>
 </div>

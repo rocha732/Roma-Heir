@@ -25,20 +25,20 @@ $roma-hair-theme: mat.define-light-theme((
 // -----------------------------------------------------
 // 3) Your custom variables (safe here)
 // -----------------------------------------------------
-$primary: #0F1012 !default;  
-$secondary: #2E2F37 !default;
-$success: #28a745 !default;
-$danger: #dc3545 !default;
+$primary: #0a0a0f !default;  
+$secondary: #12131a !default;
+$success: #10b981 !default;
+$danger: #ef4444 !default;
 
-$tertiary: #4D4E5B;
-$quaternary: #A9A9B1;
+$tertiary: #0d0d12;
+$quaternary: #1a1b23;
 
 // -----------------------------------------------------
 // 4) Imports (Bootstrap, icons, fonts)
 // -----------------------------------------------------
 @import "bootstrap/scss/bootstrap";
 @import "bootstrap-icons/font/bootstrap-icons.css";
-@import url('https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 // -----------------------------------------------------
 // 5) Global styles
@@ -49,7 +49,134 @@ html, body {
 
 body {
   margin: 0;
-  font-family: 'Red Hat Display', Roboto, "Helvetica Neue", sans-serif;
-  background-color: $tertiary;
-  color: #212529;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: $primary;
+  background-image: 
+    radial-gradient(ellipse 80% 50% at 20% 40%, rgba(6, 182, 212, 0.15), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 60%, rgba(59, 130, 246, 0.1), transparent),
+    radial-gradient(ellipse 40% 30% at 50% 80%, rgba(16, 185, 129, 0.08), transparent);
+  background-attachment: fixed;
+  color: #e5e7eb;
+  min-height: 100vh;
+}
+
+// -----------------------------------------------------
+// 6) Glassmorphism Cards - Dark Theme
+// -----------------------------------------------------
+.glass,
+.card,
+.stat-card,
+.orders-container,
+.products-container,
+.form-container,
+.create-order-container,
+.dashboard-card {
+  background: rgba(18, 19, 26, 0.7) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border-radius: 16px;
+}
+
+// Glass effect for tables
+.orders-table,
+.products-table {
+  background: rgba(18, 19, 26, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  
+  th {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  td {
+    background: transparent;
+    color: #e5e7eb;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  tr:hover td {
+    background: rgba(255, 255, 255, 0.03);
+  }
+}
+
+// Glass inputs
+.glass-input,
+.orders-filter-input,
+.orders-filter-select {
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #e5e7eb !important;
+  border-radius: 12px;
+  
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+  }
+  
+  &:focus {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(16, 185, 129, 0.5) !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    outline: none;
+  }
+}
+
+// Glass select dropdown arrow fix
+.orders-filter-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='rgba(255,255,255,0.6)' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") !important;
+}
+
+// Order details glass
+.order-details-row td {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+// Glass buttons
+.btn-clear-filters {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  color: #f87171 !important;
+  
+  &:hover {
+    background: rgba(239, 68, 68, 0.25) !important;
+    color: #fff !important;
+  }
+}
+
+// Text colors for glass theme
+.orders-error,
+.orders-empty {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+// Scrollbar styling
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+  }
 }

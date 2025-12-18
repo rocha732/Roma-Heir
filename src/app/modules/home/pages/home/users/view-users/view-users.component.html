@@ -1,195 +1,226 @@
-<div class="row">
-  <!-- IZQUIERDA: FILTROS + TABLA -->
-  <div class="col-lg-8">
-    <!-- CARD FILTROS -->
-    <div class="card shadow-sm p-4 mb-4 rounded-4">
-      <h4 class="mb-4 fw-semibold text-center">Filtros de Usuarios</h4>
+<h2 class="page-title">Lista de Usuarios</h2>
 
-      <ng-container *ngIf="!loading; else filterSkeleton">
-        <div class="row g-3">
-          <div class="col-md-4">
-            <input
-              type="text"
-              class="form-control modern-input"
-              placeholder="Buscar por nombre"
-              [(ngModel)]="filterName"
-              (input)="applyFilters()"
-            />
-          </div>
-
-          <div class="col-md-4">
-            <input
-              type="text"
-              class="form-control modern-input"
-              placeholder="Buscar por apellido"
-              [(ngModel)]="filterLastName"
-              (input)="applyFilters()"
-            />
-          </div>
-
-          <div class="col-md-4">
-            <input
-              type="text"
-              class="form-control modern-input"
-              placeholder="Buscar por email"
-              [(ngModel)]="filterEmail"
-              (input)="applyFilters()"
-            />
-          </div>
-
-          <div class="col-md-6">
-            <select
-              class="form-select modern-input"
-              [(ngModel)]="filterCountry"
-              (change)="applyFilters()"
-            >
-              <option value="">Todos los países</option>
-              <option *ngFor="let c of countries" [value]="c">
-                {{ c }}
-              </option>
-            </select>
-          </div>
-
-          <div class="col-md-6">
-            <select
-              class="form-select modern-input"
-              [(ngModel)]="filterRole"
-              (change)="applyFilters()"
-            >
-              <option value="">Todos los roles</option>
-              <option *ngFor="let r of roles" [value]="r.name">
-                {{ r.name }}
-              </option>
-            </select>
-          </div>
-        </div>
-      </ng-container>
-
-      <!-- Skeleton filtros -->
-      <ng-template #filterSkeleton>
-        <div class="row g-3">
-          <div class="col-md-4" *ngFor="let i of [1, 2, 3]">
-            <div class="skeleton-input"></div>
-          </div>
-          <div class="col-md-6" *ngFor="let i of [1, 2]">
-            <div class="skeleton-input"></div>
-          </div>
-        </div>
-      </ng-template>
+<!-- ESTADÍSTICAS ARRIBA -->
+<ng-container *ngIf="!loading; else statsSkeleton">
+  <div class="users-stats">
+    <div class="stat-card stat-total">
+      <div class="stat-icon">👥</div>
+      <div class="stat-info">
+        <div class="stat-value">{{ totalUsers }}</div>
+        <div class="stat-label">Total Usuarios</div>
+      </div>
     </div>
-
-    <!-- CARD TABLA -->
-    <div class="card shadow-sm p-4 mb-4 rounded-4">
-      <h4 class="mb-3 fw-semibold text-center">Lista de Usuarios</h4>
-
-      <ng-container *ngIf="!loading; else tableSkeleton">
-        <div class="table-container">
-          <table class="table table-hover align-middle modern-table">
-  <thead>
-    <tr>
-      <th>Foto</th>
-      <th>Nombre</th>
-      <th>Email</th>
-      <th>Teléfono</th>
-      <th>País</th>
-      <th>Rol</th>
-      <th style="width: 120px;">Acciones</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr *ngFor="let user of paginatedUsers">
-      <td>
-        <img
-          [src]="user.profileImageUrl"
-          class="rounded-circle shadow-sm"
-          width="45"
-          height="45"
-          style="object-fit: cover"
-        />
-      </td>
-
-      <td>{{ user.firstName }} {{ user.lastName }}</td>
-      <td>{{ user.email }}</td>
-      <td>{{ user.phone }}</td>
-      <td>{{ user.country.name }}</td>
-      <td>{{ user.role.name }}</td>
-
-      <!-- Botón Editar -->
-      <td>
-        <button
-          class="btn btn-sm btn-primary d-flex align-items-center gap-1"
-          [routerLink]="['/home/users/edit-user', user.id]"
-        >
-          <i class="bi bi-pencil-square"></i>
-          Editar
-        </button>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-        </div>
-      </ng-container>
-
-      <!-- Skeleton tabla -->
-      <ng-template #tableSkeleton>
-        <div class="table-container">
-          <div *ngFor="let i of [].constructor(8)" class="skeleton-row"></div>
-        </div>
-      </ng-template>
-
-      <!-- Paginación -->
-      <div class="d-flex justify-content-center mt-3" *ngIf="!loading">
-        <ul class="pagination modern-pagination">
-          <li class="page-item" [class.disabled]="currentPage === 1">
-            <button class="page-link" (click)="goToPage(currentPage - 1)">
-              «
-            </button>
-          </li>
-
-          <li
-            class="page-item"
-            *ngFor="let p of [].constructor(totalPages()); let i = index"
-            [class.active]="currentPage === i + 1"
-          >
-            <button class="page-link" (click)="goToPage(i + 1)">
-              {{ i + 1 }}
-            </button>
-          </li>
-
-          <li class="page-item" [class.disabled]="currentPage === totalPages()">
-            <button class="page-link" (click)="goToPage(currentPage + 1)">
-              »
-            </button>
-          </li>
-        </ul>
+    <div class="stat-card stat-admin">
+      <div class="stat-icon">🛡️</div>
+      <div class="stat-info">
+        <div class="stat-value">{{ adminUsers }}</div>
+        <div class="stat-label">Admins</div>
+      </div>
+    </div>
+    <div class="stat-card stat-specialist">
+      <div class="stat-icon">⭐</div>
+      <div class="stat-info">
+        <div class="stat-value">{{ specialistUsers }}</div>
+        <div class="stat-label">Especialistas</div>
+      </div>
+    </div>
+    <div class="stat-card stat-client">
+      <div class="stat-icon">🛒</div>
+      <div class="stat-info">
+        <div class="stat-value">{{ clientUsers }}</div>
+        <div class="stat-label">Clientes</div>
+      </div>
+    </div>
+    <div class="stat-card stat-countries">
+      <div class="stat-icon">🌎</div>
+      <div class="stat-info">
+        <div class="stat-value">{{ totalCountries }}</div>
+        <div class="stat-label">Países</div>
       </div>
     </div>
   </div>
+</ng-container>
 
-  <!-- DERECHA: Estadísticas -->
-  <div class="col-lg-4">
-    <div class="card shadow-sm p-4 mb-4 rounded-4 stats-card">
-      <h4 class="mb-4 fw-semibold text-center">Estadísticas</h4>
-
-      <ng-container *ngIf="!loading; else chartSkeleton">
-        <div class="chart-container">
-          <canvas id="countryChart" height="200"></canvas>
-        </div>
-
-        <div class="chart-container">
-          <canvas id="roleChart" height="200"></canvas>
-        </div>
-      </ng-container>
-
-      <!-- Skeleton charts -->
-      <ng-template #chartSkeleton>
-        <div class="skeleton-chart mb-4"></div>
-        <div class="skeleton-chart"></div>
-      </ng-template>
+<ng-template #statsSkeleton>
+  <div class="users-stats">
+    <div class="stat-card shimmer-stat" *ngFor="let i of [1,2,3,4,5]">
+      <div class="shimmer shimmer-icon"></div>
+      <div class="shimmer-info">
+        <div class="shimmer shimmer-stat-value"></div>
+        <div class="shimmer shimmer-stat-label"></div>
+      </div>
     </div>
   </div>
+</ng-template>
+
+<!-- PIE CHARTS -->
+<div class="charts-grid" *ngIf="!loading">
+  <div class="chart-card">
+    <h4 class="chart-title">Usuarios por País</h4>
+    <div class="chart-wrapper">
+      <canvas id="countryChart"></canvas>
+    </div>
+  </div>
+  <div class="chart-card">
+    <h4 class="chart-title">Usuarios por Rol</h4>
+    <div class="chart-wrapper">
+      <canvas id="roleChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Shimmer Charts -->
+<div class="charts-grid" *ngIf="loading">
+  <div class="chart-card shimmer-chart-card" *ngFor="let i of [1,2]">
+    <div class="shimmer shimmer-chart-title"></div>
+    <div class="shimmer shimmer-chart-circle"></div>
+  </div>
+</div>
+
+<!-- FILTROS -->
+<div class="users-filters">
+  <ng-container *ngIf="!loading; else filterSkeleton">
+    <input
+      type="text"
+      class="users-filter-input"
+      placeholder="Buscar por nombre"
+      [(ngModel)]="filterName"
+      (input)="applyFilters()"
+    />
+    <input
+      type="text"
+      class="users-filter-input"
+      placeholder="Buscar por apellido"
+      [(ngModel)]="filterLastName"
+      (input)="applyFilters()"
+    />
+    <input
+      type="text"
+      class="users-filter-input"
+      placeholder="Buscar por email"
+      [(ngModel)]="filterEmail"
+      (input)="applyFilters()"
+    />
+    <select
+      class="users-filter-select"
+      [(ngModel)]="filterCountry"
+      (change)="applyFilters()"
+    >
+      <option value="">Todos los países</option>
+      <option *ngFor="let c of countries" [value]="c">{{ c }}</option>
+    </select>
+    <select
+      class="users-filter-select"
+      [(ngModel)]="filterRole"
+      (change)="applyFilters()"
+    >
+      <option value="">Todos los roles</option>
+      <option *ngFor="let r of roles" [value]="r.name">{{ r.name }}</option>
+    </select>
+    <button class="btn-clear-filters" (click)="clearFilters()">Limpiar</button>
+  </ng-container>
+
+  <ng-template #filterSkeleton>
+    <div class="shimmer shimmer-filter" *ngFor="let i of [1,2,3,4,5]"></div>
+  </ng-template>
+</div>
+
+<!-- CONTENEDOR TABLA -->
+<div class="users-container">
+  <!-- Shimmer Table -->
+  <table *ngIf="loading" class="users-table shimmer-table">
+    <thead>
+      <tr>
+        <th>Foto</th>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Teléfono</th>
+        <th>País</th>
+        <th>Rol</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of [1,2,3,4,5,6]">
+        <td><div class="shimmer shimmer-avatar"></div></td>
+        <td><div class="shimmer shimmer-text"></div></td>
+        <td><div class="shimmer shimmer-text"></div></td>
+        <td><div class="shimmer shimmer-text shimmer-sm"></div></td>
+        <td><div class="shimmer shimmer-badge"></div></td>
+        <td><div class="shimmer shimmer-badge"></div></td>
+        <td><div class="shimmer shimmer-btn"></div></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Users Table -->
+  <table *ngIf="!loading && filteredUsers.length" class="users-table">
+    <thead>
+      <tr>
+        <th>Foto</th>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Teléfono</th>
+        <th>País</th>
+        <th>Rol</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of paginatedUsers">
+        <td>
+          <img
+            *ngIf="user.profileImageUrl"
+            [src]="user.profileImageUrl"
+            class="user-avatar"
+            width="45"
+            height="45"
+          />
+          <div *ngIf="!user.profileImageUrl" class="avatar-initials">
+            {{ user.firstName.charAt(0).toUpperCase() }}{{ user.lastName.charAt(0).toUpperCase() }}
+          </div>
+        </td>
+        <td>{{ user.firstName }} {{ user.lastName }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.phone }}</td>
+        <td>{{ user.country?.name || 'N/A' }}</td>
+        <td>{{ user.role?.name || 'N/A' }}</td>
+        <td>
+          <button
+            class="btn btn-sm btn-outline-info"
+            [routerLink]="['/home/users/edit-user', user.id]"
+          >
+          Editar
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && !filteredUsers.length" class="users-empty">
+    <span class="icon-empty">👥</span>
+    <p>No se encontraron usuarios.</p>
+  </div>
+</div>
+
+<!-- Paginación -->
+<div class="pagination-container" *ngIf="!loading && filteredUsers.length">
+  <ul class="pagination modern-pagination">
+    <li class="page-item" [class.disabled]="currentPage === 1">
+      <button class="page-link" (click)="goToPage(currentPage - 1)">«</button>
+    </li>
+    <li
+      class="page-item"
+      *ngFor="let p of [].constructor(totalPages()); let i = index"
+      [class.active]="currentPage === i + 1"
+    >
+      <button class="page-link" (click)="goToPage(i + 1)">{{ i + 1 }}</button>
+    </li>
+    <li class="page-item" [class.disabled]="currentPage === totalPages()">
+      <button class="page-link" (click)="goToPage(currentPage + 1)">»</button>
+    </li>
+  </ul>
 </div>
 
 <!-- BOTÓN FLOTANTE PARA CREAR USUARIO -->

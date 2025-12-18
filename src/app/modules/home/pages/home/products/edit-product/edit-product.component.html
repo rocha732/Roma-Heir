@@ -1,5 +1,17 @@
-<div class="edit-product-container">
-  <h2>Editar producto</h2>
+<h2 class="page-title">Editar producto</h2>
+
+<!-- Shimmer Loading -->
+<div *ngIf="loading" class="edit-product-container">
+  <div class="edit-product-form">
+    <div class="form-group">
+      <div class="shimmer shimmer-label"></div>
+      <div class="shimmer shimmer-select"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Contenido -->
+<div *ngIf="!loading" class="edit-product-container">
   <div class="form-group" *ngIf="!product">
     <label class="form-group-label">Selecciona un producto para editar:</label>
     <select class="form-control" [(ngModel)]="selectedProductId" name="selectedProductId" (change)="onProductSelect()">

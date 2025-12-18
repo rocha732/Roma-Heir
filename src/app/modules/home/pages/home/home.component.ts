@@ -10,6 +10,7 @@ export class HomeComponent {
   isSpecialistOpen = false;
   isProductOpen = false;
   isOrderOpen = false;
+  showLogoutScreen = false;
 
   constructor(private specialistsService: SpecialistsService, private router: Router) {}
 
@@ -19,12 +20,16 @@ export class HomeComponent {
         localStorage.setItem('specialists', JSON.stringify(specialists));
       });
     }
-    
   }
 
   logout() {
-    localStorage.clear();  // o solo removeItem('token')
-    this.router.navigate(['/']); // vuelve al login
+    this.showLogoutScreen = true;
+    
+    // Esperar la animación y luego redirigir
+    setTimeout(() => {
+      localStorage.clear();
+      this.router.navigate(['/']);
+    }, 2500);
   }
 
   toggleSpecialistDropdown() {

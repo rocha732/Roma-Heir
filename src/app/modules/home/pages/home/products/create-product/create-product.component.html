@@ -1,5 +1,41 @@
-<div class="create-product-container">
-  <h2>Crear nuevo producto</h2>
+<h2 class="page-title">Crear nuevo producto</h2>
+
+<!-- Shimmer Loading -->
+<div *ngIf="loading" class="create-product-container">
+  <div class="create-product-form">
+    <div class="form-group">
+      <div class="shimmer shimmer-label"></div>
+      <div class="shimmer shimmer-input"></div>
+    </div>
+    <div class="form-group">
+      <div class="shimmer shimmer-label"></div>
+      <div class="shimmer shimmer-textarea"></div>
+    </div>
+    <div class="form-group">
+      <div class="shimmer shimmer-label"></div>
+      <div class="shimmer shimmer-input"></div>
+    </div>
+    <div class="form-group">
+      <div class="shimmer shimmer-label"></div>
+      <div class="shimmer shimmer-select"></div>
+    </div>
+    <div class="form-group">
+      <div class="shimmer shimmer-label"></div>
+      <div class="shimmer shimmer-select"></div>
+    </div>
+    <div class="form-group">
+      <div class="shimmer shimmer-label"></div>
+      <div class="shimmer shimmer-image-area"></div>
+    </div>
+    <div class="form-group">
+      <div class="shimmer shimmer-checkbox"></div>
+    </div>
+    <div class="shimmer shimmer-button"></div>
+  </div>
+</div>
+
+<!-- Formulario -->
+<div *ngIf="!loading" class="create-product-container">
   <div *ngIf="successMessage" class="alert alert-success" style="margin-bottom: 1rem;">
     {{ successMessage }}
   </div>

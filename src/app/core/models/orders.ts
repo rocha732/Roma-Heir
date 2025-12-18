@@ -8,8 +8,9 @@ export interface Orders {
     paidAt:         Date;
     createdAt:      Date;
     updatedAt:      Date;
-    customer:       Customer;
+    customer?:      Customer;
     items:          Item[];
+    showDetails?:   boolean; // UI state for toggling order details
 }
 
 export interface Customer {
@@ -24,4 +25,16 @@ export interface Item {
     price:     number;
     quantity:  number;
     subtotal:  number;
+}
+
+// Interfaces para crear orden
+export interface CreateOrderRequest {
+    customerId: number;
+    deliveryMethodId: number;
+    items: CreateOrderItem[];
+}
+
+export interface CreateOrderItem {
+    productId: number;
+    quantity: number;
 }

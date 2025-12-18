@@ -32,7 +32,7 @@ export class AuthInterceptor implements HttpInterceptor {
     return next.handle(authReq).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401) {
-          console.warn('⚠️ Sesión expirada. Redirigiendo al inicio...');
+          alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
           localStorage.clear(); // 🔹 limpia sesión
           this.router.navigate(['/']); // 🔹 redirige al inicio
         }

@@ -7,6 +7,7 @@ import { GetReservations } from 'src/app/core/models/reservations';
 import { OrdersService } from 'src/app/core/services/orders.service';
 import { ReservationStatusesService } from 'src/app/core/services/reservation-statuses.service';
 import { ReservationsService } from 'src/app/core/services/reservations.service';
+import { SpecialistsService } from 'src/app/core/services/specialists.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,7 +22,7 @@ export class DashboardComponent {
   completadasHoy = 0;
   canceladas = 0;
   confirmadasHoy = 0;
-  specialists = JSON.parse(localStorage.getItem('specialists') || '[]');
+  specialists: any[] = [];
   chartData: any;
   orders: Orders[] = [];
   totalOrders = 0;
@@ -29,9 +30,17 @@ export class DashboardComponent {
   unpaidOrders = 0;
   totalRevenue = 0;
 
-pieOrdersChartData: any;
-ordersChartData: any;
-  selectedRange: 'week' | 'month' | 'all' = 'week';
+  // Loading states
+  loadingCitas = true;
+  loadingOrders = true;
+  
+  // Empty states
+  noSpecialists = false;
+  noReservations = false;
+
+  pieOrdersChartData: any;
+  ordersChartData: any;
+  selectedRange: 'week' | 'month' | 'all' = 'all';
   allReservations: GetReservations[] = [];
   chartLabels: string[] = [];
   chartDatasets: any[] = [];
@@ -39,13 +48,31 @@ ordersChartData: any;
     responsive: true,
     maintainAspectRatio: false,
     scales: {
-      x: {},
+      x: {
+        grid: {
+          color: 'rgba(255, 255, 255, 0.05)',
+        },
+        ticks: {
+          color: 'rgba(255, 255, 255, 0.6)',
+        },
+      },
       y: {
         beginAtZero: true,
+        grid: {
+          color: 'rgba(255, 255, 255, 0.05)',
+        },
         ticks: {
-          precision: 0, // fuerza enteros
-          // opcionalmente, también podrías usar callback para mayor control
-          // callback: (value) => Math.round(Number(value)),
+          precision: 0,
+          color: 'rgba(255, 255, 255, 0.6)',
+        },
+      },
+    },
+    plugins: {
+      legend: {
+        labels: {
+          color: 'rgba(255, 255, 255, 0.8)',
+          padding: 15,
+          font: { size: 11 },
         },
       },
     },
@@ -56,11 +83,11 @@ ordersChartData: any;
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'bottom', // ✅ esto es válido
+        position: 'bottom',
         labels: {
-          font: {
-            size: 12,
-          },
+          color: 'rgba(255, 255, 255, 0.8)',
+          padding: 15,
+          font: { size: 12 },
         },
       },
       tooltip: {
@@ -78,7 +105,8 @@ ordersChartData: any;
   constructor(
     private reservationsService: ReservationsService,
     private reservationStatusesService: ReservationStatusesService,
-    private ordersService: OrdersService 
+    private ordersService: OrdersService,
+    private specialistsService: SpecialistsService
   ) {}
 
   ngOnInit(): void {
@@ -86,31 +114,79 @@ ordersChartData: any;
   }
 
   loadDashboardData() {
+    this.loadingCitas = true;
+    this.loadingOrders = true;
+
+    // Cargar especialistas primero
+    const storedSpecialists = localStorage.getItem('specialists');
+    if (storedSpecialists) {
+      this.specialists = JSON.parse(storedSpecialists);
+      this.loadReservationsData();
+    } else {
+      this.specialistsService.getSpecialists().subscribe({
+        next: (specialists) => {
+          this.specialists = specialists;
+          localStorage.setItem('specialists', JSON.stringify(specialists));
+          this.loadReservationsData();
+        },
+        error: (err) => {
+          console.error('Error cargando especialistas', err);
+          this.noSpecialists = true;
+          this.loadReservationsData();
+        }
+      });
+    }
+
+    // Cargar órdenes
+    this.ordersService.getOrders().subscribe({
+      next: (res: Orders[]) => {
+        this.orders = res;
+        this.calculateOrdersMetrics();
+        this.buildOrdersPieChart();
+        this.buildOrdersChartData();
+        this.loadingOrders = false;
+      },
+      error: (err) => {
+        console.error('Error cargando órdenes', err);
+        this.loadingOrders = false;
+      }
+    });
+  }
+
+  loadReservationsData() {
     this.reservationStatusesService
       .getStatusReservations()
-      .subscribe((statuses) => {
-        this.reservationStatuses = statuses;
+      .subscribe({
+        next: (statuses) => {
+          this.reservationStatuses = statuses;
 
-        this.reservationsService.getReservations().subscribe((reservations) => {
-          this.reservaciones = reservations;
-          this.allReservations = reservations;
+          this.reservationsService.getReservations().subscribe({
+            next: (reservations) => {
+              this.reservaciones = reservations;
+              this.allReservations = reservations;
+              this.noReservations = reservations.length === 0;
 
-          const todayReservations = this.getTodayReservations(reservations);
-          this.resToday = this.getCountByStatus(todayReservations, statuses);
-          this.calcDashboardValues();
+              const todayReservations = this.getTodayReservations(reservations);
+              this.resToday = this.getCountByStatus(todayReservations, statuses);
+              this.calcDashboardValues();
 
-          // Inicializar gráfico
-          this.updateChartData();
-          this.buildSpecialistPieChart(this.specialists, this.reservaciones);
-        });
+              // Inicializar gráficos
+              this.updateChartData();
+              this.buildSpecialistPieChart(this.specialists, this.reservaciones);
+              this.loadingCitas = false;
+            },
+            error: (err) => {
+              console.error('Error cargando reservaciones', err);
+              this.noReservations = true;
+              this.loadingCitas = false;
+            }
+          });
+        },
+        error: (err) => {
+          console.error('Error cargando estados', err);
+          this.loadingCitas = false;
+        }
       });
-
-       this.ordersService.getOrders().subscribe((res: Orders[]) => {
-      this.orders = res;
-      this.calculateOrdersMetrics();
-      this.buildOrdersPieChart();
-      this.buildOrdersChartData();
-    });
   }
 
   getTodayReservations(reservations: GetReservations[]) {
@@ -146,14 +222,14 @@ ordersChartData: any;
 
   getColorByStatus(statusId: number) {
     const colors: any = {
-      1: 'rgba(255,193,7,0.7)', // Pendiente
-      2: 'rgba(33,150,243,0.7)', // Confirmada
-      3: 'rgba(244,67,54,0.7)', // Cancelada
-      4: 'rgba(76,175,80,0.7)', // Completada
-      5: 'rgba(158,158,158,0.7)', // Ausente
-      6: 'rgba(156,39,176,0.7)', // Reprogramada
+      1: 'rgba(251, 191, 36, 0.8)',  // Pendiente - Amarillo
+      2: 'rgba(59, 130, 246, 0.8)',  // Confirmada - Azul
+      3: 'rgba(239, 68, 68, 0.8)',   // Cancelada - Rojo
+      4: 'rgba(16, 185, 129, 0.8)',  // Completada - Verde
+      5: 'rgba(107, 114, 128, 0.8)', // Ausente - Gris
+      6: 'rgba(168, 85, 247, 0.8)',  // Reprogramada - Púrpura
     };
-    return colors[statusId] || 'rgba(100,100,100,0.7)';
+    return colors[statusId] || 'rgba(100, 100, 100, 0.7)';
   }
 
   changeRange(range: 'week' | 'month' | 'all') {
@@ -240,16 +316,18 @@ ordersChartData: any;
         {
           data,
           backgroundColor: [
-            '#FF6384',
-            '#36A2EB',
-            '#FFCE56',
-            '#4BC0C0',
-            '#9966FF',
-            '#FF9F40',
-            '#C9CBCF',
-            '#8BC34A',
-            '#FFC107',
+            'rgba(59, 130, 246, 0.8)',   // Azul
+            'rgba(168, 85, 247, 0.8)',   // Púrpura
+            'rgba(16, 185, 129, 0.8)',   // Verde
+            'rgba(251, 191, 36, 0.8)',   // Amarillo
+            'rgba(239, 68, 68, 0.8)',    // Rojo
+            'rgba(236, 72, 153, 0.8)',   // Rosa
+            'rgba(20, 184, 166, 0.8)',   // Teal
+            'rgba(249, 115, 22, 0.8)',   // Naranja
+            'rgba(139, 92, 246, 0.8)',   // Violeta
           ],
+          borderColor: 'rgba(18, 19, 26, 0.8)',
+          borderWidth: 2,
         },
       ],
     };
@@ -263,11 +341,19 @@ ordersChartData: any;
   }
 
   buildOrdersPieChart() {
-    this.pieOrdersChartData  = {
+    this.pieOrdersChartData = {
       labels: ['Pagadas', 'No pagadas'],
       datasets: [
-        { data: [this.paidOrders, this.unpaidOrders], backgroundColor: ['#4caf50', '#f44336'] }
-      ]
+        {
+          data: [this.paidOrders, this.unpaidOrders],
+          backgroundColor: [
+            'rgba(16, 185, 129, 0.8)',  // Verde
+            'rgba(239, 68, 68, 0.8)',   // Rojo
+          ],
+          borderColor: 'rgba(18, 19, 26, 0.8)',
+          borderWidth: 2,
+        },
+      ],
     };
   }
 buildOrdersChartData() {
@@ -294,12 +380,16 @@ buildOrdersChartData() {
       {
         label: 'Pagadas',
         data: paidData,
-        backgroundColor: '#4caf50',
+        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+        borderColor: 'rgba(16, 185, 129, 1)',
+        borderWidth: 1,
       },
       {
         label: 'No pagadas',
         data: unpaidData,
-        backgroundColor: '#f44336',
+        backgroundColor: 'rgba(239, 68, 68, 0.8)',
+        borderColor: 'rgba(239, 68, 68, 1)',
+        borderWidth: 1,
       },
     ],
   };

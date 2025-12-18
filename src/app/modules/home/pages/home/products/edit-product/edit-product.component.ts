@@ -17,6 +17,7 @@ export class EditProductComponent implements OnInit {
   isDragOver = false;
   imagePreview: string | ArrayBuffer | null = null;
   successMessage: string | null = null;
+  loading = true;
 
   constructor(
     private route: ActivatedRoute,
@@ -25,9 +26,15 @@ export class EditProductComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    let categoriesLoaded = false;
+    let productsLoaded = false;
+
     this.categoriesService.getCategories().subscribe(categories => {
       this.categoryList = categories;
+      categoriesLoaded = true;
+      if (categoriesLoaded && productsLoaded) this.loading = false;
     });
+    
     this.productsService.getProducts().subscribe((products: any) => {
       this.allProducts = products;
       const typeMap = new Map<number, { id: number, name: string }>();
@@ -41,6 +48,8 @@ export class EditProductComponent implements OnInit {
       if (id) {
         this.setProductToEdit(id);
       }
+      productsLoaded = true;
+      if (categoriesLoaded && productsLoaded) this.loading = false;
     });
   }
 

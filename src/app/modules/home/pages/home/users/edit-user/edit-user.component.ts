@@ -12,22 +12,28 @@ export class EditUserComponent {
   searchQuery: string = '';
   searching: boolean = false;
 
-  user: ResponseUsers | null = null; // <--- NECESARIO
+  user: ResponseUsers | null = null;
   previewImage: string | ArrayBuffer | null = null;
   selectedPicture: File | null = null;
+  
+  // Separate properties for select binding
+  selectedCountryId: number = 1;
+  selectedRoleId: number = 3;
 
   constructor(
     private userService: UsersService,
     private route: ActivatedRoute
   ) {}
+
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
 
     if (id) {
       this.searchQuery = id;
-      this.searchUsers(); // <--- LLAMA AUTOMÁTICAMENTE
+      this.searchUsers();
     }
   }
+
   onSearchChange() {
     if (!this.searchQuery || this.searchQuery.trim() === '') {
       this.user = null;
@@ -48,8 +54,10 @@ export class EditUserComponent {
 
     this.userService.getUserById(id).subscribe({
       next: (resp) => {
-        this.user = resp; // <--- EL CARD APARECE AQUÍ
-        this.previewImage = null; // limpiar vista previa
+        this.user = resp;
+        this.selectedCountryId = resp.country?.id || 1;
+        this.selectedRoleId = resp.role?.id || 3;
+        this.previewImage = null;
         this.searching = false;
       },
       error: (err) => {
@@ -72,26 +80,25 @@ export class EditUserComponent {
   }
 
   saveUser() {
-  if (!this.user) return;
+    if (!this.user) return;
 
-  const formData = new FormData();
+    const formData = new FormData();
 
-  formData.append('Id', this.user.id.toString());
-  formData.append('FirstName', this.user.firstName);
-  formData.append('LastName', this.user.lastName);
-  formData.append('Email', this.user.email);
-  formData.append('Phone', this.user.phone);
-  formData.append('CountryId', this.user.country.id.toString());
-  formData.append('RoleId', this.user.role.id.toString());
+    formData.append('Id', this.user.id.toString());
+    formData.append('FirstName', this.user.firstName);
+    formData.append('LastName', this.user.lastName);
+    formData.append('Email', this.user.email);
+    formData.append('Phone', this.user.phone);
+    formData.append('CountryId', this.selectedCountryId.toString());
+    formData.append('RoleId', this.selectedRoleId.toString());
 
-  if (this.selectedPicture) {
-    formData.append('Picture', this.selectedPicture);
+    if (this.selectedPicture) {
+      formData.append('Picture', this.selectedPicture);
+    }
+
+    this.userService.putUpdateUser(formData, this.user.id).subscribe({
+      next: () => console.log('Usuario actualizado'),
+      error: (err) => console.error(err),
+    });
   }
-
-  this.userService.putUpdateUser(formData, this.user.id).subscribe({
-    next: () => console.log("Usuario actualizado"),
-    error: (err) => console.error(err)
-  });
-}
-
 }

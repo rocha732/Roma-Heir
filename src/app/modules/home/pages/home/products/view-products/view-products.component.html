@@ -1,5 +1,126 @@
-<div *ngIf="products && products.length; else noProducts">
-	<div class="products-title">Lista de productos</div>
+<div class="products-title">Lista de productos</div>
+
+<!-- Shimmer Loading -->
+<div *ngIf="loading">
+	<!-- Shimmer Stats -->
+	<div class="products-stats">
+		<div class="stat-card shimmer-stat">
+			<div class="shimmer shimmer-icon"></div>
+			<div class="shimmer-info">
+				<div class="shimmer shimmer-stat-value"></div>
+				<div class="shimmer shimmer-stat-label"></div>
+			</div>
+		</div>
+		<div class="stat-card shimmer-stat">
+			<div class="shimmer shimmer-icon"></div>
+			<div class="shimmer-info">
+				<div class="shimmer shimmer-stat-value"></div>
+				<div class="shimmer shimmer-stat-label"></div>
+			</div>
+		</div>
+		<div class="stat-card shimmer-stat">
+			<div class="shimmer shimmer-icon"></div>
+			<div class="shimmer-info">
+				<div class="shimmer shimmer-stat-value"></div>
+				<div class="shimmer shimmer-stat-label"></div>
+			</div>
+		</div>
+		<div class="stat-card shimmer-stat">
+			<div class="shimmer shimmer-icon"></div>
+			<div class="shimmer-info">
+				<div class="shimmer shimmer-stat-value"></div>
+				<div class="shimmer shimmer-stat-label"></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Shimmer Actions -->
+	<div class="products-actions">
+		<div class="skeleton-input shimmer"></div>
+		<div class="products-filters">
+			<div class="skeleton-select shimmer"></div>
+			<div class="skeleton-select shimmer"></div>
+		</div>
+	</div>
+	
+	<!-- Shimmer Cards -->
+	<div class="products-list">
+		<div *ngFor="let item of [1,2,3,4,5,6]" class="product-card-skeleton">
+			<div class="skeleton-image shimmer"></div>
+			<div class="skeleton-category shimmer"></div>
+			<div class="skeleton-content">
+				<div class="skeleton-title shimmer"></div>
+				<div class="skeleton-description shimmer"></div>
+				<div class="skeleton-footer">
+					<div class="skeleton-price shimmer"></div>
+					<div class="skeleton-badge shimmer"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Content -->
+<div *ngIf="!loading && products && products.length">
+	<!-- Statistics Summary -->
+	<div class="products-stats">
+		<div class="stat-card stat-total">
+			<div class="stat-icon">📦</div>
+			<div class="stat-info">
+				<div class="stat-value">{{ totalProducts }}</div>
+				<div class="stat-label">Total Productos</div>
+			</div>
+		</div>
+		<div class="stat-card stat-available">
+			<div class="stat-icon">✅</div>
+			<div class="stat-info">
+				<div class="stat-value">{{ availableProducts }}</div>
+				<div class="stat-label">Disponibles</div>
+			</div>
+		</div>
+		<div class="stat-card stat-unavailable">
+			<div class="stat-icon">⏸️</div>
+			<div class="stat-info">
+				<div class="stat-value">{{ unavailableProducts }}</div>
+				<div class="stat-label">No Disponibles</div>
+			</div>
+		</div>
+		<div class="stat-card stat-price">
+			<div class="stat-icon">💰</div>
+			<div class="stat-info">
+				<div class="stat-value">S/. {{ averagePrice | number:'1.2-2' }}</div>
+				<div class="stat-label">Precio Promedio</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Statistics by Category and Type 
+	<div class="products-stats-detailed">
+		<div class="stat-breakdown stat-categories">
+			<div class="breakdown-header">
+				<span class="breakdown-icon">🏷️</span>
+				<span class="breakdown-title">Por Categoría</span>
+			</div>
+			<div class="breakdown-list">
+				<div *ngFor="let cat of productsByCategory" class="breakdown-item">
+					<span class="breakdown-name">{{ cat.name }}</span>
+					<span class="breakdown-count">{{ cat.count }}</span>
+				</div>
+			</div>
+		</div>
+		<div class="stat-breakdown stat-types">
+			<div class="breakdown-header">
+				<span class="breakdown-icon">📋</span>
+				<span class="breakdown-title">Por Tipo de Producto</span>
+			</div>
+			<div class="breakdown-list">
+				<div *ngFor="let type of productsByType" class="breakdown-item">
+					<span class="breakdown-name">{{ type.name }}</span>
+					<span class="breakdown-count">{{ type.count }}</span>
+				</div>
+			</div>
+		</div>
+	</div>-->
 
 	<div class="products-actions">
 		<input 
@@ -33,10 +154,13 @@
 			[available]="product.available"
 			[productTypeName]="product.productType?.name || 'Tipo desconocido'"
 			[onEditCallback]="onEditProduct"
-      [id]="product.id"
+			[id]="product.id"
 		></app-product-card>
 	</div>
 </div>
-<ng-template #noProducts>
+
+<!-- Empty State -->
+<div *ngIf="!loading && (!products || !products.length)" class="products-empty">
+	<span class="icon-empty">📦</span>
 	<p>No hay productos para mostrar.</p>
-</ng-template>
+</div>

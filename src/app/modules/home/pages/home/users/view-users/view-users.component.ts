@@ -30,8 +30,8 @@ export class ViewUsersComponent implements OnDestroy {
     { id: 3, name: 'client' },
   ];
 
-    roleChart!: Chart<'doughnut', number[], string>;
-  countryChart!: Chart<'bar', number[], string>;
+  roleChart!: Chart<'pie', number[], string>;
+  countryChart!: Chart<'pie', number[], string>;
 
   constructor(
     private usersService: UsersService,
@@ -92,8 +92,18 @@ export class ViewUsersComponent implements OnDestroy {
       return matchCountry && matchRole && matchName && matchLastName && matchEmail;
     });
 
+    this.currentPage = 1;
     // Volver a generar gráficos con nuevos datos
     this.createCharts();
+  }
+
+  clearFilters() {
+    this.filterName = '';
+    this.filterLastName = '';
+    this.filterEmail = '';
+    this.filterCountry = '';
+    this.filterRole = '';
+    this.applyFilters();
   }
 
   /** 📊 Gráfico por país */
@@ -109,18 +119,44 @@ export class ViewUsersComponent implements OnDestroy {
       counts[c] = (counts[c] || 0) + 1;
     });
 
+    const colors = [
+      'rgba(59, 130, 246, 0.8)',   // Azul
+      'rgba(168, 85, 247, 0.8)',   // Púrpura
+      'rgba(16, 185, 129, 0.8)',   // Verde
+      'rgba(251, 191, 36, 0.8)',   // Amarillo
+      'rgba(239, 68, 68, 0.8)',    // Rojo
+      'rgba(236, 72, 153, 0.8)',   // Rosa
+      'rgba(20, 184, 166, 0.8)',   // Teal
+      'rgba(249, 115, 22, 0.8)',   // Naranja
+    ];
+
     this.countryChart = new Chart(ctx, {
-      type: 'bar',
+      type: 'pie',
       data: {
         labels: Object.keys(counts),
         datasets: [
           {
-            label: 'Usuarios por país',
             data: Object.values(counts),
-            backgroundColor: ['#4e79a7', '#f28e2b', '#76b7b2'],
+            backgroundColor: colors.slice(0, Object.keys(counts).length),
+            borderColor: 'rgba(18, 19, 26, 0.8)',
+            borderWidth: 2,
           },
         ],
       },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: 'rgba(255, 255, 255, 0.8)',
+              padding: 15,
+              font: { size: 12 }
+            }
+          }
+        }
+      }
     });
   }
 
@@ -137,17 +173,39 @@ export class ViewUsersComponent implements OnDestroy {
       counts[r] = (counts[r] || 0) + 1;
     });
 
+    const colors = [
+      'rgba(239, 68, 68, 0.8)',    // Rojo - Admin
+      'rgba(251, 191, 36, 0.8)',   // Amarillo - Specialist
+      'rgba(16, 185, 129, 0.8)',   // Verde - Client
+    ];
+
     this.roleChart = new Chart(ctx, {
-      type: 'doughnut',
+      type: 'pie',
       data: {
         labels: Object.keys(counts),
         datasets: [
           {
             data: Object.values(counts),
-            backgroundColor: ['#59a14f', '#e15759', '#edc948'],
+            backgroundColor: colors.slice(0, Object.keys(counts).length),
+            borderColor: 'rgba(18, 19, 26, 0.8)',
+            borderWidth: 2,
           },
         ],
       },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: 'rgba(255, 255, 255, 0.8)',
+              padding: 15,
+              font: { size: 12 }
+            }
+          }
+        }
+      }
     });
   }
 
@@ -165,5 +223,26 @@ export class ViewUsersComponent implements OnDestroy {
     if (page >= 1 && page <= this.totalPages()) {
       this.currentPage = page;
     }
+  }
+
+  /** Estadísticas */
+  get totalUsers(): number {
+    return this.filteredUsers.length;
+  }
+
+  get adminUsers(): number {
+    return this.filteredUsers.filter(u => u.role?.name?.toLowerCase() === 'admin').length;
+  }
+
+  get specialistUsers(): number {
+    return this.filteredUsers.filter(u => u.role?.name?.toLowerCase() === 'specialist').length;
+  }
+
+  get clientUsers(): number {
+    return this.filteredUsers.filter(u => u.role?.name?.toLowerCase() === 'client').length;
+  }
+
+  get totalCountries(): number {
+    return this.countries.length;
   }
 }

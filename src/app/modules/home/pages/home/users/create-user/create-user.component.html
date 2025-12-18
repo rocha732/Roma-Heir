@@ -1,11 +1,12 @@
+<h2 class="page-title">Crear Usuario</h2>
+
 <!-- Card de registro -->
 <div
-  class="card shadow-sm mx-auto mb-3"
-  style="max-width: 500px"
+  class="card"
+  style="max-width: 600px"
   [class.disabled-card]="submitted"
 >
   <div class="card-body">
-    <h5 class="card-title text-center mb-4">Crear Usuario</h5>
 
     <form [formGroup]="userForm" (ngSubmit)="submit()">
       <app-form-input

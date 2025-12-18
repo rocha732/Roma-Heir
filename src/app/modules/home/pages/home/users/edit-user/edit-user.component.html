@@ -1,14 +1,16 @@
+<h2 class="page-title">Editar Usuario</h2>
+
 <!-- Buscador solo si entras sin ID -->
-<div class="mb-3">
+<div class="search-container mb-3">
   <input
     type="text"
     class="form-control"
-    placeholder="Buscar usuario..."
+    placeholder="Buscar usuario por ID..."
     [(ngModel)]="searchQuery"
     (ngModelChange)="onSearchChange()"
   />
 </div>
-<div class="card shadow p-4" *ngIf="user">
+<div class="card p-4" *ngIf="user">
   <div class="text-center mb-3">
     <img
       [src]="user.profileImageUrl"
@@ -72,24 +74,23 @@
       <label class="form-label">Country</label>
       <select
         class="form-select"
-        [(ngModel)]="user.country.id"
+        [(ngModel)]="selectedCountryId"
         name="countryId"
       >
-        <!-- Ejemplo: agregar opciones reales -->
-        <option value="1">Argentina</option>
-        <option value="2">Perú</option>
-        <option value="3">Chile</option>
-        <option value="4">México</option>
+        <option [value]="1">Argentina</option>
+        <option [value]="2">Perú</option>
+        <option [value]="3">Chile</option>
+        <option [value]="4">México</option>
       </select>
     </div>
 
     <!-- Role -->
     <div class="mb-3">
       <label class="form-label">Role</label>
-      <select class="form-select" [(ngModel)]="user.role.id" name="roleId">
-        <option value="1">Admin</option>
-        <option value="2">Specialist</option>
-        <option value="3">User</option>
+      <select class="form-select" [(ngModel)]="selectedRoleId" name="roleId">
+        <option [value]="1">Admin</option>
+        <option [value]="2">Specialist</option>
+        <option [value]="3">Client</option>
       </select>
     </div>
     <img

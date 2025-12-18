@@ -1,6 +1,16 @@
+<!-- Logout Screen -->
+<div class="logout-overlay" *ngIf="showLogoutScreen">
+  <div class="logout-card">
+    <h2 class="logout-title">¡Hasta pronto!</h2>
+    <p class="logout-message">Gracias por usar Roma Hair</p>
+    <p class="logout-submessage">Esperamos verte de nuevo</p>
+    <div class="logout-spinner"></div>
+  </div>
+</div>
+
 <div class="d-flex">
   <!-- Sidebar -->
-  <aside class="sidebar bg-dark text-white p-3">
+  <aside class="sidebar text-white p-3">
     <div class="text-center mb-4">
       <img
         src="assets/ico-logo.svg"
@@ -98,7 +108,7 @@
           [attr.aria-expanded]="false"
           (click)="toggleProductDropdown()"
         >
-          <span><i class="bi bi-people-fill me-2"></i> Productos</span>
+          <span><i class="bi bi-box-seam me-2"></i> Productos</span>
           <i
             class="bi"
             [ngClass]="{
@@ -151,7 +161,7 @@
           [attr.aria-expanded]="false"
           (click)="toggleOrderDropdown()"
         >
-          <span><i class="bi bi-people-fill me-2"></i>Ordenes</span>
+          <span><i class="bi bi-receipt me-2"></i> Órdenes</span>
           <i
             class="bi"
             [ngClass]="{
@@ -181,22 +191,13 @@
                 Crear Ordenes
               </a>
             </li>
-            <li>
-              <a
-                class="nav-link text-white sidebar-link"
-                routerLink="orders/edit-orders"
-                routerLinkActive="active-link"
-              >
-                Modificar Ordenes
-              </a>
-            </li>
           </ul>
         </div>
       </div>
 
       <!-- 🔴 Cerrar sesión -->
       <a
-        class="nav-link text-white sidebar-link mt-4 text-danger fw-bold"
+        class="nav-link text-white sidebar-link mt-4 text-danger"
         style="cursor: pointer"
         (click)="logout()"
       >

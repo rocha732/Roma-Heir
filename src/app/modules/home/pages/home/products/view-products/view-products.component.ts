@@ -17,6 +17,7 @@ export class ViewProductsComponent {
   productTypeList: { id: number, name: string }[] = [];
   selectedCategory: string | null = null;
   selectedProductType: number | null = null;
+  loading: boolean = true;
 
   constructor(
     private productsService: ProductsService,
@@ -31,6 +32,7 @@ export class ViewProductsComponent {
     this.productsService.getProducts().subscribe((products: any) => {
       this.products = products;
       this.filteredProducts = products;
+      this.loading = false;
       // Construir lista de tipos de producto únicos como objetos {id, name}
       const typeMap = new Map<number, { id: number, name: string }>();
       products.forEach((p: any) => {
@@ -40,6 +42,61 @@ export class ViewProductsComponent {
       });
       this.productTypeList = Array.from(typeMap.values());
     });
+  }
+
+  // Estadísticas
+  get totalProducts(): number {
+    return this.products.length;
+  }
+
+  get availableProducts(): number {
+    return this.products.filter(p => p.available).length;
+  }
+
+  get unavailableProducts(): number {
+    return this.products.filter(p => !p.available).length;
+  }
+
+  get totalCategories(): number {
+    return this.categoryList.length;
+  }
+
+  get totalProductTypes(): number {
+    return this.productTypeList.length;
+  }
+
+  // Obtener productos por categoría
+  get productsByCategory(): { name: string, count: number }[] {
+    const categoryCount = new Map<string, number>();
+    this.products.forEach(p => {
+      const cat = p.categoryName || 'Sin categoría';
+      categoryCount.set(cat, (categoryCount.get(cat) || 0) + 1);
+    });
+    return Array.from(categoryCount.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+  }
+
+  // Obtener productos por tipo
+  get productsByType(): { name: string, count: number }[] {
+    const typeCount = new Map<string, number>();
+    this.products.forEach(p => {
+      const typeName = p.productType?.name || 'Sin tipo';
+      typeCount.set(typeName, (typeCount.get(typeName) || 0) + 1);
+    });
+    return Array.from(typeCount.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+  }
+
+  get averagePrice(): number {
+    if (this.products.length === 0) return 0;
+    const total = this.products.reduce((sum, p) => sum + (p.price || 0), 0);
+    return total / this.products.length;
+  }
+
+  get totalInventoryValue(): number {
+    return this.products.reduce((sum, p) => sum + (p.price || 0), 0);
   }
 
   onSearch(term: string) {

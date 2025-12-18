@@ -14,9 +14,9 @@ export interface ResponseUsers {
   lastName: string;
   email: string;
   phone: string;
-  country: Country;
-  role: Role;
-  profileImageUrl: null;
+  country?: Country;
+  role?: Role;
+  profileImageUrl?: string | null;
 }
 
 export interface Country {

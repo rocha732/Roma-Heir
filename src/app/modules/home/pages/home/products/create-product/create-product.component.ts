@@ -8,7 +8,8 @@ import { CategoriesService } from 'src/app/core/services/categories.service';
   styleUrls: ['./create-product.component.scss']
 })
 export class CreateProductComponent implements OnInit {
-    successMessage: string | null = null;
+  successMessage: string | null = null;
+  loading = true;
   product: any = {
     name: '',
     description: '',
@@ -29,9 +30,14 @@ export class CreateProductComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    let categoriesLoaded = false;
+    let typesLoaded = false;
+
     // Obtener categorías
     this.categoriesService.getCategories().subscribe(categories => {
       this.categoryList = categories;
+      categoriesLoaded = true;
+      if (categoriesLoaded && typesLoaded) this.loading = false;
     });
     
     // Obtener tipos de producto únicos desde los productos existentes
@@ -43,6 +49,8 @@ export class CreateProductComponent implements OnInit {
         }
       });
       this.productTypeList = Array.from(typeMap.values());
+      typesLoaded = true;
+      if (categoriesLoaded && typesLoaded) this.loading = false;
     });
   }
 

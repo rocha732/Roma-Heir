@@ -1,4 +1,145 @@
-.disabled-card {
-  pointer-events: none;
-  opacity: 0.6;
+.page-title {
+  font-size: 1.3rem;
+  font-weight: 300;
+  color: #e5e7eb;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.02em;
+  max-width: 100%;
+}
+
+// Card glassmorphism
+.card {
+  background: rgba(18, 19, 26, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  padding: 2rem;
+
+  &.disabled-card {
+    pointer-events: none;
+    opacity: 0.6;
+  }
+}
+
+.card-title {
+  color: #e5e7eb;
+  font-weight: 300;
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+}
+
+.card-body {
+  padding: 0;
+}
+
+// Form labels
+.form-label {
+  font-weight: 300;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+// Inputs glassmorphism
+.form-control,
+.form-select {
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  transition: all 0.2s ease;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: rgba(59, 130, 246, 0.5);
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
+}
+
+.form-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 2.5rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='white' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px;
+  cursor: pointer;
+
+  option {
+    background: #1a1a2e;
+    color: #fff;
+  }
+}
+
+// Botón primario glassmorphism
+.btn-primary {
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  color: #93c5fd;
+  backdrop-filter: blur(4px);
+  padding: 0.7rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background: rgba(59, 130, 246, 0.35);
+    border-color: rgba(59, 130, 246, 0.6);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Botón link
+.btn-link {
+  color: #93c5fd;
+  text-decoration: none;
+  font-size: 0.9rem;
+
+  &:hover:not(:disabled) {
+    color: #fff;
+  }
+
+  &:disabled {
+    color: rgba(255, 255, 255, 0.3);
+  }
+}
+
+// Error messages
+.text-danger {
+  color: #fca5a5 !important;
+  font-size: 0.85rem;
+}
+
+// Timer text
+small {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+// Form groups spacing
+.mb-3 {
+  margin-bottom: 1.25rem !important;
+}
+
+.mb-4 {
+  margin-bottom: 1.5rem !important;
 }

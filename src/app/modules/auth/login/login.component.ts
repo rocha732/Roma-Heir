@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { ApiService } from 'src/app/core/services/api.service';
-import * as bootstrap from 'bootstrap';
 import { Router } from '@angular/router';
 
 @Component({
@@ -12,50 +11,60 @@ export class LoginComponent {
   email: string = '';
   code: string = '';
   loading = false;
-  private modalRef: any;
-  constructor(private ApiService: ApiService, private router: Router) {
-    this.loading = false
-  }
+  showModal = false;
+
+  constructor(private ApiService: ApiService, private router: Router) {}
+
   login() {
     if (!this.email) return;
     this.loading = true;
+
     this.ApiService.login({ email: this.email }).subscribe({
       next: (data) => {
         this.loading = false;
-        console.log('✅ Email enviado, abre el modal de código');
+        console.log('✅ Email enviado');
         if (data.isValid) {
-          const modalEl = document.getElementById('verifyModal');
-          if (modalEl) {
-            this.modalRef = new bootstrap.Modal(modalEl);
-            this.modalRef.show();
-          }
+          this.showModal = true;
         } else {
           alert('Usuario no registrado');
         }
       },
-      error: (err) => console.error('❌ Error login', err),
+      error: (err) => {
+        this.loading = false;
+        console.error('❌ Error login', err);
+      },
     });
   }
 
-  verifyCode() {this.loading = true;
+  verifyCode() {
     if (!this.code) return;
+    this.loading = true;
 
-    const payload: any = {
+    const payload = {
       email: this.email,
       code: this.code,
     };
 
     this.ApiService.verifyCode(payload).subscribe({
-      next: (res) => { this.loading = false;
+      next: (res) => {
+        this.loading = false;
         if (res.isValid) {
-          this.modalRef?.hide();
+          this.showModal = false;
           localStorage.setItem('token', res.data.accessToken.token);
-         this.router.navigate(['/home']);
+          this.router.navigate(['/home']);
         } else {
           alert('Código incorrecto');
         }
       },
-      error: (err) => console.error('❌ Error verificando código', err),
+      error: (err) => {
+        this.loading = false;
+        console.error('❌ Error verificando código', err);
+      },
     });
+  }
+
+  closeModal() {
+    this.showModal = false;
+    this.code = '';
   }
 }

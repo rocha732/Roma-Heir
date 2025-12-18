@@ -1,79 +1,80 @@
-<!-- Spinner global -->
-<div
-  *ngIf="loading"
-  class="d-flex justify-content-center align-items-center position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50"
-  style="z-index: 2000"
->
-  <div class="spinner-border text-light" role="status">
-    <span class="visually-hidden">Cargando...</span>
+<!-- Loading Overlay -->
+<div class="loading-overlay" *ngIf="loading">
+  <div class="loading-card">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Cargando...</p>
   </div>
 </div>
- <div class="text-center my-4">
-    <img src="assets/ico-logo.svg" alt="Logo" >
-  </div>
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-md-6">
-      <div class="card shadow">
-        <div class="card-body">
-          <h5 class="card-title text-center">Login</h5>
 
-          <form (ngSubmit)="login()">
-            <div class="mb-3">
-              <label for="email" class="form-label">Correo electrónico</label>
-              <input
-                type="email"
-                id="email"
-                [(ngModel)]="email"
-                name="email"
-                class="form-control"
-                required
-              />
-            </div>
-            <button type="submit" class="btn btn-primary w-100">
-              Ingresar
-            </button>
-          </form>
-        </div>
-      </div>
+<!-- Login Container -->
+<div class="login-container">
+  <div class="login-card">
+    <!-- Logo -->
+    <div class="login-logo">
+      <img src="assets/ico-logo.svg" alt="Roma Hair" />
     </div>
-  </div>
-</div>
 
-<!-- Modal Bootstrap -->
-<div
-  class="modal fade"
-  id="verifyModal"
-  tabindex="-1"
-  aria-labelledby="verifyModalLabel"
-  aria-hidden="true"
->
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="verifyModalLabel">Verificación</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Cerrar"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <p>Se envió un código a tu correo: <strong>{{ email }}</strong></p>
+    <!-- Title -->
+    <h1 class="login-title">Bienvenido</h1>
+    <p class="login-subtitle">Ingresa a tu cuenta</p>
+
+    <!-- Form -->
+    <form (ngSubmit)="login()" class="login-form">
+      <div class="form-group">
+        <label for="email" class="form-label">Correo electrónico</label>
         <input
-          type="text"
-          [(ngModel)]="code"
-          name="code"
-          class="form-control"
-          placeholder="Ingresa tu código"
+          type="email"
+          id="email"
+          [(ngModel)]="email"
+          name="email"
+          class="form-input"
+          placeholder="ejemplo@correo.com"
+          required
         />
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" (click)="verifyCode()">
-          Verificar
-        </button>
+
+      <button type="submit" class="btn-login">
+        Ingresar
+      </button>
+    </form>
+
+    <!-- Footer -->
+    <p class="login-footer">
+      Productos de belleza y cuidado personal
+    </p>
+  </div>
+</div>
+
+<!-- Verification Modal -->
+<div class="modal-overlay" *ngIf="showModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h2 class="modal-title">Verificación</h2>
+      <button class="modal-close" (click)="closeModal()">✕</button>
+    </div>
+    
+    <div class="modal-body">
+      <p class="modal-message">Se envió un código a tu correo:</p>
+      <p class="modal-email">{{ email }}</p>
+      
+      <div class="form-group">
+        <label for="code" class="form-label">Código de verificación</label>
+        <input
+          type="text"
+          id="code"
+          [(ngModel)]="code"
+          name="code"
+          class="form-input code-input"
+          placeholder="Ingresa tu código"
+          maxlength="6"
+        />
       </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-verify" (click)="verifyCode()">
+        Verificar
+      </button>
     </div>
   </div>
 </div>

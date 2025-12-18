@@ -1,0 +1,169 @@
+<div class="create-order-title">Crear Nueva Orden</div>
+
+<!-- Shimmer Loading -->
+<div *ngIf="loading" class="create-order-container">
+	<!-- Shimmer Customer Selection -->
+	<div class="form-section">
+		<div class="shimmer shimmer-section-title"></div>
+		<div class="shimmer shimmer-select"></div>
+	</div>
+
+	<!-- Shimmer Delivery Method -->
+	<div class="form-section">
+		<div class="shimmer shimmer-section-title"></div>
+		<div class="shimmer-delivery-options">
+			<div class="shimmer shimmer-delivery-option"></div>
+			<div class="shimmer shimmer-delivery-option"></div>
+		</div>
+	</div>
+
+	<!-- Shimmer Products -->
+	<div class="form-section">
+		<div class="shimmer shimmer-section-title"></div>
+		<div class="shimmer-add-product">
+			<div class="shimmer shimmer-product-select"></div>
+			<div class="shimmer shimmer-quantity"></div>
+			<div class="shimmer shimmer-btn-add"></div>
+		</div>
+		<div class="shimmer shimmer-empty-products"></div>
+	</div>
+
+	<!-- Shimmer Summary -->
+	<div class="shimmer shimmer-summary"></div>
+
+	<!-- Shimmer Actions -->
+	<div class="shimmer-actions">
+		<div class="shimmer shimmer-btn-cancel"></div>
+		<div class="shimmer shimmer-btn-submit"></div>
+	</div>
+</div>
+
+<!-- Form -->
+<div *ngIf="!loading" class="create-order-container">
+	<!-- Error Message -->
+	<div *ngIf="error" class="error-message">
+		{{ error }}
+	</div>
+
+	<!-- Customer Selection -->
+	<div class="form-section">
+		<h3 class="section-title">1. Seleccionar Cliente</h3>
+		<select 
+			class="form-select" 
+			[(ngModel)]="selectedCustomerId">
+			<option [ngValue]="null">-- Seleccione un cliente --</option>
+		<option *ngFor="let customer of customers" [ngValue]="customer.id">
+			{{ customer.firstName }} {{ customer.lastName }} - {{ customer.email }}
+		</option>
+		</select>
+	</div>
+
+	<!-- Delivery Method -->
+	<div class="form-section">
+		<h3 class="section-title">2. Método de Entrega</h3>
+		<div class="delivery-options">
+			<label 
+				*ngFor="let method of deliveryMethods" 
+				class="delivery-option"
+				[class.selected]="selectedDeliveryMethodId === method.id">
+				<input 
+					type="radio" 
+					name="deliveryMethod" 
+					[value]="method.id"
+					[(ngModel)]="selectedDeliveryMethodId" />
+				<span class="delivery-icon">{{ method.id === 1 ? '🏪' : '🚚' }}</span>
+				<span class="delivery-name">{{ method.name }}</span>
+			</label>
+		</div>
+	</div>
+
+	<!-- Products -->
+	<div class="form-section">
+		<h3 class="section-title">3. Agregar Productos</h3>
+		
+		<!-- Add Product Form -->
+		<div class="add-product-form">
+			<select 
+				class="form-select product-select" 
+				[(ngModel)]="selectedProductId">
+				<option [ngValue]="null">-- Seleccione un producto --</option>
+				<option *ngFor="let product of products" [ngValue]="product.id">
+					{{ product.name }} - S/. {{ product.price | number:'1.2-2' }}
+				</option>
+			</select>
+			<input 
+				type="number" 
+				class="form-input quantity-input" 
+				[(ngModel)]="productQuantity"
+				min="1"
+				placeholder="Cant." />
+			<button 
+				class="btn-add-product" 
+				(click)="addProduct()"
+				[disabled]="!selectedProductId || productQuantity < 1">
+				+ Agregar
+			</button>
+		</div>
+
+		<!-- Products List -->
+		<div *ngIf="orderItems.length > 0" class="products-list">
+			<div class="products-header">
+				<span class="col-product">Producto</span>
+				<span class="col-price">Precio</span>
+				<span class="col-quantity">Cantidad</span>
+				<span class="col-subtotal">Subtotal</span>
+				<span class="col-action"></span>
+			</div>
+			<div *ngFor="let item of orderItems; let i = index" class="product-item">
+				<span class="col-product">{{ item.productName }}</span>
+				<span class="col-price">S/. {{ item.price | number:'1.2-2' }}</span>
+				<span class="col-quantity">
+					<button class="btn-qty" (click)="updateQuantity(i, item.quantity - 1)">-</button>
+					<span class="qty-value">{{ item.quantity }}</span>
+					<button class="btn-qty" (click)="updateQuantity(i, item.quantity + 1)">+</button>
+				</span>
+				<span class="col-subtotal">S/. {{ item.price * item.quantity | number:'1.2-2' }}</span>
+				<span class="col-action">
+					<button class="btn-remove" (click)="removeProduct(i)">🗑️</button>
+				</span>
+			</div>
+		</div>
+
+		<!-- Empty State -->
+		<div *ngIf="orderItems.length === 0" class="empty-products">
+			<span class="empty-icon">🛒</span>
+			<p>No hay productos agregados</p>
+		</div>
+	</div>
+
+	<!-- Order Summary -->
+	<div class="order-summary">
+		<div class="summary-row">
+			<span>Productos:</span>
+			<span>{{ orderItems.length }}</span>
+		</div>
+		<div class="summary-row">
+			<span>Items totales:</span>
+			<span>{{ totalItems }}</span>
+		</div>
+		<div class="summary-row total">
+			<span>Total:</span>
+			<span>S/. {{ orderTotal | number:'1.2-2' }}</span>
+		</div>
+	</div>
+
+	<!-- Actions -->
+	<div class="form-actions">
+		<button class="btn-cancel" (click)="cancel()">
+			Cancelar
+		</button>
+		<button 
+			class="btn-submit" 
+			(click)="submitOrder()"
+			[disabled]="!isFormValid || submitting">
+			<span *ngIf="submitting">Creando...</span>
+			<span *ngIf="!submitting">Crear Orden</span>
+		</button>
+	</div>
+</div>
+
