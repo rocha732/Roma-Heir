@@ -195,6 +195,67 @@
         </div>
       </div>
 
+
+      <!---->
+      <div class="nav-item dropdown" [class.open]="isReservationsOpen">
+        <p
+          class="nav-link text-white sidebar-link d-flex justify-content-between align-items-center"
+      
+          role="button"
+          data-bs-toggle="collapse"
+          [attr.aria-expanded]="false"
+          (click)="toggleReservationsDropdown()"
+        >
+          <span><i class="bi bi-calendar-check-fill me-2"></i> Reservas</span>
+          <i
+            class="bi"
+            [ngClass]="{
+              'bi-caret-down-fill': !isReservationsOpen,
+              'bi-caret-up-fill': isReservationsOpen
+            }"
+          ></i>
+          </p>
+
+        <div class="collapse" [ngClass]="{ show: isReservationsOpen }">
+          <ul class="nav flex-column ms-3 mt-1">
+            <li>
+              <a
+                class="nav-link text-white sidebar-link"
+                routerLink="reservations/view-reservations"
+                routerLinkActive="active-link"
+              >
+                Ver Reservas
+              </a>
+            </li>
+           <!-- <li>
+              <a
+                class="nav-link text-white sidebar-link"
+                routerLink="reservations/create-reserve"
+                routerLinkActive="active-link"
+              >
+                Crear Reserva
+              </a>
+            </li> 
+            <li>
+              <a
+                class="nav-link text-white sidebar-link"
+                routerLink="reservations/edit-reserve"
+                routerLinkActive="active-link"
+              >
+                Modificar Reservas
+              </a>
+            </li>-->
+            <li>
+              <a
+                class="nav-link text-white sidebar-link"
+                routerLink="reservations/calendar-reservations"
+                routerLinkActive="active-link"
+              >
+                Calendario de Reservas
+              </a>
+          </ul>
+        </div>
+      </div>
       <!-- 🔴 Cerrar sesión -->
       <a
         class="nav-link text-white sidebar-link mt-4 text-danger"
