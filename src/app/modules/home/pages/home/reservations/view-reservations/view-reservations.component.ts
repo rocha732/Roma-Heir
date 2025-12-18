@@ -18,6 +18,10 @@ import { ResponseUsers } from 'src/app/core/models/users';
 export class ViewReservationsComponent implements AfterViewInit {
   @ViewChild('dateRangeInput') dateRangeInput!: ElementRef;
 
+  loading = true;
+  private usersLoaded = false;
+  private reservationsLoaded = false;
+
   reservations: GetReservations[] = [];
   allReservations: GetReservations[] = [];
   rawReservations: GetReservations[] = [];
@@ -41,12 +45,19 @@ export class ViewReservationsComponent implements AfterViewInit {
   ) {}
 
   ngOnInit() {
+    this.loading = true;
     this.loadSpecialists();
     this.loadUsers();
-   this.reservationsService.getReservations().subscribe((res) => {
-    this.rawReservations = res;
-    this.loadUsers(); // 👈 cuando termina, mapea todo
-  });
+    this.reservationsService.getReservations().subscribe({
+      next: (res) => {
+        this.rawReservations = res;
+        this.reservationsLoaded = true;
+        if (this.usersLoaded) this.mapReservations();
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
   }
 
   ngAfterViewInit() {
@@ -143,12 +154,29 @@ export class ViewReservationsComponent implements AfterViewInit {
         datasets: [
           {
             data: [canceled, active],
+            backgroundColor: [
+              'rgba(239, 68, 68, 0.8)', // Canceladas (rojo)
+              'rgba(16, 185, 129, 0.8)', // No canceladas (verde)
+            ],
+            // Borde oscuro entre porciones (igual al pie de Users)
+            borderColor: 'rgba(18, 19, 26, 0.8)',
+            borderWidth: 2,
           },
         ],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: 'rgba(255, 255, 255, 0.8)',
+              padding: 15,
+              font: { size: 12 },
+            },
+          },
+        },
 
         onClick: (_, elements) => {
           if (!elements.length) return;
@@ -289,8 +317,8 @@ loadUsers() {
       });
     });
 
-    // 🔥 cuando ya tengo usuarios, proceso reservas
-    this.mapReservations();
+    this.usersLoaded = true;
+    if (this.reservationsLoaded) this.mapReservations();
   });
 }
 mapReservations() {
@@ -307,10 +335,15 @@ mapReservations() {
     };
   });
 
-  this.allReservations = this.reservations;
+  this.allReservations = [...this.reservations];
+  this.page = 1;
 
-  this.createMonthlyChart();
-  this.createPieChart();
+  // Renderiza la UI primero y luego inicializa charts (si no, el canvas no existe cuando hay loading)
+  this.loading = false;
+  setTimeout(() => {
+    this.createMonthlyChart();
+    this.createPieChart();
+  }, 0);
 }
 
 }

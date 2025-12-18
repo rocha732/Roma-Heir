@@ -80,11 +80,16 @@ export class CalendarReservationsComponent implements OnInit {
   ngOnInit(): void {
     this.loadSpecialists();
 
-    this.reservationsService.getReservations().subscribe((reservations) => {
-      this.rawReservations = reservations;
-
-      // 👇 cuando usuarios estén listos, ahí se arma TODO
-      this.loadUsers();
+    this.loading = true;
+    this.reservationsService.getReservations().subscribe({
+      next: (reservations) => {
+        this.rawReservations = reservations;
+        // 👇 cuando usuarios estén listos, ahí se arma TODO
+        this.loadUsers();
+      },
+      error: () => {
+        this.loading = false;
+      },
     });
   }
 
