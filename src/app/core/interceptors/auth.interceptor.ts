@@ -41,8 +41,10 @@ export class AuthInterceptor implements HttpInterceptor {
           localStorage.clear(); // 🔹 limpia sesión
           this.router.navigate(['/']); // 🔹 redirige al inicio
         } else {
-          console.error('[AuthInterceptor] Error HTTP:', error);
-        }
+        alert('Error al actualizar la reserva.');
+        console.error(error);
+      }
+
         return throwError(() => error);
       })
     );

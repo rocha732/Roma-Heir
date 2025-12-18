@@ -1,0 +1,178 @@
+<div class="container-fluid mt-4">
+  <!-- 📊 KPIs -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card text-center shadow-sm">
+        <div class="card-body">
+          <h6 class="text-muted">Total</h6>
+          <h3 class="fw-bold">{{ totalReservations() }}</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card text-center shadow-sm border-success">
+        <div class="card-body text-success">
+          <h6 class="text-muted">Activas</h6>
+          <h3 class="fw-bold">{{ activeReservations() }}</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card text-center shadow-sm border-danger">
+        <div class="card-body text-danger">
+          <h6 class="text-muted">Canceladas</h6>
+          <h3 class="fw-bold">{{ canceledReservations() }}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔍 FILTROS -->
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label">Buscar</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Cliente, fecha u hora..."
+            [(ngModel)]="searchTerm"
+          />
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Rango de fechas</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Selecciona rango"
+            #dateRangeInput
+          />
+        </div>
+
+        <div class="col-md-4 d-flex gap-2">
+          <button
+            class="btn btn-outline-secondary w-100"
+            (click)="resetFilters()"
+          >
+            <i class="bi bi-arrow-counterclockwise me-1"></i>
+            Reset
+          </button>
+
+          <button class="btn btn-success w-100" (click)="exportToExcel()">
+            <i class="bi bi-file-earmark-excel me-1"></i>
+            Excel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- 📋 TABLA + PAGINADOR -->
+    <div class="col-lg-8">
+      <div class="card shadow h-100">
+        <div class="card-body table-responsive">
+          <!-- 📑 PAGINADOR -->
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <nav>
+              <ul class="pagination pagination-sm mb-0">
+                <li class="page-item" [class.disabled]="page === 1">
+                  <button class="page-link" (click)="changePage(page - 1)">
+                    ‹
+                  </button>
+                </li>
+
+                <li
+                  class="page-item"
+                  *ngFor="let p of totalPagesArray"
+                  [class.active]="p === page"
+                >
+                  <button class="page-link" (click)="changePage(p)">
+                    {{ p }}
+                  </button>
+                </li>
+
+                <li class="page-item" [class.disabled]="page === totalPages">
+                  <button class="page-link" (click)="changePage(page + 1)">
+                    ›
+                  </button>
+                </li>
+              </ul>
+            </nav>
+
+            <small class="text-muted">
+              Página {{ page }} de {{ totalPages }}
+            </small>
+          </div>
+          <table class="table table-hover table-sm align-middle mb-3">
+            <thead class="table-dark">
+              <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Especialista</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of paginatedReservations">
+                <td>{{ r.id }}</td>
+<td>
+  <span class="tooltip-wrapper">
+    {{ r.customerName }}
+
+    <span class="tooltip-box">
+      <strong>Email:</strong> {{ r.customerEmail }}<br />
+      <strong>Tel:</strong> {{ r.customerPhone }}
+    </span>
+  </span>
+</td>
+
+
+                <td>{{ getSpecialistName(r.specialistId) }}</td>
+                <td>{{ r.reservedAt }}</td>
+                <td>{{ r.hourAt }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    [ngClass]="{
+                      'bg-success': r.statusId === 1,
+                      'bg-warning text-dark': r.statusId === 2,
+                      'bg-danger': r.statusId === 3
+                    }"
+                  >
+                    {{ getStatusLabel(r.statusId) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 📊 GRÁFICOS -->
+    <div class="col-lg-4">
+      <div class="d-flex flex-column gap-4 charts-column">
+        <div class="card shadow chart-card">
+          <div class="card-body">
+            <h6 class="card-title mb-2">Citas por mes</h6>
+            <canvas id="monthlyChart"></canvas>
+          </div>
+        </div>
+
+        <div class="card shadow chart-card">
+          <div class="card-body">
+            <h6 class="card-title mb-2">Estado de citas</h6>
+            <canvas id="statusPieChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

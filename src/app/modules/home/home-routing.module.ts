@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { Component, NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './pages/home/home.component';
 import { DashboardComponent } from './pages/home/dashboard/dashboard.component';
@@ -12,6 +12,10 @@ import { EditProductComponent } from './pages/home/products/edit-product/edit-pr
 import { ViewOrdersComponent } from './pages/home/orders/view-orders/view-orders.component';
 import { CreateOrdersComponent } from './pages/home/orders/create-orders/create-orders.component';
 import { EditOrdersComponent } from './pages/home/orders/edit-orders/edit-orders.component';
+import { ViewReservationsComponent } from './pages/home/reservations/view-reservations/view-reservations.component';
+import { EditReserveComponent } from './pages/home/reservations/edit-reserve/edit-reserve.component';
+import { CreateReserveComponent } from './pages/home/reservations/create-reserve/create-reserve.component';
+import { CalendarReservationsComponent } from './pages/home/reservations/calendar-reservations/calendar-reservations.component';
 
 const routes: Routes = [
   {
@@ -53,7 +57,12 @@ const routes: Routes = [
       { path: 'orders/view-orders', component: ViewOrdersComponent },
       { path: 'orders/create-orders', component: CreateOrdersComponent },
       { path: 'orders/edit-orders', component: EditOrdersComponent },
-      { path: 'orders/edit-orders/:id', component: EditOrdersComponent }
+      { path: 'orders/edit-orders/:id', component: EditOrdersComponent },
+      { path: 'reservations/view-reservations', component: ViewReservationsComponent},
+      { path: 'reservations/edit-reserve/:id', component: EditReserveComponent},
+      { path: 'reservations/edit-reserve', component: EditReserveComponent},
+      { path: 'reservations/create-reserve', component: CreateReserveComponent },
+      {path: 'reservations/calendar-reservations', component: CalendarReservationsComponent}
     ],
   },
 ];

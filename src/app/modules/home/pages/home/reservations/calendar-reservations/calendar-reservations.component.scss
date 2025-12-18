@@ -1,0 +1,53 @@
+.calendar-skeleton {
+  .skeleton-header {
+    height: 40px;
+    width: 200px;
+    margin-bottom: 12px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #eee, #f5f5f5, #eee);
+    animation: pulse 1.5s infinite;
+  }
+
+  .skeleton-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+  }
+
+  .skeleton-cell {
+    height: 80px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #eee, #f5f5f5, #eee);
+    animation: pulse 1.5s infinite;
+  }
+}
+
+.skeleton-title {
+  height: 24px;
+  width: 260px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #eee, #f5f5f5, #eee);
+  animation: pulse 1.5s infinite;
+}
+
+.skeleton-row {
+  height: 36px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  background: linear-gradient(90deg, #eee, #f5f5f5, #eee);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { background-position: 0% }
+  100% { background-position: 200% }
+}
+.bg-orange {
+  background-color: #fd7e14 !important;
+  color: #212529;
+}
+.bg-blue {
+  background-color: #0d6efd !important;
+  color: #fff;
+}

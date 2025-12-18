@@ -11,8 +11,12 @@ export class HomeComponent {
   isProductOpen = false;
   isOrderOpen = false;
   showLogoutScreen = false;
+  isReservationsOpen = false;
 
-  constructor(private specialistsService: SpecialistsService, private router: Router) {}
+  constructor(
+    private specialistsService: SpecialistsService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     if (!localStorage.getItem('specialists')) {
@@ -42,5 +46,8 @@ export class HomeComponent {
 
   toggleOrderDropdown() {
     this.isOrderOpen = !this.isOrderOpen;
+  }
+  toggleReservationsDropdown() {
+    this.isReservationsOpen = !this.isReservationsOpen;
   }
 }

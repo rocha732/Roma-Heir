@@ -1,7 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { GetReservations } from '../models/reservations';
+import {
+  GetReservations,
+  PutUpdateReservationDate,
+  PutUpdateReservationStatus,
+} from '../models/reservations';
 
 @Injectable({
   providedIn: 'root',
@@ -14,4 +18,13 @@ export class ReservationsService {
   getReservations(): Observable<GetReservations[]> {
     return this.http.get<GetReservations[]>(`${this.apiUrl}/Reservations`);
   }
+
+  updateReservationStatus(id: number, body: { newStatusId: number }) {
+  return this.http.patch(`${this.apiUrl}/Reservations/${id}/status`, body);
+}
+
+updateReservationDate(id: number, body: { reservedAt: string; hourAt: string }) {
+  return this.http.put(`${this.apiUrl}/Reservations/${id}/dates`, body);
+}
+
 }
