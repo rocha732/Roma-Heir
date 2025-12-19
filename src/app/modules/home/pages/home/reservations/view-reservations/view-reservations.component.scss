@@ -464,3 +464,20 @@
   width: 70px;
   border-radius: 12px;
 }
+.bg-orange {
+  background-color: #fd7e14 !important;
+  color: #212529;
+}
+
+.bg-blue {
+  background-color: #0d6efd !important;
+  color: #fff;
+}
+.custom-modal {
+  z-index: 1055;
+}
+
+.custom-backdrop {
+  z-index: 1050;
+  background-color: rgba(0, 0, 0, 0.5);
+}

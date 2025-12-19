@@ -24,9 +24,14 @@
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": ["src/favicon.ico", "src/assets"],
-            "styles": [  "node_modules/flatpickr/dist/flatpickr.min.css", "node_modules/angular-calendar/css/angular-calendar.css",
-"src/styles.scss"],
-            "scripts": []
+            "styles": [
+              "node_modules/flatpickr/dist/flatpickr.min.css",
+              "node_modules/angular-calendar/css/angular-calendar.css",
+              "src/styles.scss"
+            ],
+            "scripts": [
+              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
+            ]
           },
           "configurations": {
             "production": {
@@ -82,9 +87,14 @@
             "tsConfig": "tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
             "assets": ["src/favicon.ico", "src/assets"],
-            "styles": [  "node_modules/flatpickr/dist/flatpickr.min.css", "node_modules/angular-calendar/css/angular-calendar.css",
-"src/styles.scss"],
-            "scripts": []
+            "styles": [
+              "node_modules/flatpickr/dist/flatpickr.min.css",
+              "node_modules/angular-calendar/css/angular-calendar.css",
+              "src/styles.scss"
+            ],
+            "scripts": [
+              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
+            ]
           }
         }
       }

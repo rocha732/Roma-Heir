@@ -71,6 +71,22 @@ export class CalendarReservationsComponent implements OnInit {
   dayStartHour = 9; // 9 AM
   dayEndHour = 20; // 8 PM
   locale: string = 'es';
+  showReprogramModal = false;
+
+  reprogramData: {
+    reservationId: number | null;
+    date: string;
+    hour: string;
+    id: string;
+  } = {
+    reservationId: null,
+    date: '',
+    hour: '',
+    id: '',
+  };
+
+  todayString = '';
+  availableHours: string[] = [];
 
   constructor(
     private reservationsService: ReservationsService,
@@ -79,8 +95,11 @@ export class CalendarReservationsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadSpecialists();
-
+    this.loadReservations();
     this.loading = true;
+  }
+
+  loadReservations() {
     this.reservationsService.getReservations().subscribe({
       next: (reservations) => {
         this.rawReservations = reservations;
@@ -286,5 +305,126 @@ export class CalendarReservationsComponent implements OnInit {
     this.refresh.next();
   }
 
-  
+  isTodayOrFuture(reservedAt: string | Date): boolean {
+    const date = this.parseLocalDate(reservedAt);
+    const today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+
+    return date >= today;
+  }
+  parseLocalDate(date: string | Date): Date {
+    if (date instanceof Date) {
+      return new Date(date);
+    }
+
+    const [y, m, d] = date.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+  onChangeStatusFromCalendar(reservation: any, newStatusId: number) {
+    console.log('🚩 onChangeStatusFromCalendar', reservation, newStatusId)  ;
+    console.log('Cambiar estado', reservation.id, newStatusId);
+    if (reservation.statusId === newStatusId) return;
+
+    this.reservationsService
+      .updateReservationStatus(reservation.id, { newStatusId })
+      .subscribe({
+        next: () => {
+          reservation.statusId = newStatusId;
+          this.loadReservations();
+        },
+        error: (err) => console.error(err),
+      });
+  }
+
+  onReprogramFromCalendar(reservation: any) {
+    this.todayString = this.formatDateInput(new Date());
+
+    this.reprogramData = {
+      reservationId: reservation.id,
+      date: this.todayString,
+      hour: '',
+      id: reservation.id,
+    };
+
+    this.generateAvailableHours(this.reprogramData.date);
+    this.showReprogramModal = true;
+  }
+
+  onReprogramDateChange() {
+    this.reprogramData.hour = '';
+    this.generateAvailableHours(this.reprogramData.date!);
+  }
+  generateAvailableHours(selectedDate: string) {
+    const hours: string[] = [];
+    const now = new Date();
+    const isToday = selectedDate === this.formatDateInput(now);
+
+    for (let h = 9; h <= 20; h++) {
+      for (const m of [0, 30]) {
+        if (h === 20 && m > 0) continue;
+
+        const time = `${this.pad(h)}:${this.pad(m)}`;
+
+        if (isToday) {
+          const candidate = new Date();
+          candidate.setHours(h, m, 0, 0);
+
+          if (candidate <= now) continue;
+        }
+
+        hours.push(time);
+      }
+    }
+
+    this.availableHours = hours;
+  }
+  submitReprogram() {
+    const { reservationId, date, hour } = this.reprogramData;
+
+    if (!reservationId || !date || !hour) return;
+
+    const payload = {
+      reservedAt: date,
+      hourAt: hour,
+    };
+
+    console.log('📤 Reprogramando:', reservationId, payload);
+
+    this.reservationsService
+      .updateReservationDate(reservationId, {
+        reservedAt: date,
+        hourAt: hour + ':00',
+      })
+      .subscribe({
+        next: () => {
+          this.onChangeStatusFromCalendar(this.reprogramData, 6); // Cambia estado a Reprogramada
+          this.closeReprogramModal();
+        },
+        error: (err) => console.error(err),
+      });
+
+    
+  }
+  formatDateInput(date: Date): string {
+    const y = date.getFullYear();
+    const m = this.pad(date.getMonth() + 1);
+    const d = this.pad(date.getDate());
+    return `${y}-${m}-${d}`;
+  }
+
+  pad(n: number): string {
+    return n < 10 ? `0${n}` : `${n}`;
+  }
+  closeReprogramModal() {
+    this.showReprogramModal = false;
+    this.reprogramData = {
+      reservationId: null,
+      date: '',
+      hour: '',
+      id: '',
+    };
+    this.availableHours = [];
+  }
 }

@@ -90,11 +90,12 @@
   />
 
   <ng-container *ngIf="!loading; else filterButtonsSkeleton">
-    <button class="btn-clear-filters" (click)="resetFilters()">
-      Limpiar
-    </button>
+    <button class="btn-clear-filters" (click)="resetFilters()">Limpiar</button>
 
-    <button class="btn btn-sm btn-success btn-export-excel" (click)="exportToExcel()">
+    <button
+      class="btn btn-sm btn-success btn-export-excel"
+      (click)="exportToExcel()"
+    >
       <i class="bi bi-file-earmark-excel me-1"></i>
       Excel
     </button>
@@ -139,11 +140,14 @@
           <th>Fecha</th>
           <th>Hora</th>
           <th>Estado</th>
+          <th>Acciones</th>
         </tr>
       </thead>
+
       <tbody>
         <tr *ngFor="let r of paginatedReservations">
           <td>{{ r.id }}</td>
+
           <td>
             <span class="tooltip-wrapper">
               {{ r.customerName }}
@@ -153,20 +157,68 @@
               </span>
             </span>
           </td>
+
           <td>{{ getSpecialistName(r.specialistId) }}</td>
           <td>{{ r.reservedAt }}</td>
           <td>{{ r.hourAt }}</td>
+
+          <!-- ESTADO -->
           <td>
             <span
               class="badge"
               [ngClass]="{
-                'bg-success': r.statusId === 1,
-                'bg-warning text-dark': r.statusId === 2,
-                'bg-danger': r.statusId === 3
+                'bg-warning': r.statusId === 1,
+                'bg-blue text-dark': r.statusId === 2,
+                'bg-danger': r.statusId === 3,
+                'bg-success': r.statusId === 4,
+                'bg-orange text-dark': r.statusId === 5,
+                'bg-info text-dark': r.statusId === 6
               }"
             >
               {{ getStatusLabel(r.statusId) }}
             </span>
+          </td>
+
+          <!-- ACCIONES -->
+          <td>
+            <!-- 🔒 Si es fecha pasada, no hay acciones -->
+            <ng-container *ngIf="isTodayOrFuture(r.reservedAt); else noActions">
+              <div class="dropdown">
+                <button
+                  class="btn btn-sm btn-light dropdown-toggle border"
+                  type="button"
+                  data-bs-toggle="dropdown"
+                >
+                  Cambiar estado
+                </button>
+
+                <ul class="dropdown-menu">
+                  <li *ngFor="let s of statues" [hidden]="s.id === r.statusId">
+                    <!-- 🔁 Reprogramar -->
+                    <button
+                      *ngIf="s.id === 6"
+                      class="dropdown-item text-info"
+                      (click)="onReprogram(r)"
+                    >
+                      🔁 {{ s.name }}
+                    </button>
+
+                    <!-- 🔄 Otros estados -->
+                    <button
+                      *ngIf="s.id !== 6"
+                      class="dropdown-item"
+                      (click)="onChangeStatus(r, s.id)"
+                    >
+                      {{ s.name }}
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </ng-container>
+
+            <ng-template #noActions>
+              <span class="text-muted small">—</span>
+            </ng-template>
           </td>
         </tr>
       </tbody>
@@ -205,3 +257,62 @@
     </table>
   </div>
 </ng-template>
+<!-- 🗓 MODAL REPROGRAMAR -->
+<!-- 🗓 MODAL REPROGRAMAR -->
+<div class="modal show d-block custom-modal" *ngIf="showReprogramModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header">
+        <h5 class="modal-title">🔄 Reprogramar reserva</h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="showReprogramModal = false"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <!-- FECHA -->
+        <div class="mb-3">
+          <label class="form-label">Fecha</label>
+          <input
+            type="date"
+            class="form-control"
+            [(ngModel)]="reprogramData.date"
+            [min]="todayString"
+            (change)="onDateChange()"
+          />
+        </div>
+
+        <!-- HORA -->
+        <div class="mb-3">
+          <label class="form-label">Hora</label>
+          <select class="form-select" [(ngModel)]="reprogramData.hour">
+            <option value="">Seleccione hora</option>
+            <option *ngFor="let h of availableHours" [value]="h">
+              {{ h }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button
+          class="btn btn-outline-secondary"
+          (click)="showReprogramModal = false"
+        >
+          Cancelar
+        </button>
+        <button class="btn btn-primary" (click)="submitReprogram()">
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BACKDROP -->
+<div
+  class="modal-backdrop show custom-backdrop"
+  *ngIf="showReprogramModal"
+></div>
