@@ -249,7 +249,7 @@ export class ViewOrdersComponent implements OnInit {
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.text('Productos de belleza y cuidado personal', pageWidth / 2, 25, { align: 'center' });
-    doc.text('www.romahair.com | +51 999 999 999', pageWidth / 2, 32, { align: 'center' });
+    doc.text('www.romahair.com | +51 901 924 018', pageWidth / 2, 32, { align: 'center' });
     
     // Título del documento
     const docTitle = type === 'boleta' ? 'BOLETA DE VENTA' : 'ORDEN DE COMPRA';
@@ -433,7 +433,7 @@ export class ViewOrdersComponent implements OnInit {
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.text('Productos de belleza y cuidado personal', pageWidth / 2, 25, { align: 'center' });
-    doc.text('www.romahair.com | +51 999 999 999', pageWidth / 2, 32, { align: 'center' });
+    doc.text('www.romahair.com | +51 901 924 018', pageWidth / 2, 32, { align: 'center' });
     
     const docTitle = type === 'boleta' ? 'BOLETA DE VENTA' : 'ORDEN DE COMPRA';
     doc.setTextColor(...darkColor);

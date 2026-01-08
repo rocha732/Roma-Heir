@@ -1,3 +1,4 @@
+
 <h2 class="page-title">Crear Usuario</h2>
 
 <!-- Card de registro -->
@@ -50,12 +51,13 @@
       </div>
 
       <button
-        type="submit"
-        class="btn btn-primary w-100"
-        [disabled]="userForm.invalid || submitted"
-      >
-        Crear Usuario
-      </button>
+  type="submit"
+  class="btn btn-primary w-100"
+  [disabled]="userForm.invalid || submitted || isLoading"
+>
+  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+  {{ isLoading ? 'Procesando...' : 'Crear Usuario' }}
+</button>
     </form>
   </div>
 </div>
@@ -87,12 +89,13 @@
       </div>
 
       <button
-        type="submit"
-        class="btn btn-primary w-100"
-        [disabled]="codeForm.invalid"
-      >
-        Verificar
-      </button>
+  type="submit"
+  class="btn btn-primary w-100"
+  [disabled]="codeForm.invalid || isLoading"
+>
+  <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+  {{ isLoading ? 'Verificando...' : 'Verificar' }}
+</button>
     </form>
   </div>
 </div>
