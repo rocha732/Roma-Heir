@@ -183,37 +183,40 @@
           <td>
             <!-- 🔒 Si es fecha pasada, no hay acciones -->
             <ng-container *ngIf="isTodayOrFuture(r.reservedAt); else noActions">
-              <div class="dropdown">
-                <button
-                  class="btn btn-sm btn-light dropdown-toggle border"
-                  type="button"
-                  data-bs-toggle="dropdown"
-                >
-                  Cambiar estado
-                </button>
+            <div class="dropdown position-static">
+                  <button
+                    class="btn btn-sm btn-light border dropdown-toggle"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                  >
+                    Cambiar estado
+                  </button>
 
-                <ul class="dropdown-menu">
-                  <li *ngFor="let s of statues" [hidden]="s.id === r.statusId">
-                    <!-- 🔁 Reprogramar -->
-                    <button
-                      *ngIf="s.id === 6"
-                      class="dropdown-item text-info"
-                      (click)="onReprogram(r)"
+                  <ul class="dropdown-menu">
+                    <li
+                      *ngFor="let s of statues"
+                      [hidden]="s.id === r.statusId"
                     >
-                      🔁 {{ s.name }}
-                    </button>
+                      <!-- 🔁 Reprogramar -->
+                      <button
+                        *ngIf="s.id === 6"
+                        class="dropdown-item text-info"
+                        (click)="onReprogram(r)"
+                      >
+                        🔁 {{ s.name }}
+                      </button>
 
-                    <!-- 🔄 Otros estados -->
-                    <button
-                      *ngIf="s.id !== 6"
-                      class="dropdown-item"
-                      (click)="onChangeStatus(r, s.id)"
-                    >
-                      {{ s.name }}
-                    </button>
-                  </li>
-                </ul>
-              </div>
+                      <!-- 🔄 Otros estados -->
+                      <button
+                        *ngIf="s.id !== 6"
+                        class="dropdown-item"
+                        (click)="onChangeStatus(r, s.id)"
+                      >
+                        {{ s.name }}
+                      </button>
+                    </li>
+                  </ul>
+                </div>
             </ng-container>
 
             <ng-template #noActions>

@@ -481,3 +481,16 @@
   z-index: 1050;
   background-color: rgba(0, 0, 0, 0.5);
 }
+.dropdown-menu {
+  z-index: 2000 !important;
+  background-color: rgba(30, 31, 40, 0.95) !important; // Color sólido para que no se trasluzca la tabla
+  backdrop-filter: none !important; // Evita conflictos visuales al sobresalir
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-item {
+  color: #fff !important;
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+  }
+}

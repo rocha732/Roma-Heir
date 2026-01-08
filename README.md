@@ -32,3 +32,6 @@ ng build --configuration production --base-href "https://rocha732.github.io/Roma
 npx angular-cli-ghpages --dir=dist/roma-hair
 
 ng build --configuration production --base-href /
+
+
+www.romahair.pe
