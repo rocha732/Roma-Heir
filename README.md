@@ -31,4 +31,4 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
 ng build --configuration production --base-href "https://rocha732.github.io/Roma-Heir/"
 npx angular-cli-ghpages --dir=dist/roma-hair
 
-npx angular-cli-ghpages --dir=dist/roma-hair
+ng build --configuration production --base-href /
