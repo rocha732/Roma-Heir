@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
+  Country,
   RequestAccount,
   RequestVerifyAccount,
   ResponseUsers,
@@ -51,8 +52,22 @@ export class UsersService {
     const url = `${this.apiUrl}/Users/${id}`;
     return this.http.get<ResponseUsers>(url);
   }
+
+  getCountries(): Observable<Country[]> {
+    const url = `${this.apiUrl}/Countries`;
+    return this.http.get<Country[]>(url);
+  }
   putUpdateUser(formData: FormData, id: number): Observable<any> {
     const url = `${this.apiUrl}/Users/${id}`;
     return this.http.put(url, formData);
+  }
+
+  deleteUser(id: number): Observable<any> {
+    const url = `${this.apiUrl}/Users/${id}`;
+    return this.http.delete(url, {
+      headers: {
+        'accept': '/'
+      }
+    });
   }
 }
