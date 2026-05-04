@@ -13,13 +13,19 @@
       <div class="calendar-skeleton-surface">
         <div class="shimmer shimmer-calendar-header"></div>
         <div class="skeleton-grid">
-          <div *ngFor="let i of [].constructor(35)" class="shimmer shimmer-cell"></div>
+          <div
+            *ngFor="let i of [].constructor(35)"
+            class="shimmer shimmer-cell"
+          ></div>
         </div>
       </div>
 
       <div class="skeleton-table mt-4">
         <div class="shimmer shimmer-table-title"></div>
-        <div *ngFor="let i of [].constructor(5)" class="shimmer shimmer-row"></div>
+        <div
+          *ngFor="let i of [].constructor(5)"
+          class="shimmer shimmer-row"
+        ></div>
       </div>
     </div>
   </ng-container>
@@ -53,12 +59,17 @@
       </div>
 
       <div class="calendar-title">
-        {{ viewDate | date: (view === CalendarView.Month ? 'MMMM yyyy' : 'dd MMM yyyy') }}
+        {{
+          viewDate
+            | date : (view === CalendarView.Month ? "MMMM yyyy" : "dd MMM yyyy")
+        }}
       </div>
 
       <div class="calendar-nav">
         <button class="calendar-btn" (click)="prev()">‹</button>
-        <button class="calendar-btn calendar-btn-today" (click)="today()">Hoy</button>
+        <button class="calendar-btn calendar-btn-today" (click)="today()">
+          Hoy
+        </button>
         <button class="calendar-btn" (click)="next()">›</button>
       </div>
     </div>
@@ -142,9 +153,11 @@
     <div *ngIf="selectedDayEvents.length > 0" class="day-table">
       <div class="day-table-header">
         <h6 class="day-table-title">
-          📅 Reservas del {{ selectedDate | date : 'dd/MM/yyyy' }}
+          📅 Reservas del {{ selectedDate | date : "dd/MM/yyyy" }}
         </h6>
-        <span class="badge bg-secondary">{{ selectedDayEvents.length }} reservas</span>
+        <span class="badge bg-secondary"
+          >{{ selectedDayEvents.length }} reservas</span
+        >
       </div>
 
       <table class="reservations-table">
@@ -155,6 +168,7 @@
             <th>Especialista</th>
             <th>Hora</th>
             <th class="text-center">Estado</th>
+            <th class="text-center">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -162,13 +176,64 @@
             <td class="fw-semibold">{{ e.meta.id }}</td>
             <td>{{ e.meta.customerName }}</td>
             <td>{{ e.meta.specialistName }}</td>
+
             <td>
-              <span class="badge bg-info text-dark">{{ e.meta.hourAt }}</span>
+              <span class="badge bg-info text-dark">
+                {{ e.meta.hourAt }}
+              </span>
             </td>
+
+            <!-- ESTADO -->
             <td class="text-center">
               <span class="badge" [ngClass]="getStatusClass(e.meta.statusId)">
                 {{ getStatusName(e.meta.statusId) }}
               </span>
+            </td>
+
+            <!-- ACCIONES -->
+            <td class="text-center">
+              <ng-container
+                *ngIf="isTodayOrFuture(e.meta.reservedAt); else noActions"
+              >
+                <div class="dropdown position-static">
+                  <button
+                    class="btn btn-sm btn-light border dropdown-toggle"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                  >
+                    Cambiar estado
+                  </button>
+
+                  <ul class="dropdown-menu">
+                    <li
+                      *ngFor="let s of statuses"
+                      [hidden]="s.id === e.meta.statusId"
+                    >
+                      <!-- 🔁 Reprogramar -->
+                      <button
+                        *ngIf="s.id === 6"
+                        class="dropdown-item text-info"
+                        (click)="onReprogramFromCalendar(e.meta)"
+                      >
+                        🔁 {{ s.name }}
+                      </button>
+
+                      <!-- 🔄 Otros estados -->
+                      <button
+                        *ngIf="s.id !== 6"
+                        class="dropdown-item"
+                        (click)="onChangeStatusFromCalendar(e.meta, s.id)"
+                      >
+                        {{ s.name }}
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              </ng-container>
+
+              <ng-template #noActions>
+                <span class="text-muted small">—</span>
+              </ng-template>
             </td>
           </tr>
         </tbody>
@@ -176,3 +241,55 @@
     </div>
   </ng-template>
 </div>
+<!-- 🗓 MODAL REPROGRAMAR -->
+<div class="modal d-block" *ngIf="showReprogramModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow">
+
+      <div class="modal-header">
+        <h5 class="modal-title">🔄 Reprogramar reserva</h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="closeReprogramModal()"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Fecha</label>
+          <input
+            type="date"
+            class="form-control"
+            [(ngModel)]="reprogramData.date"
+            [min]="todayString"
+            (change)="submitReprogram()"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Hora</label>
+          <select class="form-select" [(ngModel)]="reprogramData.hour">
+            <option value="">Seleccione hora</option>
+            <option *ngFor="let h of availableHours" [value]="h">
+              {{ h }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeReprogramModal()">
+          Cancelar
+        </button>
+        <button class="btn btn-primary" (click)="submitReprogram()">
+          Guardar
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- backdrop -->
+<div class="modal-backdrop show" *ngIf="showReprogramModal"></div>

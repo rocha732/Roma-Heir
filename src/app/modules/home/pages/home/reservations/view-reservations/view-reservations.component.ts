@@ -30,13 +30,51 @@ export class ViewReservationsComponent implements AfterViewInit {
   searchTerm = '';
   monthlyChart!: Chart;
   page = 1;
-  pageSize = 20;
+  pageSize = 8;
   startDate?: Date;
   endDate?: Date;
   flatpickrInstance!: FlatpickrInstance;
   pieChart!: Chart<'pie', number[], string>;
   specialistsMap = new Map<number, string>();
   usersMap = new Map<number, any>();
+  statues = [
+    {
+      id: 1,
+      name: 'Pendiente',
+    },
+    {
+      id: 2,
+      name: 'Confirmada',
+    },
+    {
+      id: 3,
+      name: 'Cancelada',
+    },
+    {
+      id: 4,
+      name: 'Completada',
+    },
+    {
+      id: 5,
+      name: 'Ausente',
+    },
+    {
+      id: 6,
+      name: 'Reprogramada',
+    },
+  ];
+
+  showReprogramModal = false;
+
+  reprogramData = {
+    reservationId: null as number | null,
+    date: '',
+    hour: '',
+    id: '',
+  };
+
+  availableHours: string[] = [];
+  todayString = new Date().toISOString().split('T')[0];
 
   constructor(
     private reservationsService: ReservationsService,
@@ -48,6 +86,10 @@ export class ViewReservationsComponent implements AfterViewInit {
     this.loading = true;
     this.loadSpecialists();
     this.loadUsers();
+    this.loadReservations();
+  }
+
+  loadReservations() {
     this.reservationsService.getReservations().subscribe({
       next: (res) => {
         this.rawReservations = res;
@@ -59,7 +101,6 @@ export class ViewReservationsComponent implements AfterViewInit {
       },
     });
   }
-
   ngAfterViewInit() {
     this.flatpickrInstance = flatpickr(this.dateRangeInput.nativeElement, {
       mode: 'range',
@@ -76,11 +117,17 @@ export class ViewReservationsComponent implements AfterViewInit {
   getStatusLabel(status: number) {
     switch (status) {
       case 1:
-        return 'Activo';
-      case 2:
         return 'Pendiente';
+      case 2:
+        return 'Confirmada';
       case 3:
-        return 'Cancelado';
+        return 'Cancelada';
+      case 4:
+        return 'Completada';
+      case 5:
+        return 'Ausente';
+      case 6:
+        return 'Reprogramada';
       default:
         return 'Desconocido';
     }
@@ -204,24 +251,24 @@ export class ViewReservationsComponent implements AfterViewInit {
   getMonthLabel(date: Date): string {
     return date.toLocaleString('es-PE', { month: 'short', year: 'numeric' });
   }
-exportToExcel() {
-  const data = this.filteredReservations.map((r) => ({
-    ID: r.id,
-    Cliente: r.customerName,
-    Email: r.customerEmail,
-    Teléfono: r.customerPhone,
-    Especialista: r.specialistName,
-    Fecha: r.reservedAt,
-    Hora: r.hourAt,
-    Estado: this.getStatusLabel(r.statusId),
-  }));
+  exportToExcel() {
+    const data = this.filteredReservations.map((r) => ({
+      ID: r.id,
+      Cliente: r.customerName,
+      Email: r.customerEmail,
+      Teléfono: r.customerPhone,
+      Especialista: r.specialistName,
+      Fecha: r.reservedAt,
+      Hora: r.hourAt,
+      Estado: this.getStatusLabel(r.statusId),
+    }));
 
-  const ws = XLSX.utils.json_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Reservas');
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Reservas');
 
-  XLSX.writeFile(wb, 'reservas.xlsx');
-}
+    XLSX.writeFile(wb, 'reservas.xlsx');
+  }
 
   get filteredReservations() {
     return this.reservations.filter((r) => {
@@ -307,43 +354,138 @@ exportToExcel() {
     return this.specialistsMap.get(id) || `ID ${id}`;
   }
 
-loadUsers() {
-  this.usersService.getUsers().subscribe((users) => {
-    users.forEach((u) => {
-      this.usersMap.set(u.id, {
-        name: `${u.firstName} ${u.lastName}`,
-        email: u.email,
-        phone: u.phone,
+  loadUsers() {
+    this.usersService.getUsers().subscribe((users) => {
+      users.forEach((u) => {
+        this.usersMap.set(u.id, {
+          name: `${u.firstName} ${u.lastName}`,
+          email: u.email,
+          phone: u.phone,
+        });
       });
+
+      this.usersLoaded = true;
+      if (this.reservationsLoaded) this.mapReservations();
+    });
+  }
+  mapReservations() {
+    this.reservations = this.rawReservations.map((r) => {
+      const user = this.usersMap.get(r.customerId);
+      const specialist = this.specialistsMap.get(r.specialistId);
+
+      return {
+        ...r,
+        customerName: user?.name ?? '—',
+        customerEmail: user?.email ?? '—',
+        customerPhone: user?.phone ?? '—',
+        specialistName: specialist ?? '—',
+      };
     });
 
-    this.usersLoaded = true;
-    if (this.reservationsLoaded) this.mapReservations();
-  });
-}
-mapReservations() {
-  this.reservations = this.rawReservations.map((r) => {
-    const user = this.usersMap.get(r.customerId);
-    const specialist = this.specialistsMap.get(r.specialistId);
+    this.allReservations = [...this.reservations];
+    this.page = 1;
 
-    return {
-      ...r,
-      customerName: user?.name ?? '—',
-      customerEmail: user?.email ?? '—',
-      customerPhone: user?.phone ?? '—',
-      specialistName: specialist ?? '—',
+    // Renderiza la UI primero y luego inicializa charts (si no, el canvas no existe cuando hay loading)
+    this.loading = false;
+    setTimeout(() => {
+      this.createMonthlyChart();
+      this.createPieChart();
+    }, 0);
+  }
+  isTodayOrFuture(reservedAt: string | Date): boolean {
+    let date: Date;
+
+    if (typeof reservedAt === 'string') {
+      // yyyy-mm-dd → fecha local
+      const [year, month, day] = reservedAt.split('-').map(Number);
+      date = new Date(year, month - 1, day);
+    } else {
+      date = new Date(reservedAt);
+    }
+
+    const today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+
+    return date >= today;
+  }
+
+  onChangeStatus(reservation: any, newStatusId: number) {
+    if (reservation.statusId === newStatusId) return;
+
+    this.reservationsService
+      .updateReservationStatus(reservation.id, { newStatusId })
+      .subscribe({
+        next: () => {
+          reservation.statusId = newStatusId;
+          this.loadReservations();
+        },
+        error: (err) => console.error(err),
+      });
+  }
+
+  onReprogram(reservation: any) {
+    this.reprogramData = {
+      reservationId: reservation.id,
+      id: reservation.id,
+      date: this.todayString,
+      hour: '',
     };
-  });
 
-  this.allReservations = [...this.reservations];
-  this.page = 1;
+    this.generateHours();
+    this.showReprogramModal = true;
+  }
 
-  // Renderiza la UI primero y luego inicializa charts (si no, el canvas no existe cuando hay loading)
-  this.loading = false;
-  setTimeout(() => {
-    this.createMonthlyChart();
-    this.createPieChart();
-  }, 0);
-}
+  generateHours() {
+    const hours: string[] = [];
+    const now = new Date();
 
+    for (let h = 9; h <= 20; h++) {
+      for (let m of [0, 30]) {
+        if (h === 20 && m > 0) continue;
+
+        const hh = h.toString().padStart(2, '0');
+        const mm = m.toString().padStart(2, '0');
+        const time = `${hh}:${mm}`;
+
+        // ⏱ Si es hoy, solo horas futuras
+        if (this.reprogramData.date === this.todayString) {
+          const compare = new Date();
+          compare.setHours(h, m, 0, 0);
+          if (compare <= now) continue;
+        }
+
+        hours.push(time);
+      }
+    }
+
+    this.availableHours = hours;
+  }
+
+  onDateChange() {
+    this.reprogramData.hour = '';
+    this.generateHours();
+  }
+
+  submitReprogram() {
+    const { reservationId, date, hour } = this.reprogramData;
+    if (!reservationId || !date || !hour) {
+      alert('Debe seleccionar fecha y hora');
+      return;
+    }
+    this.loading = true;
+    this.showReprogramModal = false;
+    this.reservationsService
+      .updateReservationDate(reservationId, {
+        reservedAt: date,
+        hourAt: hour + ':00',
+      })
+      .subscribe({
+        next: () => {
+          this.onChangeStatus(this.reprogramData, 6); // Cambia estado a Reprogramada
+        },
+        error: (err) => console.error(err),
+      });
+  }
 }
