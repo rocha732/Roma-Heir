@@ -25,9 +25,9 @@ export class ViewUsersComponent implements OnDestroy {
 
   countries: string[] = [];
   roles = [
-    { id: 1, name: 'admin' },
+    { id: 1, name: 'customer' },
     { id: 2, name: 'specialist' },
-    { id: 3, name: 'client' },
+    { id: 3, name: 'admin' },
   ];
 
   roleChart!: Chart<'pie', number[], string>;
@@ -238,8 +238,8 @@ export class ViewUsersComponent implements OnDestroy {
     return this.filteredUsers.filter(u => u.role?.name?.toLowerCase() === 'specialist').length;
   }
 
-  get clientUsers(): number {
-    return this.filteredUsers.filter(u => u.role?.name?.toLowerCase() === 'client').length;
+  get customerUsers(): number {
+    return this.filteredUsers.filter(u => u.role?.name?.toLowerCase() === 'customer').length;
   }
 
   get totalCountries(): number {

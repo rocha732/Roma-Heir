@@ -139,9 +139,9 @@
     <div class="mb-3">
       <label class="form-label">Rol</label>
       <select class="form-select" [(ngModel)]="selectedRoleId" name="roleId">
-        <option [value]="1">Admin</option>
+        <option [value]="1">Customer</option>
         <option [value]="2">Especialista</option>
-        <option [value]="3">Cliente</option>
+        <option [value]="3">Admin</option>
       </select>
     </div>
     <ng-container *ngIf="hasProfileImage(); else noImagePreview">

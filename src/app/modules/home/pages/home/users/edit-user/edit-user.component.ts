@@ -24,7 +24,7 @@ export class EditUserComponent {
   
   // Separate properties for select binding
   selectedCountryId: number | null = null;
-  selectedRoleId: number = 3;
+  selectedRoleId: number = 1;
 
   countries: Country[] = [];
   loadingCountries = false;

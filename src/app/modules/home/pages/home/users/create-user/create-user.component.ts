@@ -1259,9 +1259,9 @@ export class CreateUserComponent {
   isLoading = false;
 
   roles = [
-    { id: 1, name: 'admin' },
+    { id: 1, name: 'customer' },
     { id: 2, name: 'specialist' },
-    { id: 3, name: 'client' },
+    { id: 3, name: 'admin' },
   ];
 
   submitted = false;
