@@ -5,6 +5,8 @@ import { CategoriesService } from 'src/app/core/services/categories.service';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 import { ProcessingOverlayService } from 'src/app/core/services/processing-overlay.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NotificationModalComponent } from 'src/app/components/notification-modal/notification-modal.component';
 
 @Component({
   selector: 'app-edit-product',
@@ -27,35 +29,58 @@ export class EditProductComponent implements OnInit {
     private productsService: ProductsService,
     private categoriesService: CategoriesService,
     private router: Router,
-    private processingOverlay: ProcessingOverlayService
+    private processingOverlay: ProcessingOverlayService,
+    private modalService: NgbModal
   ) {}
 
   ngOnInit() {
     let categoriesLoaded = false;
     let productsLoaded = false;
 
-    this.categoriesService.getCategories().subscribe(categories => {
-      this.categoryList = categories;
-      categoriesLoaded = true;
-      if (categoriesLoaded && productsLoaded) this.loading = false;
+    this.categoriesService.getCategories().subscribe({
+      next: (categories) => {
+        this.categoryList = categories;
+        categoriesLoaded = true;
+        if (categoriesLoaded && productsLoaded) this.loading = false;
+      },
+      error: (err) => {
+        categoriesLoaded = true;
+        if (categoriesLoaded && productsLoaded) this.loading = false;
+        this.openErrorModal(err, 'No se pudo cargar la lista de categorías.');
+      }
     });
     
-    this.productsService.getProducts().subscribe((products: any) => {
-      this.allProducts = products;
-      const typeMap = new Map<number, { id: number, name: string }>();
-      products.forEach((p: any) => {
-        if (p.productType && p.productType.id && !typeMap.has(p.productType.id)) {
-          typeMap.set(p.productType.id, { id: p.productType.id, name: p.productType.name });
+    this.productsService.getProducts().subscribe({
+      next: (products: any) => {
+        this.allProducts = products;
+        const typeMap = new Map<number, { id: number, name: string }>();
+        products.forEach((p: any) => {
+          if (p.productType && p.productType.id && !typeMap.has(p.productType.id)) {
+            typeMap.set(p.productType.id, { id: p.productType.id, name: p.productType.name });
+          }
+        });
+        this.productTypeList = Array.from(typeMap.values());
+        const id = this.route.snapshot.paramMap.get('id');
+        if (id) {
+          this.setProductToEdit(id);
         }
-      });
-      this.productTypeList = Array.from(typeMap.values());
-      const id = this.route.snapshot.paramMap.get('id');
-      if (id) {
-        this.setProductToEdit(id);
+        productsLoaded = true;
+        if (categoriesLoaded && productsLoaded) this.loading = false;
+      },
+      error: (err) => {
+        productsLoaded = true;
+        if (categoriesLoaded && productsLoaded) this.loading = false;
+        this.openErrorModal(err, 'No se pudo cargar la lista de productos.');
       }
-      productsLoaded = true;
-      if (categoriesLoaded && productsLoaded) this.loading = false;
     });
+  }
+
+  private openErrorModal(err: any, defaultMsg: string) {
+    const message = err?.error?.detail || err?.error?.message || err?.error?.title || defaultMsg;
+    const modalRef = this.modalService.open(NotificationModalComponent, { centered: true });
+    modalRef.componentInstance.title = 'Error';
+    modalRef.componentInstance.message = message;
+    modalRef.componentInstance.type = 'error';
   }
 
   onProductSelect() {
@@ -155,7 +180,7 @@ export class EditProductComponent implements OnInit {
         this.router.navigate(['/home/products/view-products']);
       },
       error: (err) => {
-        console.error('Error del servicio:', err);
+        this.openErrorModal(err, 'No se pudo actualizar el producto.');
       }
     });
   }

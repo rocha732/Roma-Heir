@@ -2,6 +2,8 @@ import { Component, OnDestroy, AfterViewInit, ChangeDetectorRef } from '@angular
 import { Chart } from 'chart.js';
 import { ResponseUsers } from 'src/app/core/models/users';
 import { UsersService } from 'src/app/core/services/users.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NotificationModalComponent } from 'src/app/components/notification-modal/notification-modal.component';
 
 @Component({
   selector: 'app-view-users',
@@ -35,7 +37,8 @@ export class ViewUsersComponent implements OnDestroy {
 
   constructor(
     private usersService: UsersService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private modalService: NgbModal
   ) {}
 
   ngOnInit() {
@@ -70,7 +73,14 @@ export class ViewUsersComponent implements OnDestroy {
           this.createCharts();
         }, 50);
       },
-      error: (err) => console.error(err)
+      error: (err) => {
+        this.loading = false;
+        const message = err?.error?.detail || err?.error?.message || 'No se pudo cargar la lista de usuarios.';
+        const modalRef = this.modalService.open(NotificationModalComponent, { centered: true });
+        modalRef.componentInstance.title = 'Error';
+        modalRef.componentInstance.message = message;
+        modalRef.componentInstance.type = 'error';
+      }
     });
   }
 

@@ -9,6 +9,8 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { finalize } from 'rxjs';
 import { ProcessingOverlayService } from 'src/app/core/services/processing-overlay.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NotificationModalComponent } from 'src/app/components/notification-modal/notification-modal.component';
 
 @Component({
   selector: 'app-view-orders',
@@ -45,7 +47,8 @@ export class ViewOrdersComponent implements OnInit {
     private ordersService: OrdersService,
     private productsService: ProductsService,
     private router: Router,
-    private processingOverlay: ProcessingOverlayService
+    private processingOverlay: ProcessingOverlayService,
+    private modalService: NgbModal
   ) {}
 
   ngOnInit() {
@@ -189,9 +192,9 @@ export class ViewOrdersComponent implements OnInit {
         this.loadingDetailsId = null;
       },
       error: (err) => {
-        console.error('Error al cargar detalles:', err);
-        order.showDetails = true; // Mostrar igual para ver mensaje de "no hay productos"
+        order.showDetails = true;
         this.loadingDetailsId = null;
+        this.openErrorModal(err, 'No se pudo cargar el detalle de la orden.');
       }
     });
   }
@@ -213,10 +216,17 @@ export class ViewOrdersComponent implements OnInit {
         order.paidAt = new Date();
       },
       error: (err) => {
-        console.error('Error al actualizar pago:', err);
-        alert('Error al procesar el pago. Intente nuevamente.');
+        this.openErrorModal(err, 'Error al procesar el pago. Intente nuevamente.');
       }
     });
+  }
+
+  private openErrorModal(err: any, defaultMsg: string) {
+    const message = err?.error?.detail || err?.error?.message || err?.error?.title || defaultMsg;
+    const modalRef = this.modalService.open(NotificationModalComponent, { centered: true });
+    modalRef.componentInstance.title = 'Error';
+    modalRef.componentInstance.message = message;
+    modalRef.componentInstance.type = 'error';
   }
 
   // Cargar logo para PDF

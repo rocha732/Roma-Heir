@@ -17,6 +17,8 @@ import { GetReservations } from 'src/app/core/models/reservations';
 import { UsersService } from 'src/app/core/services/users.service';
 import { ResponseUsers } from 'src/app/core/models/users';
 import { es } from 'date-fns/locale';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NotificationModalComponent } from 'src/app/components/notification-modal/notification-modal.component';
 
 @Component({
   selector: 'app-calendar-reservations',
@@ -90,7 +92,8 @@ export class CalendarReservationsComponent implements OnInit {
 
   constructor(
     private reservationsService: ReservationsService,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private modalService: NgbModal
   ) {}
 
   ngOnInit(): void {
@@ -334,7 +337,9 @@ export class CalendarReservationsComponent implements OnInit {
           reservation.statusId = newStatusId;
           this.loadReservations();
         },
-        error: (err) => console.error(err),
+        error: (err) => {
+          this.openErrorModal(err, 'No se pudo cambiar el estado de la reservación.');
+        },
       });
   }
 
@@ -350,6 +355,14 @@ export class CalendarReservationsComponent implements OnInit {
 
     this.generateAvailableHours(this.reprogramData.date);
     this.showReprogramModal = true;
+  }
+
+  private openErrorModal(err: any, defaultMsg: string) {
+    const message = err?.error?.detail || err?.error?.message || err?.error?.title || defaultMsg;
+    const modalRef = this.modalService.open(NotificationModalComponent, { centered: true });
+    modalRef.componentInstance.title = 'Error';
+    modalRef.componentInstance.message = message;
+    modalRef.componentInstance.type = 'error';
   }
 
   onReprogramDateChange() {
@@ -402,7 +415,9 @@ export class CalendarReservationsComponent implements OnInit {
           this.onChangeStatusFromCalendar(this.reprogramData, 6); // Cambia estado a Reprogramada
           this.closeReprogramModal();
         },
-        error: (err) => console.error(err),
+        error: (err) => {
+          this.openErrorModal(err, 'No se pudo reprogramar la reservación.');
+        },
       });
 
     

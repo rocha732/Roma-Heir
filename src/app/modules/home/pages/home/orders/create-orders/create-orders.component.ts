@@ -6,6 +6,8 @@ import { UsersService } from 'src/app/core/services/users.service';
 import { CreateOrderRequest, CreateOrderItem } from 'src/app/core/models/orders';
 import { finalize } from 'rxjs';
 import { ProcessingOverlayService } from 'src/app/core/services/processing-overlay.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NotificationModalComponent } from 'src/app/components/notification-modal/notification-modal.component';
 
 @Component({
   selector: 'app-create-orders',
@@ -42,7 +44,8 @@ export class CreateOrdersComponent implements OnInit {
     private productsService: ProductsService,
     private usersService: UsersService,
     private router: Router,
-    private processingOverlay: ProcessingOverlayService
+    private processingOverlay: ProcessingOverlayService,
+    private modalService: NgbModal
   ) {}
 
   ngOnInit() {
@@ -106,7 +109,7 @@ export class CreateOrdersComponent implements OnInit {
         this.customers = users;
       },
       error: (err) => {
-        console.error('Error cargando clientes:', err);
+        this.openErrorModal(err, 'No se pudo cargar la lista de clientes.');
       }
     });
 
@@ -117,8 +120,8 @@ export class CreateOrdersComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error cargando productos:', err);
         this.loading = false;
+        this.openErrorModal(err, 'No se pudo cargar la lista de productos.');
       }
     });
   }
@@ -216,11 +219,17 @@ export class CreateOrdersComponent implements OnInit {
         this.router.navigate(['/home/orders/view-orders']);
       },
       error: (err) => {
-        console.error('Error creando orden:', err);
-        console.error('Error details:', err.error);
-        this.error = err.error?.message || err.error?.title || 'Error al crear la orden. Intente nuevamente.';
+        this.openErrorModal(err, 'Error al crear la orden. Intente nuevamente.');
       }
     });
+  }
+
+  private openErrorModal(err: any, defaultMsg: string) {
+    const message = err?.error?.detail || err?.error?.message || err?.error?.title || defaultMsg;
+    const modalRef = this.modalService.open(NotificationModalComponent, { centered: true });
+    modalRef.componentInstance.title = 'Error';
+    modalRef.componentInstance.message = message;
+    modalRef.componentInstance.type = 'error';
   }
 
   // Cancelar

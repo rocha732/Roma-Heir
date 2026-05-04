@@ -1331,8 +1331,8 @@ export class CreateUserComponent {
         this.isLoading = false;
       },
       error: (err) => {
-        console.error(err);
         this.isLoading = false;
+        this.openErrorModal(err, 'No se pudo registrar el usuario. Intente nuevamente.');
       },
     });
   }
@@ -1356,8 +1356,8 @@ export class CreateUserComponent {
         this.isLoading = false;
       },
       error: (err) => {
-        console.error(err);
         this.isLoading = false;
+        this.openErrorModal(err, 'No se pudo reenviar el código. Intente nuevamente.');
       },
     });
   }
@@ -1396,11 +1396,20 @@ export class CreateUserComponent {
           }
         },
         error: (err) => {
-          console.error(err);
           this.isLoading = false;
+          this.openErrorModal(err, 'No se pudo verificar el código. Intente nuevamente.');
         },
       });
   }
+
+  private openErrorModal(err: any, defaultMsg: string) {
+    const message = err?.error?.detail || err?.error?.message || err?.error?.title || defaultMsg;
+    const modalRef = this.modalService.open(NotificationModalComponent, { centered: true });
+    modalRef.componentInstance.title = 'Error';
+    modalRef.componentInstance.message = message;
+    modalRef.componentInstance.type = 'error';
+  }
+
   private resetForms() {
     // Resetear ambos formularios
     this.userForm.reset();

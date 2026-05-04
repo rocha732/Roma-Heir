@@ -9,6 +9,8 @@ import { Spanish } from 'flatpickr/dist/l10n/es';
 import { Instance as FlatpickrInstance } from 'flatpickr/dist/types/instance';
 import { UsersService } from 'src/app/core/services/users.service';
 import { ResponseUsers } from 'src/app/core/models/users';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NotificationModalComponent } from 'src/app/components/notification-modal/notification-modal.component';
 
 @Component({
   selector: 'app-view-reserve',
@@ -79,7 +81,8 @@ export class ViewReservationsComponent implements AfterViewInit {
   constructor(
     private reservationsService: ReservationsService,
     private reservationStatusesService: ReservationStatusesService,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private modalService: NgbModal
   ) {}
 
   ngOnInit() {
@@ -421,7 +424,9 @@ export class ViewReservationsComponent implements AfterViewInit {
           reservation.statusId = newStatusId;
           this.loadReservations();
         },
-        error: (err) => console.error(err),
+        error: (err) => {
+          this.openErrorModal(err, 'No se pudo cambiar el estado de la reservación.');
+        },
       });
   }
 
@@ -485,7 +490,17 @@ export class ViewReservationsComponent implements AfterViewInit {
         next: () => {
           this.onChangeStatus(this.reprogramData, 6); // Cambia estado a Reprogramada
         },
-        error: (err) => console.error(err),
+        error: (err) => {
+          this.openErrorModal(err, 'No se pudo reprogramar la reservación.');
+        },
       });
+  }
+
+  private openErrorModal(err: any, defaultMsg: string) {
+    const message = err?.error?.detail || err?.error?.message || err?.error?.title || defaultMsg;
+    const modalRef = this.modalService.open(NotificationModalComponent, { centered: true });
+    modalRef.componentInstance.title = 'Error';
+    modalRef.componentInstance.message = message;
+    modalRef.componentInstance.type = 'error';
   }
 }

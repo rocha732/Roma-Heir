@@ -8,6 +8,8 @@ import { OrdersService } from 'src/app/core/services/orders.service';
 import { ReservationStatusesService } from 'src/app/core/services/reservation-statuses.service';
 import { ReservationsService } from 'src/app/core/services/reservations.service';
 import { SpecialistsService } from 'src/app/core/services/specialists.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NotificationModalComponent } from 'src/app/components/notification-modal/notification-modal.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -106,7 +108,8 @@ export class DashboardComponent {
     private reservationsService: ReservationsService,
     private reservationStatusesService: ReservationStatusesService,
     private ordersService: OrdersService,
-    private specialistsService: SpecialistsService
+    private specialistsService: SpecialistsService,
+    private modalService: NgbModal
   ) {}
 
   ngOnInit(): void {
@@ -130,9 +133,9 @@ export class DashboardComponent {
           this.loadReservationsData();
         },
         error: (err) => {
-          console.error('Error cargando especialistas', err);
           this.noSpecialists = true;
           this.loadReservationsData();
+          this.openErrorModal(err, 'No se pudo cargar la lista de especialistas.');
         }
       });
     }
@@ -147,8 +150,8 @@ export class DashboardComponent {
         this.loadingOrders = false;
       },
       error: (err) => {
-        console.error('Error cargando órdenes', err);
         this.loadingOrders = false;
+        this.openErrorModal(err, 'No se pudo cargar las órdenes.');
       }
     });
   }
@@ -176,17 +179,25 @@ export class DashboardComponent {
               this.loadingCitas = false;
             },
             error: (err) => {
-              console.error('Error cargando reservaciones', err);
               this.noReservations = true;
               this.loadingCitas = false;
+              this.openErrorModal(err, 'No se pudo cargar las reservaciones.');
             }
           });
         },
         error: (err) => {
-          console.error('Error cargando estados', err);
           this.loadingCitas = false;
+          this.openErrorModal(err, 'No se pudo cargar los estados de reservación.');
         }
       });
+  }
+
+  private openErrorModal(err: any, defaultMsg: string) {
+    const message = err?.error?.detail || err?.error?.message || err?.error?.title || defaultMsg;
+    const modalRef = this.modalService.open(NotificationModalComponent, { centered: true });
+    modalRef.componentInstance.title = 'Error';
+    modalRef.componentInstance.message = message;
+    modalRef.componentInstance.type = 'error';
   }
 
   getTodayReservations(reservations: GetReservations[]) {

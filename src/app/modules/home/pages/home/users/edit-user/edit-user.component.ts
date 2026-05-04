@@ -57,9 +57,9 @@ export class EditUserComponent {
         // (el valor real se setea cuando llegue el user).
       },
       error: (err) => {
-        console.error('Error loading countries:', err);
         this.countries = [];
         this.loadingCountries = false;
+        this.showError(err?.error?.detail || err?.error?.message || 'No se pudo cargar la lista de países.');
       },
     });
   }
@@ -91,9 +91,9 @@ export class EditUserComponent {
         this.searching = false;
       },
       error: (err) => {
-        console.error('Error:', err);
         this.user = null;
         this.searching = false;
+        this.showError(err?.error?.detail || err?.error?.message || 'No se encontró el usuario con ese ID.');
       },
     });
   }
