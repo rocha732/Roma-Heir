@@ -4,6 +4,8 @@ import { OrdersService } from 'src/app/core/services/orders.service';
 import { ProductsService } from 'src/app/core/services/products.service';
 import { UsersService } from 'src/app/core/services/users.service';
 import { CreateOrderRequest, CreateOrderItem } from 'src/app/core/models/orders';
+import { finalize } from 'rxjs';
+import { ProcessingOverlayService } from 'src/app/core/services/processing-overlay.service';
 
 @Component({
   selector: 'app-create-orders',
@@ -13,6 +15,8 @@ import { CreateOrderRequest, CreateOrderItem } from 'src/app/core/models/orders'
 export class CreateOrdersComponent implements OnInit {
   // Datos del formulario
   selectedCustomerId: number | null = null;
+  customerSearchQuery = '';
+  customerDropdownOpen = false;
   selectedDeliveryMethodId: number = 1; // Default: 1
   orderItems: { productId: number; quantity: number; productName: string; price: number }[] = [];
 
@@ -37,11 +41,62 @@ export class CreateOrdersComponent implements OnInit {
     private ordersService: OrdersService,
     private productsService: ProductsService,
     private usersService: UsersService,
-    private router: Router
+    private router: Router,
+    private processingOverlay: ProcessingOverlayService
   ) {}
 
   ngOnInit() {
     this.loadData();
+  }
+
+  get filteredCustomers(): any[] {
+    const q = this.customerSearchQuery.trim().toLowerCase();
+    if (!q || this.customers.length === 0) return [];
+    return this.customers
+      .filter((c) => {
+        const full = `${c.firstName ?? ''} ${c.lastName ?? ''}`.toLowerCase();
+        const email = (c.email ?? '').toLowerCase();
+        return full.includes(q) || email.includes(q);
+      })
+      .slice(0, 40);
+  }
+
+  onCustomerSearchFocus() {
+    this.customerDropdownOpen = true;
+  }
+
+  onCustomerSearchBlur() {
+    setTimeout(() => {
+      this.customerDropdownOpen = false;
+    }, 180);
+  }
+
+  onCustomerSearchInput() {
+    if (this.selectedCustomerId !== null) {
+      this.selectedCustomerId = null;
+    }
+    this.customerDropdownOpen = true;
+  }
+
+  selectCustomer(customer: any, ev: MouseEvent) {
+    ev.preventDefault();
+    this.selectedCustomerId = customer.id;
+    this.customerSearchQuery = '';
+    this.customerDropdownOpen = false;
+  }
+
+  clearSelectedCustomer(ev?: MouseEvent) {
+    ev?.preventDefault();
+    this.selectedCustomerId = null;
+    this.customerSearchQuery = '';
+    this.customerDropdownOpen = false;
+  }
+
+  selectedCustomerLabel(): string {
+    if (this.selectedCustomerId === null) return '';
+    const c = this.customers.find((x) => x.id === this.selectedCustomerId);
+    if (!c) return '';
+    return `${c.firstName ?? ''} ${c.lastName ?? ''}`.trim() + ` — ${c.email ?? ''}`;
   }
 
   loadData() {
@@ -133,6 +188,7 @@ export class CreateOrdersComponent implements OnInit {
 
     this.submitting = true;
     this.error = null;
+    this.processingOverlay.show('Se está creando la orden');
 
     const orderRequest: CreateOrderRequest = {
       customerId: this.selectedCustomerId!,
@@ -145,10 +201,17 @@ export class CreateOrdersComponent implements OnInit {
 
     console.log('Enviando orden:', orderRequest);
 
-    this.ordersService.createOrder(orderRequest).subscribe({
+    this.ordersService
+      .createOrder(orderRequest)
+      .pipe(
+        finalize(() => {
+          this.submitting = false;
+          this.processingOverlay.hide();
+        })
+      )
+      .subscribe({
       next: (response) => {
         console.log('Orden creada exitosamente:', response);
-        this.submitting = false;
         // Navegar a la lista de órdenes
         this.router.navigate(['/home/orders/view-orders']);
       },
@@ -156,7 +219,6 @@ export class CreateOrdersComponent implements OnInit {
         console.error('Error creando orden:', err);
         console.error('Error details:', err.error);
         this.error = err.error?.message || err.error?.title || 'Error al crear la orden. Intente nuevamente.';
-        this.submitting = false;
       }
     });
   }

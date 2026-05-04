@@ -45,17 +45,57 @@
 		{{ error }}
 	</div>
 
-	<!-- Customer Selection -->
+	<!-- Customer search -->
 	<div class="form-section">
-		<h3 class="section-title">1. Seleccionar Cliente</h3>
-		<select 
-			class="form-select" 
-			[(ngModel)]="selectedCustomerId">
-			<option [ngValue]="null">-- Seleccione un cliente --</option>
-		<option *ngFor="let customer of customers" [ngValue]="customer.id">
-			{{ customer.firstName }} {{ customer.lastName }} - {{ customer.email }}
-		</option>
-		</select>
+		<h3 class="section-title">1. Buscar Cliente</h3>
+
+		<ng-container *ngIf="selectedCustomerId === null; else customerSelected">
+			<div class="customer-search-wrap">
+				<input
+					type="text"
+					class="form-input customer-search-input"
+					name="customerSearch"
+					[(ngModel)]="customerSearchQuery"
+					(input)="onCustomerSearchInput()"
+					(focus)="onCustomerSearchFocus()"
+					(blur)="onCustomerSearchBlur()"
+					placeholder="Buscar por nombre o email..."
+					autocomplete="off"
+				/>
+				<ul
+					*ngIf="customerDropdownOpen && customerSearchQuery.trim() && filteredCustomers.length > 0"
+					class="customer-dropdown"
+					role="listbox"
+				>
+					<li
+						*ngFor="let customer of filteredCustomers"
+						class="customer-dropdown-item"
+						role="option"
+						(mousedown)="selectCustomer(customer, $event)"
+					>
+						<span class="customer-name">{{ customer.firstName }} {{ customer.lastName }}</span>
+						<span class="customer-email">{{ customer.email }}</span>
+					</li>
+				</ul>
+				<p *ngIf="customerSearchQuery.trim() && filteredCustomers.length === 0" class="customer-search-hint">
+					No hay clientes que coincidan con tu búsqueda.
+				</p>
+				<p *ngIf="!customerSearchQuery.trim()" class="customer-search-hint">
+					Escribe nombre o correo para buscar en la lista de clientes.
+				</p>
+			</div>
+		</ng-container>
+		<ng-template #customerSelected>
+			<div class="selected-customer">
+				<div class="selected-customer-info">
+					<span class="selected-customer-label">Cliente seleccionado</span>
+					<span class="selected-customer-value">{{ selectedCustomerLabel() }}</span>
+				</div>
+				<button type="button" class="btn-change-customer" (click)="clearSelectedCustomer($event)">
+					Cambiar
+				</button>
+			</div>
+		</ng-template>
 	</div>
 
 	<!-- Delivery Method -->

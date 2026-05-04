@@ -29,6 +29,8 @@ import { CreateReserveComponent } from './pages/home/reservations/create-reserve
 import { EditReserveComponent } from './pages/home/reservations/edit-reserve/edit-reserve.component';
 import { ViewReservationsComponent } from './pages/home/reservations/view-reservations/view-reservations.component';
 import { CalendarReservationsComponent } from './pages/home/reservations/calendar-reservations/calendar-reservations.component';
+import { ServiceStylistsComponent } from './pages/home/services/service-stylists/service-stylists.component';
+import { ViewServicesComponent } from './pages/home/services/view-services/view-services.component';
 import { CalendarModule, DateAdapter } from 'angular-calendar';
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 
@@ -53,6 +55,8 @@ import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
     EditReserveComponent,
     ViewReservationsComponent,
     CalendarReservationsComponent,
+    ServiceStylistsComponent,
+    ViewServicesComponent,
   ],
   imports: [
     CommonModule,

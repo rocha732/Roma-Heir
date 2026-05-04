@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ProductsService } from 'src/app/core/services/products.service';
 import { CategoriesService } from 'src/app/core/services/categories.service';
+import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
+import { ProcessingOverlayService } from 'src/app/core/services/processing-overlay.service';
 
 @Component({
   selector: 'app-create-product',
@@ -26,7 +29,9 @@ export class CreateProductComponent implements OnInit {
 
   constructor(
     private productsService: ProductsService,
-    private categoriesService: CategoriesService
+    private categoriesService: CategoriesService,
+    private router: Router,
+    private processingOverlay: ProcessingOverlayService
   ) {}
 
   ngOnInit() {
@@ -100,22 +105,18 @@ export class CreateProductComponent implements OnInit {
       ProductType: this.product.productType,
       Picture: this.product.picture
     };
-    this.productsService.addProduct(payload).subscribe(() => {
-      this.successMessage = '¡Producto agregado correctamente!';
-      // Limpiar formulario
-      this.product = {
-        name: '',
-        description: '',
-        price: null,
-        categoryId: null,
-        productType: null,
-        available: true,
-        picture: null
-      };
-      this.imagePreview = null;
-      setTimeout(() => {
-        this.successMessage = null;
-      }, 3000);
-    });
+    this.processingOverlay.show('Se está creando el producto');
+    this.productsService
+      .addProduct(payload)
+      .pipe(
+        finalize(() => {
+          this.processingOverlay.hide();
+        })
+      )
+      .subscribe({
+        next: () => {
+          this.router.navigate(['/home/products/view-products']);
+        },
+      });
   }
 }

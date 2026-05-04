@@ -12,6 +12,7 @@ export class HomeComponent {
   isOrderOpen = false;
   showLogoutScreen = false;
   isReservationsOpen = false;
+  isServicesOpen = false;
 
   constructor(
     private specialistsService: SpecialistsService,
@@ -49,5 +50,9 @@ export class HomeComponent {
   }
   toggleReservationsDropdown() {
     this.isReservationsOpen = !this.isReservationsOpen;
+  }
+
+  toggleServicesDropdown() {
+    this.isServicesOpen = !this.isServicesOpen;
   }
 }

@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Country, ResponseUsers } from 'src/app/core/models/users';
 import { UsersService } from 'src/app/core/services/users.service';
+import { finalize } from 'rxjs';
+import { ProcessingOverlayService } from 'src/app/core/services/processing-overlay.service';
 
 @Component({
   selector: 'app-edit-user',
@@ -30,7 +32,8 @@ export class EditUserComponent {
   constructor(
     private userService: UsersService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private processingOverlay: ProcessingOverlayService
   ) {}
 
   ngOnInit() {
@@ -127,8 +130,20 @@ export class EditUserComponent {
       formData.append('Picture', this.selectedPicture);
     }
 
-    this.userService.putUpdateUser(formData, this.user.id).subscribe({
-      next: () => console.log('Usuario actualizado'),
+    this.processingOverlay.show('Estamos actualizando el usuario');
+
+    this.userService
+      .putUpdateUser(formData, this.user.id)
+      .pipe(
+        finalize(() => {
+          this.processingOverlay.hide();
+        })
+      )
+      .subscribe({
+      next: () => {
+        console.log('Usuario actualizado');
+        this.router.navigate(['/home/users/view-users']);
+      },
       error: (err) => {
         console.error('Error al guardar usuario:', err);
         

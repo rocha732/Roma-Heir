@@ -2,6 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ProductsService } from 'src/app/core/services/products.service';
 import { CategoriesService } from 'src/app/core/services/categories.service';
+import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
+import { ProcessingOverlayService } from 'src/app/core/services/processing-overlay.service';
 
 @Component({
   selector: 'app-edit-product',
@@ -22,7 +25,9 @@ export class EditProductComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private productsService: ProductsService,
-    private categoriesService: CategoriesService
+    private categoriesService: CategoriesService,
+    private router: Router,
+    private processingOverlay: ProcessingOverlayService
   ) {}
 
   ngOnInit() {
@@ -137,12 +142,17 @@ export class EditProductComponent implements OnInit {
       payload.Picture = this.product.picture;
     }
     console.log('Payload enviado:', payload);
-    this.productsService.updateProduct(this.product.id, payload).subscribe({
+    this.processingOverlay.show('Estamos actualizando el producto');
+    this.productsService
+      .updateProduct(this.product.id, payload)
+      .pipe(
+        finalize(() => {
+          this.processingOverlay.hide();
+        })
+      )
+      .subscribe({
       next: () => {
-        this.successMessage = '¡Producto actualizado correctamente!';
-        setTimeout(() => {
-          this.successMessage = null;
-        }, 3000);
+        this.router.navigate(['/home/products/view-products']);
       },
       error: (err) => {
         console.error('Error del servicio:', err);

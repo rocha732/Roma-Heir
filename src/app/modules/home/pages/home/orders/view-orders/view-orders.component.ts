@@ -7,6 +7,8 @@ import { ProductsService } from 'src/app/core/services/products.service';
 import { Orders } from 'src/app/core/models/orders';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { finalize } from 'rxjs';
+import { ProcessingOverlayService } from 'src/app/core/services/processing-overlay.service';
 
 @Component({
   selector: 'app-view-orders',
@@ -42,7 +44,8 @@ export class ViewOrdersComponent implements OnInit {
   constructor(
     private ordersService: OrdersService,
     private productsService: ProductsService,
-    private router: Router
+    private router: Router,
+    private processingOverlay: ProcessingOverlayService
   ) {}
 
   ngOnInit() {
@@ -195,15 +198,22 @@ export class ViewOrdersComponent implements OnInit {
 
   markAsPaid(order: Orders) {
     this.payingOrderId = order.id;
-    this.ordersService.updatePayment(order.id).subscribe({
+    this.processingOverlay.show('Estamos actualizando la orden');
+    this.ordersService
+      .updatePayment(order.id)
+      .pipe(
+        finalize(() => {
+          this.processingOverlay.hide();
+          this.payingOrderId = null;
+        })
+      )
+      .subscribe({
       next: () => {
         order.paid = true;
         order.paidAt = new Date();
-        this.payingOrderId = null;
       },
       error: (err) => {
         console.error('Error al actualizar pago:', err);
-        this.payingOrderId = null;
         alert('Error al procesar el pago. Intente nuevamente.');
       }
     });

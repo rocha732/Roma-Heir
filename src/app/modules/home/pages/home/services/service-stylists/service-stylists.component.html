@@ -1,0 +1,131 @@
+<div class="page-title">Servicios y estilistas</div>
+
+<div *ngIf="lockedServiceId != null" class="locked-service-bar">
+  <div class="locked-service-text">
+    <span class="locked-label">Trabajando en</span>
+    <strong class="locked-value">
+      {{
+        lockedServiceName
+          ? lockedServiceName + ' (#' + lockedServiceId + ')'
+          : 'Servicio #' + lockedServiceId
+      }}
+    </strong>
+  </div>
+  <a class="btn-back-list" routerLink="/home/services/list">← Volver al listado</a>
+</div>
+
+<p *ngIf="catalogLoading" class="catalog-loading">Cargando catálogo de servicios…</p>
+
+<div class="glass-card">
+  <div *ngIf="errorMsg" class="alert alert-error">{{ errorMsg }}</div>
+  <div *ngIf="okMsg" class="alert alert-success">{{ okMsg }}</div>
+
+  <section class="form-block" *ngIf="lockedServiceId === null">
+    <h3 class="block-title">1. Servicio</h3>
+
+    <ng-container *ngIf="!catalogLoadFailed; else manualIdTpl">
+      <label class="form-label">Seleccionar servicio</label>
+      <select
+        class="form-select"
+        name="svc"
+        [(ngModel)]="selectedServiceId"
+        (ngModelChange)="onServiceSelectChange()"
+      >
+        <option [ngValue]="null">— Elige un servicio —</option>
+        <option *ngFor="let s of services" [ngValue]="s.id">
+          {{ s.name }} (#{{ s.id }})
+        </option>
+      </select>
+      <p class="hint" *ngIf="services.length === 0">
+        El catálogo de servicios no devolvió datos. Usa ID manual abajo (<span
+          class="recarga"
+          (click)="loadCatalog()"
+          >reintentar carga</span
+        >).
+      </p>
+    </ng-container>
+
+    <ng-template #manualIdTpl>
+      <label class="form-label">ID del servicio</label>
+      <div class="row-manual">
+        <input
+          type="number"
+          class="form-input"
+          name="manualSvc"
+          [(ngModel)]="manualServiceId"
+          placeholder="Ej. 1"
+          min="1"
+        />
+        <button type="button" class="btn-secondary" (click)="applyManualServiceId()">
+          Cargar estilistas
+        </button>
+      </div>
+      <p class="hint">
+        No se cargó la lista desde el servidor.
+        <span class="recarga" (click)="loadCatalog()">Reintentar listado</span>
+      </p>
+    </ng-template>
+  </section>
+
+  <section class="form-block">
+    <h3 class="block-title">
+      {{ lockedServiceId != null ? '1.' : '2.' }} Estilistas vinculados
+    </h3>
+    <button
+      *ngIf="activeServiceId != null"
+      type="button"
+      class="btn-outline"
+      (click)="loadLinkedStylists()"
+      [disabled]="loadingList"
+    >
+      {{ loadingList ? 'Actualizando…' : 'Refrescar lista' }}
+    </button>
+
+    <ul class="linked-list" *ngIf="linkedRaw.length">
+      <li *ngFor="let row of linkedRaw" class="linked-item">
+        <span class="name">{{ stylistLabel(row) }}</span>
+        <button
+          type="button"
+          class="btn-danger-soft"
+          (mousedown)="removeStylist(stylistIdFromRow(row)!, $event)"
+          *ngIf="stylistIdFromRow(row) != null"
+        >
+          Quitar
+        </button>
+      </li>
+    </ul>
+    <p *ngIf="!loadingList && linkedRaw.length === 0 && activeServiceId != null" class="empty-state">
+      No hay estilistas vinculados o aún no se ha cargado la lista.
+    </p>
+  </section>
+
+  <section class="form-block">
+    <h3 class="block-title">
+      {{ lockedServiceId != null ? '2.' : '3.' }} Agregar estilista
+    </h3>
+    <label class="form-label">Especialista disponible</label>
+    <div class="row-add">
+      <select
+        class="form-select"
+        name="addStylist"
+        [(ngModel)]="selectedStylistToAdd"
+      >
+        <option [ngValue]="null">— Seleccionar —</option>
+        <option *ngFor="let sp of availableSpecialistsToAdd()" [ngValue]="sp.id">
+          {{ sp.firstName }} {{ sp.lastName }} (#{{ sp.id }})
+        </option>
+      </select>
+      <button
+        type="button"
+        class="btn-primary"
+        (click)="addStylist()"
+        [disabled]="activeServiceId == null || selectedStylistToAdd == null"
+      >
+        Asignar
+      </button>
+    </div>
+    <p class="hint" *ngIf="specialists.length === 0">
+      No hay especialistas cargados.
+    </p>
+  </section>
+</div>

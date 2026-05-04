@@ -31,6 +31,12 @@ export class CreateUserComponent {
     { id: 9, name: 'Peru', code: 'PE' },
   ];
 
+  roles = [
+    { id: 1, name: 'admin' },
+    { id: 2, name: 'specialist' },
+    { id: 3, name: 'client' },
+  ];
+
   submitted = false;
   timerSeconds = 30;
   timerSubscription!: Subscription;
@@ -46,6 +52,7 @@ export class CreateUserComponent {
       email: ['', [Validators.required, Validators.email]],
       phone: ['', [Validators.required, Validators.pattern(/^\d{9,15}$/)]],
       countryId: ['', Validators.required],
+      roleId: ['', Validators.required],
     });
 
     this.codeForm = this.fb.group({
@@ -74,6 +81,10 @@ export class CreateUserComponent {
 
   get countryId(): FormControl {
     return this.userForm.get('countryId') as FormControl;
+  }
+
+  get roleId(): FormControl {
+    return this.userForm.get('roleId') as FormControl;
   }
 
   get verificationCode(): FormControl {
