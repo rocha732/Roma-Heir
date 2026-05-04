@@ -1,0 +1,44 @@
+<h1 class="page-title">Servicios</h1>
+
+<div class="glass-card">
+  <div class="toolbar">
+    <button type="button" class="btn-refresh" (click)="loadServices()" [disabled]="loading">
+      {{ loading ? 'Cargando…' : 'Actualizar' }}
+    </button>
+  </div>
+
+  <div *ngIf="errorMsg" class="alert alert-error">{{ errorMsg }}</div>
+
+  <div *ngIf="loading" class="skeleton-lines">
+    <div class="sk-line" *ngFor="let _ of skeletonRows"></div>
+  </div>
+
+  <ng-container *ngIf="!loading && !errorMsg">
+    <div *ngIf="services.length === 0" class="empty">No hay servicios para mostrar.</div>
+
+    <div *ngIf="services.length > 0" class="table-wrap">
+      <table class="service-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th class="col-actions">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of services">
+            <td class="td-id">{{ s.id }}</td>
+            <td class="td-name">{{ s.name }}</td>
+            <td class="td-desc">{{ trimDescription(s.description) || '—' }}</td>
+            <td class="td-actions">
+              <button type="button" class="btn-link-service" (click)="manageStylists(s)">
+                Estilistas
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+</div>

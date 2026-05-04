@@ -53,6 +53,27 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
+.profile-image {
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.avatar-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3));
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: #93c5fd;
+  margin: 0 auto;
+}
+
 // User name title
 h5 {
   color: #e5e7eb;
@@ -147,8 +168,217 @@ input[type="file"] {
   }
 }
 
+// Botón peligro (delete) glassmorphism
+.btn-danger {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  backdrop-filter: blur(4px);
+  padding: 0.7rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.35);
+    border-color: rgba(239, 68, 68, 0.6);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.2);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// Spinner personalizado
+.spinner-border-sm {
+  width: 0.875rem;
+  height: 0.875rem;
+  border-width: 0.2em;
+  color: #fca5a5;
+}
+
+// Modal overlay
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.error-modal {
+  background: rgba(18, 19, 26, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 90%;
+  animation: slideIn 0.3s ease-out;
+
+  .modal-content {
+    padding: 2rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(239, 68, 68, 0.1);
+  }
+
+  .modal-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  .modal-title {
+    color: #fca5a5;
+    font-weight: 600;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+  }
+
+  .modal-message {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem;
+    justify-content: center;
+
+    .btn {
+      flex: 1;
+      max-width: 150px;
+      padding: 0.65rem 1.5rem;
+      border-radius: 10px;
+      font-weight: 600;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+
+      &.btn-primary {
+        background: rgba(59, 130, 246, 0.2);
+        border: 1px solid rgba(59, 130, 246, 0.4);
+        color: #93c5fd;
+
+        &:hover {
+          background: rgba(59, 130, 246, 0.35);
+          color: #fff;
+        }
+      }
+    }
+  }
+}
+
+.delete-modal {
+  background: rgba(18, 19, 26, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 90%;
+  animation: slideIn 0.3s ease-out;
+
+  .modal-content {
+    padding: 2rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .modal-title {
+    color: #e5e7eb;
+    font-weight: 600;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+  }
+
+  .modal-message {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+
+  .modal-user-info {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    color: #93c5fd;
+    font-size: 0.9rem;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 1rem;
+    padding: 1.5rem;
+    justify-content: center;
+
+    .btn {
+      flex: 1;
+      max-width: 150px;
+      padding: 0.65rem 1.5rem;
+      border-radius: 10px;
+      font-weight: 600;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+
+      &.btn-secondary {
+        background: rgba(107, 114, 128, 0.2);
+        border: 1px solid rgba(107, 114, 128, 0.4);
+        color: #d1d5db;
+
+        &:hover:not(:disabled) {
+          background: rgba(107, 114, 128, 0.35);
+          color: #fff;
+        }
+      }
+
+      &.btn-danger {
+        background: rgba(239, 68, 68, 0.2);
+        border: 1px solid rgba(239, 68, 68, 0.4);
+        color: #fca5a5;
+
+        &:hover:not(:disabled) {
+          background: rgba(239, 68, 68, 0.35);
+          color: #fff;
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 // Form groups spacing
 .mb-3 {
   margin-bottom: 1.25rem !important;
 }
-

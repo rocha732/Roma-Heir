@@ -11,6 +11,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { NotificationModalComponent } from './components/notification-modal/notification-modal.component';
+import { ProcessingOverlayComponent } from './components/processing-overlay/processing-overlay.component';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 
@@ -19,7 +20,8 @@ registerLocaleData(localeEs);
 @NgModule({
   declarations: [
     AppComponent,
-    NotificationModalComponent
+    NotificationModalComponent,
+    ProcessingOverlayComponent
   ],
   imports: [
     BrowserModule,

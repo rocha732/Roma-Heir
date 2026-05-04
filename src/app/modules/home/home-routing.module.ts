@@ -16,6 +16,8 @@ import { ViewReservationsComponent } from './pages/home/reservations/view-reserv
 import { EditReserveComponent } from './pages/home/reservations/edit-reserve/edit-reserve.component';
 import { CreateReserveComponent } from './pages/home/reservations/create-reserve/create-reserve.component';
 import { CalendarReservationsComponent } from './pages/home/reservations/calendar-reservations/calendar-reservations.component';
+import { ServiceStylistsComponent } from './pages/home/services/service-stylists/service-stylists.component';
+import { ViewServicesComponent } from './pages/home/services/view-services/view-services.component';
 
 const routes: Routes = [
   {
@@ -62,7 +64,22 @@ const routes: Routes = [
       { path: 'reservations/edit-reserve/:id', component: EditReserveComponent},
       { path: 'reservations/edit-reserve', component: EditReserveComponent},
       { path: 'reservations/create-reserve', component: CreateReserveComponent },
-      {path: 'reservations/calendar-reservations', component: CalendarReservationsComponent}
+      {path: 'reservations/calendar-reservations', component: CalendarReservationsComponent},
+      {
+        path: 'services/list',
+        component: ViewServicesComponent,
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'services/stylists',
+        component: ServiceStylistsComponent,
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'services/:serviceId/stylists',
+        component: ServiceStylistsComponent,
+        canActivate: [AuthGuard],
+      },
     ],
   },
 ];

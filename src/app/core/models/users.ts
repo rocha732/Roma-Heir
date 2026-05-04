@@ -36,6 +36,7 @@ export interface RequestAccount {
   email: string;
   phone: string;
   countryId: number;
+  roleId?: number;
 }
 
 export interface RequestVerifyAccount {

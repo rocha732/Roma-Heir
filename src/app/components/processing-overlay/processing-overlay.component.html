@@ -1,0 +1,12 @@
+<ng-container *ngIf="state$ | async as s">
+  <div class="processing-overlay" *ngIf="s.visible" aria-live="polite" aria-busy="true">
+    <div class="processing-card">
+      <div class="spinner" aria-hidden="true"></div>
+      <div class="processing-text">
+        <div class="processing-title">{{ s.message }}</div>
+        <div class="processing-subtitle">Espera un momento…</div>
+      </div>
+    </div>
+  </div>
+</ng-container>
+

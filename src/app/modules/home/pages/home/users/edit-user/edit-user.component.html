@@ -1,5 +1,48 @@
 <h2 class="page-title">Editar Usuario</h2>
 
+<!-- Modal de error -->
+<div class="modal-overlay" *ngIf="showErrorModal">
+  <div class="error-modal">
+    <div class="modal-content">
+      <div class="modal-icon">
+        <span class="icon-error">⚠️</span>
+      </div>
+      <h5 class="modal-title">Error</h5>
+      <p class="modal-message">{{ errorMessage }}</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" (click)="closeError()">
+        Aceptar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<div class="modal-overlay" *ngIf="showDeleteModal">
+  <div class="delete-modal">
+    <div class="modal-content">
+      <h5 class="modal-title">Eliminar usuario</h5>
+      <p class="modal-message">¿Deseas eliminar este usuario? Esta acción no se puede deshacer.</p>
+      <div class="modal-user-info">
+        <strong>{{ user?.firstName }} {{ user?.lastName }}</strong>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" (click)="cancelDelete()">
+        Cancelar
+      </button>
+      <button class="btn btn-danger" (click)="confirmDelete()" [disabled]="deleting">
+        <span *ngIf="!deleting">Eliminar</span>
+        <span *ngIf="deleting">
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          Eliminando...
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Buscador solo si entras sin ID -->
 <div class="search-container mb-3">
   <input
@@ -12,14 +55,19 @@
 </div>
 <div class="card p-4" *ngIf="user">
   <div class="text-center mb-3">
-    <img
-      [src]="user.profileImageUrl"
-      alt="Foto de perfil"
-      class="rounded-circle"
-      width="120"
-      height="120"
-      style="object-fit: cover"
-    />
+    <ng-container *ngIf="hasProfileImage(); else noImage">
+      <img
+        [src]="user.profileImageUrl"
+        alt="Foto de perfil"
+        class="rounded-circle profile-image"
+        width="120"
+        height="120"
+        style="object-fit: cover"
+      />
+    </ng-container>
+    <ng-template #noImage>
+      <div class="avatar-initials rounded-circle">{{ getInitials() }}</div>
+    </ng-template>
   </div>
 
   <h5 class="text-center mb-4">{{ user.firstName }} {{ user.lastName }}</h5>
@@ -27,7 +75,7 @@
   <form>
     <!-- FirstName -->
     <div class="mb-3">
-      <label class="form-label">First Name</label>
+      <label class="form-label">Nombre</label>
       <input
         type="text"
         class="form-control"
@@ -38,7 +86,7 @@
 
     <!-- LastName -->
     <div class="mb-3">
-      <label class="form-label">Last Name</label>
+      <label class="form-label">Apellido</label>
       <input
         type="text"
         class="form-control"
@@ -60,7 +108,7 @@
 
     <!-- Phone -->
     <div class="mb-3">
-      <label class="form-label">Phone</label>
+      <label class="form-label">Teléfono</label>
       <input
         type="text"
         class="form-control"
@@ -71,34 +119,47 @@
 
     <!-- Country -->
     <div class="mb-3">
-      <label class="form-label">Country</label>
-      <select class="form-select" [(ngModel)]="selectedCountryId" name="countryId">
-  <option *ngFor="let country of countries" [value]="country.id">
-    {{ country.name }}
-  </option>
-</select>
+      <label class="form-label">País</label>
+      <select
+        class="form-select"
+        [(ngModel)]="selectedCountryId"
+        name="countryId"
+        [disabled]="loadingCountries"
+      >
+        <option [ngValue]="null" disabled>
+          {{ loadingCountries ? 'Cargando países...' : 'Selecciona un país' }}
+        </option>
+        <option *ngFor="let c of countries" [ngValue]="c.id">
+          {{ c.name }}
+        </option>
+      </select>
     </div>
 
     <!-- Role -->
     <div class="mb-3">
-      <label class="form-label">Role</label>
+      <label class="form-label">Rol</label>
       <select class="form-select" [(ngModel)]="selectedRoleId" name="roleId">
-        <option [value]="3">Admin</option>
-        <option [value]="2">Specialist</option>
-        <option [value]="1">Client</option>
+        <option [value]="1">Admin</option>
+        <option [value]="2">Especialista</option>
+        <option [value]="3">Cliente</option>
       </select>
     </div>
-    <img
-      [src]="previewImage ? previewImage : user.profileImageUrl"
-      alt="Foto de perfil"
-      class="rounded-circle"
-      width="120"
-      height="120"
-      style="object-fit: cover"
-    />
+    <ng-container *ngIf="hasProfileImage(); else noImagePreview">
+      <img
+        [src]="previewImage ? previewImage : user.profileImageUrl"
+        alt="Foto de perfil"
+        class="rounded-circle profile-image"
+        width="120"
+        height="120"
+        style="object-fit: cover"
+      />
+    </ng-container>
+    <ng-template #noImagePreview>
+      <div class="avatar-initials rounded-circle">{{ getInitials() }}</div>
+    </ng-template>
     <!-- Picture -->
     <div class="mb-3">
-      <label class="form-label">Profile Picture</label>
+      <label class="form-label">Foto de Perfil</label>
       <input
         type="file"
         class="form-control"
@@ -108,6 +169,13 @@
 
     <button class="btn btn-primary w-100 mt-3" (click)="saveUser()">
       Guardar cambios
+    </button>
+    <button 
+      class="btn btn-danger w-100 mt-2" 
+      (click)="deleteUser()"
+      [disabled]="deleting"
+    >
+      Eliminar usuario
     </button>
   </form>
 </div>

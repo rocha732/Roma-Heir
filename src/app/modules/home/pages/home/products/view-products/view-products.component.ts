@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { ProductsService } from 'src/app/core/services/products.service';
 import { CategoriesService } from 'src/app/core/services/categories.service';
+import { finalize } from 'rxjs';
+import { ProcessingOverlayService } from 'src/app/core/services/processing-overlay.service';
 
 @Component({
   selector: 'app-view-products',
@@ -22,7 +24,8 @@ export class ViewProductsComponent {
   constructor(
     private productsService: ProductsService,
     private categoriesService: CategoriesService,
-    private router: Router
+    private router: Router,
+    private processingOverlay: ProcessingOverlayService
   ) {
     // Cargar categorías desde el backend
     this.categoriesService.getCategories().subscribe((categories) => {
@@ -141,14 +144,22 @@ export class ViewProductsComponent {
       CategoryId: Number(product.CategoryId),
       ProductType: Number(product.ProductType)
     };
-    this.productsService.addProduct(payload).subscribe(() => {
-      // Recargar la lista de productos para obtener la URL real de la imagen
-      this.productsService.getProducts().subscribe((products: any) => {
-        this.products = products;
-        this.filteredProducts = products;
-        this.showModal = false;
+    this.processingOverlay.show('Se está creando el producto');
+    this.productsService
+      .addProduct(payload)
+      .pipe(
+        finalize(() => {
+          this.processingOverlay.hide();
+        })
+      )
+      .subscribe(() => {
+        // Recargar la lista de productos para obtener la URL real de la imagen
+        this.productsService.getProducts().subscribe((products: any) => {
+          this.products = products;
+          this.filteredProducts = products;
+          this.showModal = false;
+        });
       });
-    });
   }
 
   onModalClose() {

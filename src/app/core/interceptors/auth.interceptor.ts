@@ -38,12 +38,11 @@ export class AuthInterceptor implements HttpInterceptor {
         if (error.status === 401) {
           console.error('[AuthInterceptor] Error 401 detectado:', error);
           alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-          localStorage.clear(); // 🔹 limpia sesión
-          this.router.navigate(['/']); // 🔹 redirige al inicio
+          localStorage.clear();
+          this.router.navigate(['/']);
         } else {
-        alert('Error al actualizar la reserva.');
-        console.error(error);
-      }
+          console.error('[AuthInterceptor] Error detectado:', error);
+        }
 
         return throwError(() => error);
       })

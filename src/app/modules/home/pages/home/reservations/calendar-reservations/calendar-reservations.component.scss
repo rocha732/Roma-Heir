@@ -412,6 +412,79 @@
 }
 
 // -----------------------------
+// Week / Day time grid — tema oscuro (angular-calendar usa #fff / #fafafa por defecto)
+// La vista día reutiliza mwl-calendar-week-view con class cal-day-view; el fondo claro viene de .cal-week-view y .cal-hour-odd.
+// -----------------------------
+:host ::ng-deep .cal-week-view {
+  background-color: rgba(18, 19, 26, 0.5) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+:host ::ng-deep .cal-week-view .cal-time-events {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+:host ::ng-deep .cal-week-view .cal-all-day-events {
+  background-color: rgba(18, 19, 26, 0.55);
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+// Filas de horas: pares/impares (antes blanco vs gris muy claro)
+:host ::ng-deep .cal-week-view .cal-hour {
+  background-color: rgba(18, 19, 26, 0.42) !important;
+}
+
+:host ::ng-deep .cal-week-view .cal-hour.cal-hour-odd {
+  background-color: rgba(255, 255, 255, 0.045) !important;
+}
+
+// Etiquetas de hora (antes heredaban texto claro sobre fondo blanco → ilegible)
+:host ::ng-deep .cal-week-view .cal-time {
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 600;
+}
+
+:host ::ng-deep .cal-week-view .cal-time-label-column .cal-hour-segment:hover {
+  background-color: transparent;
+}
+
+// Líneas horizontales punteadas entre segmentos de 30 min
+:host ::ng-deep .cal-week-view .cal-hour:not(:last-child) .cal-hour-segment,
+:host ::ng-deep .cal-week-view .cal-hour:last-child :not(:last-child) .cal-hour-segment {
+  border-bottom-color: rgba(255, 255, 255, 0.09) !important;
+}
+
+// Hover sobre celdas (tema por defecto #ededed)
+:host ::ng-deep
+  .cal-week-view
+  .cal-time-events
+  .cal-day-columns:not(.cal-resize-active)
+  .cal-hour-segment:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+:host ::ng-deep .cal-week-view .cal-drag-over .cal-hour-segment {
+  background-color: rgba(59, 130, 246, 0.14) !important;
+}
+
+// Cabeceras de día (vista semana): sin flash claro al hover
+:host ::ng-deep .cal-week-view .cal-day-headers .cal-header:hover,
+:host ::ng-deep .cal-week-view .cal-day-headers .cal-drag-over {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+// Hoy en cabecera semanal (tema por defecto verde pastel)
+:host ::ng-deep .cal-week-view .cal-header.cal-today {
+  background-color: rgba(59, 130, 246, 0.16) !important;
+}
+
+// Tarjetas de evento: esquinas acordes al resto de la UI (colores vienen del modelo del evento)
+:host ::ng-deep .cal-week-view .cal-time-events .cal-event {
+  border-radius: 6px;
+}
+
+// -----------------------------
 // Day table (mismo look que otras tablas)
 // -----------------------------
 .day-table {
