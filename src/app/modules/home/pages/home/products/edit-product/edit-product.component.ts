@@ -16,7 +16,6 @@ export class EditProductComponent implements OnInit {
   allProducts: any[] = [];
   selectedProductId: number | null = null;
   categoryList: { id: number, name: string }[] = [];
-  productTypeList: { id: number, name: string }[] = [];
   isDragOver = false;
   imagePreview: string | ArrayBuffer | null = null;
   successMessage: string | null = null;
@@ -36,19 +35,17 @@ export class EditProductComponent implements OnInit {
 
     this.categoriesService.getCategories().subscribe(categories => {
       this.categoryList = categories;
+      if (this.product?.categoryId == null && this.product?.categoryName) {
+        this.product.categoryId = this.getCategoryIdByName(this.product.categoryName);
+      }
       categoriesLoaded = true;
       if (categoriesLoaded && productsLoaded) this.loading = false;
     });
     
     this.productsService.getProducts().subscribe((products: any) => {
-      this.allProducts = products;
-      const typeMap = new Map<number, { id: number, name: string }>();
-      products.forEach((p: any) => {
-        if (p.productType && p.productType.id && !typeMap.has(p.productType.id)) {
-          typeMap.set(p.productType.id, { id: p.productType.id, name: p.productType.name });
-        }
-      });
-      this.productTypeList = Array.from(typeMap.values());
+      this.allProducts = products.filter((p: any) =>
+        String(p.productType?.name || '').toLowerCase().includes('product')
+      );
       const id = this.route.snapshot.paramMap.get('id');
       if (id) {
         this.setProductToEdit(id);
@@ -67,15 +64,24 @@ export class EditProductComponent implements OnInit {
     }
   }
 
+  private getCategoryIdByName(name: string | undefined | null): number | null {
+    if (!name) return null;
+    const foundCategory = this.categoryList.find(cat => cat.name === name);
+    return foundCategory ? foundCategory.id : null;
+  }
+
   setProductToEdit(id: number | string) {
     const found = this.allProducts.find((p: any) => String(p.id) === String(id));
     if (found) {
+      const categoryId = found.categoryId ?? this.getCategoryIdByName(found.categoryName);
+
       this.product = {
         id: found.id,
         name: found.name,
         description: found.description,
         price: found.price,
-        categoryId: found.categoryId,
+        categoryId: categoryId,
+        categoryName: found.categoryName,
         productType: found.productType?.id,
         available: found.available,
         picture: null

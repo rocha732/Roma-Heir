@@ -95,6 +95,15 @@
       </button>
     </div>
 
+    <div class="calendar-actions">
+      <button
+        class="btn-create-reservation"
+        (click)="openCreateReservationModal()"
+      >
+        + Nueva reservación
+      </button>
+    </div>
+
     <!-- 📊 LEYENDA DE ESTADOS -->
     <div class="status-legend">
       <div *ngFor="let s of statuses" class="legend-item">
@@ -290,6 +299,168 @@
     </div>
   </div>
 </div>
+
+<!-- CREAR RESERVACIÓN -->
+ <div class="modal d-block" *ngIf="showCreateModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow">
+
+      <div class="modal-header">
+        <h5 class="modal-title">
+          ✨ Nueva reservación
+        </h5>
+
+        <button
+          type="button"
+          class="btn-close"
+          (click)="closeCreateModal()"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- CLIENTE -->
+        <div class="mb-3">
+          <label class="form-label">Cliente</label>
+
+          <select
+            class="form-select"
+            [(ngModel)]="createReservationData.customerId"
+          >
+            <option [ngValue]="null">
+              Seleccione cliente
+            </option>
+
+            <option
+              *ngFor="let c of users"
+              [ngValue]="c.id"
+            >
+              {{ c.firstName }} {{ c.lastName }}
+            </option>
+          </select>
+        </div>
+
+        <!-- ESPECIALISTA -->
+        <div class="mb-3">
+          <label class="form-label">
+            Especialista
+          </label>
+
+          <select
+            class="form-select"
+            [(ngModel)]="createReservationData.specialistId"
+            (change)="onSpecialistChange()"
+          >
+            <option [ngValue]="null">
+              Seleccione especialista
+            </option>
+
+            <option
+              *ngFor="let s of specialists"
+              [ngValue]="s.id"
+            >
+              {{ s.firstName }}
+              {{ s.lastName }}
+            </option>
+          </select>
+        </div>
+
+        <!-- SERVICIO -->
+        <div class="mb-3">
+          <label class="form-label">
+            Servicio
+          </label>
+
+          <select
+            class="form-select"
+            [(ngModel)]="createReservationData.serviceId"
+            [disabled]="!createReservationData.specialistId"
+          >
+            <option [ngValue]="null">
+              Seleccione servicio
+            </option>
+
+            <option
+              *ngFor="let service of filteredServices"
+              [ngValue]="service.id"
+            >
+              {{ service.name }}
+            </option>
+          </select>
+        </div>
+
+        <!-- FECHA -->
+        <div class="mb-3">
+          <label class="form-label">Fecha</label>
+
+          <input
+            type="date"
+            class="form-control"
+            [(ngModel)]="createReservationData.reservedAt"
+            (change)="onCreateDateChange()"
+          />
+        </div>
+
+        <!-- HORA -->
+        <div class="mb-3">
+          <label class="form-label">Hora</label>
+
+          <select
+            class="form-select"
+            [(ngModel)]="createReservationData.hourAt"
+          >
+            <option value="">
+              Seleccione hora
+            </option>
+
+            <option
+              *ngFor="let h of availableHours"
+              [value]="h"
+            >
+              {{ h }}
+            </option>
+          </select>
+        </div>
+
+        <!-- ASESORÍA -->
+        <div class="form-check">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            [(ngModel)]="createReservationData.requiresPersonalAdvice"
+          />
+
+          <label class="form-check-label">
+            Requiere asesoría personalizada
+          </label>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button
+          class="btn btn-secondary"
+          (click)="closeCreateModal()"
+        >
+          Cancelar
+        </button>
+
+        <button
+          class="btn btn-primary"
+          (click)="createReservation()"
+        >
+          Crear reservación
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal-backdrop show"
+  *ngIf="showCreateModal"
+></div>
 
 <!-- backdrop -->
 <div class="modal-backdrop show" *ngIf="showReprogramModal"></div>

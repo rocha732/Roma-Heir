@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CalendarEvent, CalendarView } from 'angular-calendar';
 import { Subject } from 'rxjs';
 import { ReservationsService } from 'src/app/core/services/reservations.service';
+import { SalonServicesService } from 'src/app/core/services/salon-services.service';
 import {
   addMonths,
   subMonths,
@@ -17,6 +18,8 @@ import { GetReservations } from 'src/app/core/models/reservations';
 import { UsersService } from 'src/app/core/services/users.service';
 import { ResponseUsers } from 'src/app/core/models/users';
 import { es } from 'date-fns/locale';
+import { SpecialistsService } from 'src/app/core/services/specialists.service';
+import { ProductsService } from 'src/app/core/services/products.service';
 
 @Component({
   selector: 'app-calendar-reservations',
@@ -88,13 +91,34 @@ export class CalendarReservationsComponent implements OnInit {
   todayString = '';
   availableHours: string[] = [];
 
+  showCreateModal = false;
+
+  createReservationData = {
+    customerId: null,
+    serviceId: null,
+    specialistId: null,
+    requiresPersonalAdvice: false,
+    hourAt: '',
+    reservedAt: '',
+  };
+
+  services: any[] = [];
+  specialists: any[] = [];
+  customers: any[] = [];
+  allServices: any[] = [];
+  filteredServices: any[] = [];
+
   constructor(
+    private specialistsService: SpecialistsService,
     private reservationsService: ReservationsService,
-    private usersService: UsersService
+    private productsService: ProductsService,
+    private usersService: UsersService,
+    private salonServicesService: SalonServicesService
   ) {}
 
   ngOnInit(): void {
     this.loadSpecialists();
+    this.loadServices();
     this.loadReservations();
     this.loading = true;
   }
@@ -170,18 +194,86 @@ export class CalendarReservationsComponent implements OnInit {
   }
 
   loadSpecialists() {
-    const raw = localStorage.getItem('specialists');
-    if (!raw) return;
-
-    const specialists = JSON.parse(raw);
-
-    specialists.forEach((s: any) => {
-      const fullName = `${s.firstName} ${s.lastName}`;
-      this.specialistsMap.set(s.id, fullName);
+    this.specialistsService.getSpecialists().subscribe({
+      next: (specialists) => {
+        this.specialists = specialists;
+        specialists.forEach((s: any) => {
+          const fullName = `${s.firstName} ${s.lastName}`;
+          this.specialistsMap.set(s.id, fullName);
+        });
+      },
+      error: (err) => {
+        console.error(err);
+      }
     });
   }
+
+  mapServicesToSpecialists() {
+    this.specialists.forEach((specialist: any) => {
+      specialist.services = [];
+      this.services.forEach((service: any) => {
+        const exists = service.stylists?.some(
+          (s: any) => s.id === specialist.id
+        );
+        if (exists) {
+          specialist.services.push({
+            id: service.id,
+            name: service.name
+          });
+        }
+      });
+    });
+    console.log('SPECIALISTS WITH SERVICES', this.specialists);
+  }
+
+  loadServices() {
+  this.productsService.getProducts().subscribe({
+    next: (items: any[]) => {
+
+      const services = items.filter((item) => {
+
+        const typeName =
+          item?.productType?.name ||
+          item?.ProductType?.name ||
+          item?.productTypeName ||
+          item?.ProductType;
+
+        return (
+          typeof typeName === 'string' &&
+          typeName.toLowerCase().includes('service')
+        );
+      });
+
+      this.services = [];
+
+      services.forEach((service: any) => {
+
+        this.salonServicesService
+          .getServiceStylists(service.id)
+          .subscribe({
+            next: (response: any) => {
+              this.services.push({
+                ...service,
+                stylists: response.stylists || []
+              });
+              console.log('SERVICE WITH STYLISTS', this.services);
+              this.mapServicesToSpecialists();
+            },
+            error: (err) => {
+              console.error(err);
+            }
+          });
+      });
+    },
+    error: (err) => {
+      console.error(err);
+    }
+  });
+}
+
   loadUsers() {
     this.usersService.getUsers().subscribe((users) => {
+      this.users = users; 
       users.forEach((u) => {
         this.usersMap.set(u.id, {
           name: `${u.firstName} ${u.lastName}`,
@@ -190,7 +282,6 @@ export class CalendarReservationsComponent implements OnInit {
         });
       });
 
-      // 🔥 aquí ya tengo TODO
       this.mapReservationsAndEvents();
     });
   }
@@ -354,8 +445,19 @@ export class CalendarReservationsComponent implements OnInit {
 
   onReprogramDateChange() {
     this.reprogramData.hour = '';
-    this.generateAvailableHours(this.reprogramData.date!);
+    this.generateAvailableHours(
+      this.createReservationData.reservedAt
+    );
   }
+
+  onCreateDateChange() {
+    this.createReservationData.hourAt = '';
+
+    this.generateAvailableHours(
+      this.createReservationData.reservedAt
+    );
+  }
+
   generateAvailableHours(selectedDate: string) {
     const hours: string[] = [];
     const now = new Date();
@@ -395,7 +497,7 @@ export class CalendarReservationsComponent implements OnInit {
     this.reservationsService
       .updateReservationDate(reservationId, {
         reservedAt: date,
-        hourAt: hour + ':00',
+        hourAt: hour,
       })
       .subscribe({
         next: () => {
@@ -426,5 +528,62 @@ export class CalendarReservationsComponent implements OnInit {
       id: '',
     };
     this.availableHours = [];
+  }
+
+  openCreateReservationModal(date?: Date) {
+    this.showCreateModal = true;
+
+    const selectedDate = date
+      ? this.formatDateInput(date)
+      : this.formatDateInput(new Date());
+
+    this.createReservationData = {
+      customerId: null,
+      serviceId: null,
+      specialistId: null,
+      requiresPersonalAdvice: false,
+      hourAt: '',
+      reservedAt: selectedDate,
+    };
+    // 🔥 generar horas disponibles
+    this.generateAvailableHours(selectedDate);
+  }
+
+  closeCreateModal() {
+    this.showCreateModal = false;
+  }
+
+  createReservation() {
+    const body = {
+      customerId: this.createReservationData.customerId,
+      serviceId: this.createReservationData.serviceId,
+      specialistId: this.createReservationData.specialistId,
+      requiresPersonalAdvice:
+        this.createReservationData.requiresPersonalAdvice,
+      hourAt: this.createReservationData.hourAt
+      ,
+      reservedAt: this.createReservationData.reservedAt,
+    };
+
+    this.reservationsService.createReservation(body).subscribe({
+      next: () => {
+        this.closeCreateModal();
+        this.loadReservations();
+      },
+      error: (err) => {
+        console.error(err);
+      },
+    });
+  }
+
+  onSpecialistChange() {
+    const specialist = this.specialists.find(
+      (s) => s.id === this.createReservationData.specialistId
+    );
+
+    this.filteredServices = specialist?.services ?? [];
+
+    // resetear servicio seleccionado
+    this.createReservationData.serviceId = null;
   }
 }

@@ -14,5 +14,11 @@ private apiUrl = 'https://api-roma-mahair-dev-cqgmfch0fgf9fyev.canadacentral-01.
     return this.http.get<GetSpecialists[]>(`${this.apiUrl}/Specialists`);
   }
 
-  
+  getSpecialistById(id: number): Observable<GetSpecialists> {
+    return this.http.get<GetSpecialists>(`${this.apiUrl}/Specialists/${id}`);
+  }
+
+  updateSpecialist(id: number, body: any): Observable<unknown> {
+    return this.http.put(`${this.apiUrl}/Specialists/${id}`, body);
+  }
 }

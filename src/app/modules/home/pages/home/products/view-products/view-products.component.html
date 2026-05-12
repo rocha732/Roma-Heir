@@ -94,34 +94,6 @@
 		</div>
 	</div>
 
-	<!-- Statistics by Category and Type 
-	<div class="products-stats-detailed">
-		<div class="stat-breakdown stat-categories">
-			<div class="breakdown-header">
-				<span class="breakdown-icon">🏷️</span>
-				<span class="breakdown-title">Por Categoría</span>
-			</div>
-			<div class="breakdown-list">
-				<div *ngFor="let cat of productsByCategory" class="breakdown-item">
-					<span class="breakdown-name">{{ cat.name }}</span>
-					<span class="breakdown-count">{{ cat.count }}</span>
-				</div>
-			</div>
-		</div>
-		<div class="stat-breakdown stat-types">
-			<div class="breakdown-header">
-				<span class="breakdown-icon">📋</span>
-				<span class="breakdown-title">Por Tipo de Producto</span>
-			</div>
-			<div class="breakdown-list">
-				<div *ngFor="let type of productsByType" class="breakdown-item">
-					<span class="breakdown-name">{{ type.name }}</span>
-					<span class="breakdown-count">{{ type.count }}</span>
-				</div>
-			</div>
-		</div>
-	</div>-->
-
 	<div class="products-actions">
 		<input 
 			#searchBox 
@@ -134,11 +106,6 @@
 			<select class="products-search" [(ngModel)]="selectedCategory" (change)="onFilterChange()">
 				<option [ngValue]="null">Todas las categorías</option>
 				<option *ngFor="let cat of categoryList" [ngValue]="cat.name">{{ cat.name }}</option>
-			</select>
-
-			<select class="products-search" [(ngModel)]="selectedProductType" (change)="onFilterChange()">
-				<option [ngValue]="null">Todos los tipos</option>
-				<option *ngFor="let type of productTypeList" [ngValue]="type.id">{{ type.name }}</option>
 			</select>
 		</div>
 	</div>

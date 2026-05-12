@@ -1,0 +1,56 @@
+<div class="page-title">Editar especialista</div>
+
+<div class="glass-card">
+  <div *ngIf="errorMsg" class="alert alert-error">{{ errorMsg }}</div>
+
+  <div *ngIf="loading" class="table-loading">Cargando especialista…</div>
+
+  <form *ngIf="!loading && specialist" class="edit-form" (ngSubmit)="saveSpecialist()">
+    <div class="form-row">
+      <label class="form-label">Nombre</label>
+      <input class="form-input" [(ngModel)]="specialist.firstName" name="firstName" />
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">Apellido</label>
+      <input class="form-input" [(ngModel)]="specialist.lastName" name="lastName" />
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">Email</label>
+      <input class="form-input" [(ngModel)]="specialist.email" name="email" type="email" />
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">Teléfono</label>
+      <input class="form-input" [(ngModel)]="specialist.phone" name="phone" />
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">Rol</label>
+      <input class="form-input" [(ngModel)]="specialist.role!.name" name="roleName" />
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">Servicios que brinda</label>
+      <select
+        class="form-select"
+        multiple
+        [(ngModel)]="selectedServiceIds"
+        name="serviceIds"
+      >
+        <option *ngFor="let service of services" [ngValue]="service.id">
+          {{ service.name }}
+        </option>
+      </select>
+      <p class="hint">Selecciona los servicios disponibles para este especialista.</p>
+    </div>
+
+    <div class="button-row">
+      <button type="button" class="btn-secondary" (click)="cancel()">Cancelar</button>
+      <button type="submit" class="btn-primary" [disabled]="saving">
+        {{ saving ? 'Guardando…' : 'Guardar especialista' }}
+      </button>
+    </div>
+  </form>
+</div>

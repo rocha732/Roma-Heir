@@ -18,12 +18,11 @@ export class CreateProductComponent implements OnInit {
     description: '',
     price: null,
     categoryId: null,
-    productType: null,
+    productType: 1,
     available: true,
     picture: null
   };
   categoryList: { id: number, name: string }[] = [];
-  productTypeList: { id: number, name: string }[] = [];
   isDragOver = false;
   imagePreview: string | ArrayBuffer | null = null;
 
@@ -35,27 +34,9 @@ export class CreateProductComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    let categoriesLoaded = false;
-    let typesLoaded = false;
-
-    // Obtener categorías
     this.categoriesService.getCategories().subscribe(categories => {
       this.categoryList = categories;
-      categoriesLoaded = true;
-      if (categoriesLoaded && typesLoaded) this.loading = false;
-    });
-    
-    // Obtener tipos de producto únicos desde los productos existentes
-    this.productsService.getProducts().subscribe((products: any) => {
-      const typeMap = new Map<number, { id: number, name: string }>();
-      products.forEach((p: any) => {
-        if (p.productType && p.productType.id && !typeMap.has(p.productType.id)) {
-          typeMap.set(p.productType.id, { id: p.productType.id, name: p.productType.name });
-        }
-      });
-      this.productTypeList = Array.from(typeMap.values());
-      typesLoaded = true;
-      if (categoriesLoaded && typesLoaded) this.loading = false;
+      this.loading = false;
     });
   }
 
@@ -102,7 +83,7 @@ export class CreateProductComponent implements OnInit {
       Price: this.product.price,
       Available: this.product.available,
       CategoryId: this.product.categoryId,
-      ProductType: this.product.productType,
+      ProductType: 1,
       Picture: this.product.picture
     };
     this.processingOverlay.show('Se está creando el producto');

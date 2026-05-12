@@ -20,11 +20,18 @@ export class ReservationsService {
   }
 
   updateReservationStatus(id: number, body: { newStatusId: number }) {
-  return this.http.patch(`${this.apiUrl}/Reservations/${id}/status`, body);
-}
+    return this.http.patch(`${this.apiUrl}/Reservations/${id}/status`, body);
+  }
 
-updateReservationDate(id: number, body: { reservedAt: string; hourAt: string }) {
-  return this.http.put(`${this.apiUrl}/Reservations/${id}/dates`, body);
-}
+  updateReservationDate(id: number, body: { reservedAt: string; hourAt: string }) {
+    return this.http.put(`${this.apiUrl}/Reservations/${id}/dates`, body);
+  }
+
+  createReservation(body: any) {
+    return this.http.post(
+      `${this.apiUrl}/Reservations`,
+      body
+    );
+  }
 
 }

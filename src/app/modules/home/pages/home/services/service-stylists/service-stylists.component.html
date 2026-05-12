@@ -1,131 +1,111 @@
-<div class="page-title">Servicios y estilistas</div>
-
-<div *ngIf="lockedServiceId != null" class="locked-service-bar">
-  <div class="locked-service-text">
-    <span class="locked-label">Trabajando en</span>
-    <strong class="locked-value">
-      {{
-        lockedServiceName
-          ? lockedServiceName + ' (#' + lockedServiceId + ')'
-          : 'Servicio #' + lockedServiceId
-      }}
-    </strong>
-  </div>
-  <a class="btn-back-list" routerLink="/home/services/list">← Volver al listado</a>
-</div>
-
-<p *ngIf="catalogLoading" class="catalog-loading">Cargando catálogo de servicios…</p>
+<div class="page-title">Lista de especialistas</div>
 
 <div class="glass-card">
   <div *ngIf="errorMsg" class="alert alert-error">{{ errorMsg }}</div>
-  <div *ngIf="okMsg" class="alert alert-success">{{ okMsg }}</div>
 
-  <section class="form-block" *ngIf="lockedServiceId === null">
-    <h3 class="block-title">1. Servicio</h3>
-
-    <ng-container *ngIf="!catalogLoadFailed; else manualIdTpl">
-      <label class="form-label">Seleccionar servicio</label>
-      <select
-        class="form-select"
-        name="svc"
-        [(ngModel)]="selectedServiceId"
-        (ngModelChange)="onServiceSelectChange()"
-      >
-        <option [ngValue]="null">— Elige un servicio —</option>
-        <option *ngFor="let s of services" [ngValue]="s.id">
-          {{ s.name }} (#{{ s.id }})
-        </option>
-      </select>
-      <p class="hint" *ngIf="services.length === 0">
-        El catálogo de servicios no devolvió datos. Usa ID manual abajo (<span
-          class="recarga"
-          (click)="loadCatalog()"
-          >reintentar carga</span
-        >).
-      </p>
-    </ng-container>
-
-    <ng-template #manualIdTpl>
-      <label class="form-label">ID del servicio</label>
-      <div class="row-manual">
-        <input
-          type="number"
-          class="form-input"
-          name="manualSvc"
-          [(ngModel)]="manualServiceId"
-          placeholder="Ej. 1"
-          min="1"
-        />
-        <button type="button" class="btn-secondary" (click)="applyManualServiceId()">
-          Cargar estilistas
-        </button>
+  <!--<div class="stylists-header">
+    <div class="stylists-summary">
+      <div class="summary-item">
+        <span class="summary-label">Especialistas</span>
+        <span class="summary-value">{{ filteredSpecialists.length }}</span>
       </div>
-      <p class="hint">
-        No se cargó la lista desde el servidor.
-        <span class="recarga" (click)="loadCatalog()">Reintentar listado</span>
-      </p>
-    </ng-template>
-  </section>
-
-  <section class="form-block">
-    <h3 class="block-title">
-      {{ lockedServiceId != null ? '1.' : '2.' }} Estilistas vinculados
-    </h3>
+    </div>
     <button
-      *ngIf="activeServiceId != null"
       type="button"
       class="btn-outline"
-      (click)="loadLinkedStylists()"
+      (click)="loadSpecialists()"
       [disabled]="loadingList"
     >
-      {{ loadingList ? 'Actualizando…' : 'Refrescar lista' }}
+      {{ loadingList ? 'Refrescando…' : 'Actualizar' }}
     </button>
+  </div>-->
 
-    <ul class="linked-list" *ngIf="linkedRaw.length">
-      <li *ngFor="let row of linkedRaw" class="linked-item">
-        <span class="name">{{ stylistLabel(row) }}</span>
-        <button
-          type="button"
-          class="btn-danger-soft"
-          (mousedown)="removeStylist(stylistIdFromRow(row)!, $event)"
-          *ngIf="stylistIdFromRow(row) != null"
-        >
-          Quitar
-        </button>
-      </li>
-    </ul>
-    <p *ngIf="!loadingList && linkedRaw.length === 0 && activeServiceId != null" class="empty-state">
-      No hay estilistas vinculados o aún no se ha cargado la lista.
-    </p>
-  </section>
+  <div class="filters-row">
+    <input
+      type="text"
+      class="form-input filter-input"
+      placeholder="Buscar por nombre"
+      [(ngModel)]="searchFirstName"
+    />
+    <input
+      type="text"
+      class="form-input filter-input"
+      placeholder="Buscar por apellido"
+      [(ngModel)]="searchLastName"
+    />
+    <input
+      type="text"
+      class="form-input filter-input"
+      placeholder="Buscar por email"
+      [(ngModel)]="searchEmail"
+    />
+    <select class="form-select filter-input" [(ngModel)]="filterCountry">
+      <option value="">Todos los países</option>
+      <option *ngFor="let country of countryOptions" [value]="country">{{ country }}</option>
+    </select>
+    <select class="form-select filter-input" [(ngModel)]="filterRole">
+      <option value="">Todos los roles</option>
+      <option *ngFor="let role of roleOptions" [value]="role">{{ role }}</option>
+    </select>
+  </div>
 
-  <section class="form-block">
-    <h3 class="block-title">
-      {{ lockedServiceId != null ? '2.' : '3.' }} Agregar estilista
-    </h3>
-    <label class="form-label">Especialista disponible</label>
-    <div class="row-add">
-      <select
-        class="form-select"
-        name="addStylist"
-        [(ngModel)]="selectedStylistToAdd"
-      >
-        <option [ngValue]="null">— Seleccionar —</option>
-        <option *ngFor="let sp of availableSpecialistsToAdd()" [ngValue]="sp.id">
-          {{ sp.firstName }} {{ sp.lastName }} (#{{ sp.id }})
-        </option>
-      </select>
-      <button
-        type="button"
-        class="btn-primary"
-        (click)="addStylist()"
-        [disabled]="activeServiceId == null || selectedStylistToAdd == null"
-      >
-        Asignar
-      </button>
-    </div>
-    <p class="hint" *ngIf="specialists.length === 0">
-      No hay especialistas cargados.
-    </p>
-  </section>
+  <div *ngIf="loadingList" class="table-loading">
+    Cargando especialistas…
+  </div>
+
+  <table *ngIf="!loadingList && filteredSpecialists.length > 0" class="stylists-table">
+    <thead>
+      <tr>
+        <th>Foto</th>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Teléfono</th>
+        <th>País</th>
+        <th>Rol</th>
+        <th>Servicios</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let specialist of filteredSpecialists">
+        <td>
+          <div class="avatar-cell">
+            <img
+              *ngIf="specialist.profileImageUrl"
+              class="avatar-image"
+              [src]="specialist.profileImageUrl"
+              [alt]="specialistFullName(specialist)"
+            />
+            <div *ngIf="!specialist.profileImageUrl" class="avatar-fallback">
+              {{ specialistAvatarInitials(specialist) }}
+            </div>
+          </div>
+        </td>
+        <td>{{ specialistFullName(specialist) }}</td>
+        <td>{{ specialist.email || '—' }}</td>
+        <td>{{ specialist.phone || '—' }}</td>
+        <td>{{ specialistLocation(specialist) }}</td>
+        <td>{{ specialist.role?.name || 'N/A' }}</td>
+        <td>
+          <div class="services-list">
+            <span
+              *ngFor="let service of specialist.services"
+              class="service-badge"
+            >
+              {{ service.name }}
+            </span>
+
+            <span
+              *ngIf="!specialist.services || specialist.services.length === 0"
+            >
+              —
+            </span>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="!loadingList && filteredSpecialists.length === 0" class="empty-state">
+    No se encontraron especialistas.
+  </div>
 </div>
