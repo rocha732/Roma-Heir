@@ -82,7 +82,7 @@ export class EditProductComponent implements OnInit {
         price: found.price,
         categoryId: categoryId,
         categoryName: found.categoryName,
-        productType: found.productType?.id,
+        productType: found.productType?.id ?? found.productTypeId ?? 1,
         available: found.available,
         picture: null
       };
@@ -139,15 +139,15 @@ export class EditProductComponent implements OnInit {
     const payload: any = {
       Name: this.product.name,
       Description: this.product.description,
-      Price: this.product.price,
+      Price: Number(this.product.price),
       Available: this.product.available,
-      CategoryId: this.product.categoryId,
-      ProductType: this.product.productType
+      CategoryId: Number(this.product.categoryId),
+      ProductType: Number(this.product.productType)
     };
     if (this.product.picture) {
       payload.Picture = this.product.picture;
     }
-    console.log('Payload enviado:', payload);
+    console.log('PAYLOAD FINAL', payload);
     this.processingOverlay.show('Estamos actualizando el producto');
     this.productsService
       .updateProduct(this.product.id, payload)
