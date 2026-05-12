@@ -15,6 +15,7 @@ export class ProductCardComponent {
   @Input() price: number = 0;
   @Input() available: boolean = false;
   @Input() productTypeName: string = '';
+  @Input() buttonLabel: string = 'Editar';
   @Input() id!: number;
   @Input() onEditCallback?: (id: number) => void;
   constructor(private router: Router) {}

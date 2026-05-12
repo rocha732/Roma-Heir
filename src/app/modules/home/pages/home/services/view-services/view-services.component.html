@@ -1,44 +1,116 @@
-<h1 class="page-title">Servicios</h1>
+<div class="products-title">Lista de Servicios</div>
 
-<div class="glass-card">
-  <div class="toolbar">
-    <button type="button" class="btn-refresh" (click)="loadServices()" [disabled]="loading">
-      {{ loading ? 'Cargando…' : 'Actualizar' }}
-    </button>
-  </div>
+<div *ngIf="loading">
+	<!-- Shimmer Stats -->
+	<div class="products-stats">
+		<div class="stat-card shimmer-stat">
+			<div class="shimmer shimmer-icon"></div>
+			<div class="shimmer-info">
+				<div class="shimmer shimmer-stat-value"></div>
+				<div class="shimmer shimmer-stat-label"></div>
+			</div>
+		</div>
+		<div class="stat-card shimmer-stat">
+			<div class="shimmer shimmer-icon"></div>
+			<div class="shimmer-info">
+				<div class="shimmer shimmer-stat-value"></div>
+				<div class="shimmer shimmer-stat-label"></div>
+			</div>
+		</div>
+		<div class="stat-card shimmer-stat">
+			<div class="shimmer shimmer-icon"></div>
+			<div class="shimmer-info">
+				<div class="shimmer shimmer-stat-value"></div>
+				<div class="shimmer shimmer-stat-label"></div>
+			</div>
+		</div>
+		<div class="stat-card shimmer-stat">
+			<div class="shimmer shimmer-icon"></div>
+			<div class="shimmer-info">
+				<div class="shimmer shimmer-stat-value"></div>
+				<div class="shimmer shimmer-stat-label"></div>
+			</div>
+		</div>
+	</div>
 
-  <div *ngIf="errorMsg" class="alert alert-error">{{ errorMsg }}</div>
+	<!-- Shimmer Actions -->
+	<div class="products-actions">
+		<div class="skeleton-input shimmer"></div>
+		<div class="products-filters">
+			<div class="skeleton-select shimmer"></div>
+			<div class="skeleton-select shimmer"></div>
+		</div>
+	</div>
+	
+	<!-- Shimmer Cards -->
+	<div class="products-list">
+		<div *ngFor="let item of [1,2,3,4,5,6]" class="product-card-skeleton">
+			<div class="skeleton-image shimmer"></div>
+			<div class="skeleton-category shimmer"></div>
+			<div class="skeleton-content">
+				<div class="skeleton-title shimmer"></div>
+				<div class="skeleton-description shimmer"></div>
+				<div class="skeleton-footer">
+					<div class="skeleton-price shimmer"></div>
+					<div class="skeleton-badge shimmer"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
 
-  <div *ngIf="loading" class="skeleton-lines">
-    <div class="sk-line" *ngFor="let _ of skeletonRows"></div>
-  </div>
+<div *ngIf="!loading && !errorMsg">
+	<div *ngIf="services && services.length">
+		<!-- Statistics Summary -->
+		<div class="products-stats">
+			<div class="stat-card stat-total">
+				<div class="stat-icon">📦</div>
+				<div class="stat-info">
+					<div class="stat-value">{{ totalServices }}</div>
+					<div class="stat-label">Total Servicios</div>
+				</div>
+			</div>
+			<div class="stat-card stat-available">
+				<div class="stat-icon">✅</div>
+				<div class="stat-info">
+					<div class="stat-value">{{ availableServices }}</div>
+					<div class="stat-label">Disponibles</div>
+				</div>
+			</div>
+			<div class="stat-card stat-unavailable">
+				<div class="stat-icon">⏸️</div>
+				<div class="stat-info">
+					<div class="stat-value">{{ unavailableServices }}</div>
+					<div class="stat-label">No Disponibles</div>
+				</div>
+			</div>
+			<div class="stat-card stat-price">
+				<div class="stat-icon">💰</div>
+				<div class="stat-info">
+					<div class="stat-value">S/. {{ averagePrice | number:'1.2-2' }}</div>
+					<div class="stat-label">Precio Promedio</div>
+				</div>
+			</div>
+		</div>
 
-  <ng-container *ngIf="!loading && !errorMsg">
-    <div *ngIf="services.length === 0" class="empty">No hay servicios para mostrar.</div>
+		<div class="products-list">
+			<app-product-card
+				*ngFor="let s of services"
+				[profileImageUrl]="s.profileImageUrl || 'https://placehold.co/320x160'"
+				[categoryName]="s.categoryName || 'Sin categoría'"
+				[name]="s.name"
+				[description]="trimDescription(s.description) || '—'"
+				[price]="s.price"
+				[available]="s.available"
+				[id]="s.id"
+				[buttonLabel]="'Estilistas'"
+				[onEditCallback]="manageStylistsById"
+			></app-product-card>
+		</div>
+	</div>
 
-    <div *ngIf="services.length > 0" class="table-wrap">
-      <table class="service-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Nombre</th>
-            <th>Descripción</th>
-            <th class="col-actions">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let s of services">
-            <td class="td-id">{{ s.id }}</td>
-            <td class="td-name">{{ s.name }}</td>
-            <td class="td-desc">{{ trimDescription(s.description) || '—' }}</td>
-            <td class="td-actions">
-              <button type="button" class="btn-link-service" (click)="manageStylists(s)">
-                Estilistas
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </ng-container>
+	<div *ngIf="!services || !services.length" class="products-empty">
+		<span class="icon-empty">📦</span>
+		<p>No hay servicios para mostrar.</p>
+	</div>
 </div>

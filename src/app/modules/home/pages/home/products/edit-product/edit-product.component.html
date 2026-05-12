@@ -40,13 +40,6 @@
       </select>
     </div>
     <div class="form-group">
-      <label class="form-group-label">Tipo de producto</label>
-      <select class="form-control" name="productType" [(ngModel)]="product.productType" required>
-        <option [ngValue]="null">Selecciona un tipo</option>
-        <option *ngFor="let type of productTypeList" [ngValue]="type.id">{{ type.name }}</option>
-      </select>
-    </div>
-    <div class="form-group">
       <label class="form-group-label">Imagen</label>
       <div 
         class="image-drop-area"

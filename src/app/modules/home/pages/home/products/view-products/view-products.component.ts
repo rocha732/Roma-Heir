@@ -16,9 +16,7 @@ export class ViewProductsComponent {
   searchTerm: string = '';
   showModal: boolean = false;
   categoryList: { id: number, name: string }[] = [];
-  productTypeList: { id: number, name: string }[] = [];
   selectedCategory: string | null = null;
-  selectedProductType: number | null = null;
   loading: boolean = true;
 
   constructor(
@@ -31,19 +29,14 @@ export class ViewProductsComponent {
     this.categoriesService.getCategories().subscribe((categories) => {
       this.categoryList = categories;
     });
-    // Cargar productos y tipos de producto
+    // Cargar solo productos (filtramos por productType.name que contenga 'Product')
     this.productsService.getProducts().subscribe((products: any) => {
-      this.products = products;
-      this.filteredProducts = products;
+      const productItems = products.filter((p: any) =>
+        String(p.productType?.name || '').toLowerCase().includes('product')
+      );
+      this.products = productItems;
+      this.filteredProducts = productItems;
       this.loading = false;
-      // Construir lista de tipos de producto únicos como objetos {id, name}
-      const typeMap = new Map<number, { id: number, name: string }>();
-      products.forEach((p: any) => {
-        if (p.productType && p.productType.id && !typeMap.has(p.productType.id)) {
-          typeMap.set(p.productType.id, { id: p.productType.id, name: p.productType.name });
-        }
-      });
-      this.productTypeList = Array.from(typeMap.values());
     });
   }
 
@@ -64,10 +57,6 @@ export class ViewProductsComponent {
     return this.categoryList.length;
   }
 
-  get totalProductTypes(): number {
-    return this.productTypeList.length;
-  }
-
   // Obtener productos por categoría
   get productsByCategory(): { name: string, count: number }[] {
     const categoryCount = new Map<string, number>();
@@ -76,18 +65,6 @@ export class ViewProductsComponent {
       categoryCount.set(cat, (categoryCount.get(cat) || 0) + 1);
     });
     return Array.from(categoryCount.entries())
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count);
-  }
-
-  // Obtener productos por tipo
-  get productsByType(): { name: string, count: number }[] {
-    const typeCount = new Map<string, number>();
-    this.products.forEach(p => {
-      const typeName = p.productType?.name || 'Sin tipo';
-      typeCount.set(typeName, (typeCount.get(typeName) || 0) + 1);
-    });
-    return Array.from(typeCount.entries())
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count);
   }
@@ -118,13 +95,12 @@ export class ViewProductsComponent {
       const matchesSearch = !this.searchTerm || name.includes(this.searchTerm) || category.includes(this.searchTerm);
       // Filtrar por categoryName en vez de categoryId
       const matchesCategory = this.selectedCategory == null || product.categoryName === this.selectedCategory;
-      const matchesType = this.selectedProductType == null || (product.productType && product.productType.id == this.selectedProductType);
+      const matchesType = String(product.productType?.name || '').toLowerCase().includes('product');
       return matchesSearch && matchesCategory && matchesType;
     });
     console.log('Filtro aplicado:', {
       searchTerm: this.searchTerm,
       selectedCategory: this.selectedCategory,
-      selectedProductType: this.selectedProductType,
       filteredProducts: this.filteredProducts
     });
   }

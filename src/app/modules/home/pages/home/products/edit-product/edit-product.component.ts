@@ -18,7 +18,6 @@ export class EditProductComponent implements OnInit {
   allProducts: any[] = [];
   selectedProductId: number | null = null;
   categoryList: { id: number, name: string }[] = [];
-  productTypeList: { id: number, name: string }[] = [];
   isDragOver = false;
   imagePreview: string | ArrayBuffer | null = null;
   successMessage: string | null = null;
@@ -37,40 +36,22 @@ export class EditProductComponent implements OnInit {
     let categoriesLoaded = false;
     let productsLoaded = false;
 
-    this.categoriesService.getCategories().subscribe({
-      next: (categories) => {
-        this.categoryList = categories;
-        categoriesLoaded = true;
-        if (categoriesLoaded && productsLoaded) this.loading = false;
-      },
-      error: (err) => {
-        categoriesLoaded = true;
-        if (categoriesLoaded && productsLoaded) this.loading = false;
-        this.openErrorModal(err, 'No se pudo cargar la lista de categorías.');
+    this.categoriesService.getCategories().subscribe(categories => {
+      this.categoryList = categories;
+      if (this.product?.categoryId == null && this.product?.categoryName) {
+        this.product.categoryId = this.getCategoryIdByName(this.product.categoryName);
       }
+      categoriesLoaded = true;
+      if (categoriesLoaded && productsLoaded) this.loading = false;
     });
     
-    this.productsService.getProducts().subscribe({
-      next: (products: any) => {
-        this.allProducts = products;
-        const typeMap = new Map<number, { id: number, name: string }>();
-        products.forEach((p: any) => {
-          if (p.productType && p.productType.id && !typeMap.has(p.productType.id)) {
-            typeMap.set(p.productType.id, { id: p.productType.id, name: p.productType.name });
-          }
-        });
-        this.productTypeList = Array.from(typeMap.values());
-        const id = this.route.snapshot.paramMap.get('id');
-        if (id) {
-          this.setProductToEdit(id);
-        }
-        productsLoaded = true;
-        if (categoriesLoaded && productsLoaded) this.loading = false;
-      },
-      error: (err) => {
-        productsLoaded = true;
-        if (categoriesLoaded && productsLoaded) this.loading = false;
-        this.openErrorModal(err, 'No se pudo cargar la lista de productos.');
+    this.productsService.getProducts().subscribe((products: any) => {
+      this.allProducts = products.filter((p: any) =>
+        String(p.productType?.name || '').toLowerCase().includes('product')
+      );
+      const id = this.route.snapshot.paramMap.get('id');
+      if (id) {
+        this.setProductToEdit(id);
       }
     });
   }
@@ -92,16 +73,25 @@ export class EditProductComponent implements OnInit {
     }
   }
 
+  private getCategoryIdByName(name: string | undefined | null): number | null {
+    if (!name) return null;
+    const foundCategory = this.categoryList.find(cat => cat.name === name);
+    return foundCategory ? foundCategory.id : null;
+  }
+
   setProductToEdit(id: number | string) {
     const found = this.allProducts.find((p: any) => String(p.id) === String(id));
     if (found) {
+      const categoryId = found.categoryId ?? this.getCategoryIdByName(found.categoryName);
+
       this.product = {
         id: found.id,
         name: found.name,
         description: found.description,
         price: found.price,
-        categoryId: found.categoryId,
-        productType: found.productType?.id,
+        categoryId: categoryId,
+        categoryName: found.categoryName,
+        productType: found.productType?.id ?? found.productTypeId ?? 1,
         available: found.available,
         picture: null
       };
@@ -158,15 +148,15 @@ export class EditProductComponent implements OnInit {
     const payload: any = {
       Name: this.product.name,
       Description: this.product.description,
-      Price: this.product.price,
+      Price: Number(this.product.price),
       Available: this.product.available,
-      CategoryId: this.product.categoryId,
-      ProductType: this.product.productType
+      CategoryId: Number(this.product.categoryId),
+      ProductType: Number(this.product.productType)
     };
     if (this.product.picture) {
       payload.Picture = this.product.picture;
     }
-    console.log('Payload enviado:', payload);
+    console.log('PAYLOAD FINAL', payload);
     this.processingOverlay.show('Estamos actualizando el producto');
     this.productsService
       .updateProduct(this.product.id, payload)

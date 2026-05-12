@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
-import { SalonServiceBrief } from 'src/app/core/models/salon-service';
-import { SalonServicesService } from 'src/app/core/services/salon-services.service';
+import { ProductsService } from 'src/app/core/services/products.service';
 
 @Component({
   selector: 'app-view-services',
@@ -10,14 +9,31 @@ import { SalonServicesService } from 'src/app/core/services/salon-services.servi
   styleUrls: ['./view-services.component.scss'],
 })
 export class ViewServicesComponent implements OnInit {
-  services: SalonServiceBrief[] = [];
-  /** Placeholder rows for el skeleton del listado */
+  services: any[] = [];
+  /** Placeholder rows para el skeleton del listado */
   skeletonRows = [0, 1, 2, 3, 4];
   loading = true;
   errorMsg: string | null = null;
 
+  get totalServices(): number {
+    return this.services.length;
+  }
+
+  get availableServices(): number {
+    return this.services.filter(s => s.available).length;
+  }
+
+  get unavailableServices(): number {
+    return this.services.filter(s => !s.available).length;
+  }
+
+  get averagePrice(): number {
+    if (this.services.length === 0) return 0;
+    return this.services.reduce((sum, s) => sum + (s.price || 0), 0) / this.services.length;
+  }
+
   constructor(
-    private salonServices: SalonServicesService,
+    private productsService: ProductsService,
     private router: Router
   ) {}
 
@@ -26,26 +42,35 @@ export class ViewServicesComponent implements OnInit {
   }
 
   loadServices() {
-    this.loading = true;
     this.errorMsg = null;
-    this.salonServices
-      .getServices()
+    this.loading = true;
+
+    this.productsService.getProducts()
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
-        next: (rows) => (this.services = Array.isArray(rows) ? [...rows] : []),
+        next: (items: any[]) => {
+          const list = Array.isArray(items) ? items : [];
+          this.services = list.filter((item) => {
+            const typeName = item?.productType?.name || item?.ProductType?.name || item?.productTypeName || item?.ProductType;
+            return typeof typeName === 'string' && typeName.toLowerCase().includes('service');
+          });
+        },
         error: (err) => {
+          console.error(err);
           this.services = [];
           this.errorMsg =
             err?.error?.detail ||
             err?.error?.title ||
-            'No se pudo obtener el listado de servicios.';
+            'No se pudieron cargar los servicios.';
         },
       });
   }
 
-  manageStylists(s: SalonServiceBrief) {
-    this.router.navigate(['/home', 'services', s.id, 'stylists'], {
-      state: { svc: { id: s.id, name: s.name } },
+  manageStylistsById(id: number) {
+    const service = this.services.find((s: any) => s.id === id);
+    if (!service) return;
+    this.router.navigate(['/home', 'services', service.id, 'stylists'], {
+      state: { svc: { id: service.id, name: service.name } },
     });
   }
 

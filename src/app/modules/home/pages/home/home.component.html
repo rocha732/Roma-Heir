@@ -293,8 +293,19 @@
                 class="nav-link text-white sidebar-link"
                 routerLink="services/stylists"
                 routerLinkActive="active-link"
+                [routerLinkActiveOptions]="{ exact: true }"
               >
-                Estilistas (avanzado)
+                Estilistas
+              </a>
+            </li>
+            <li>
+              <a
+                class="nav-link text-white sidebar-link"
+                routerLink="services/stylists/assign"
+                routerLinkActive="active-link"
+                [routerLinkActiveOptions]="{ exact: false }"
+              >
+                Asignar Especialistas
               </a>
             </li>
           </ul>

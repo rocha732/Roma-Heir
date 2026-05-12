@@ -1,0 +1,82 @@
+<div class="service-stylist-title">Asignar Especialistas a Servicios</div>
+
+<div class="glass-card">
+  <div *ngIf="errorMsg" class="alert alert-error">{{ errorMsg }}</div>
+  <div *ngIf="successMsg" class="alert alert-success">{{ successMsg }}</div>
+
+  <div class="form-block">
+    <h3 class="block-title">1. Selecciona un servicio</h3>
+    <label class="form-label">Servicio</label>
+    <select
+      class="form-select"
+      [(ngModel)]="selectedServiceId"
+      (ngModelChange)="onServiceChange()"
+      [disabled]="loadingServices"
+    >
+      <option [ngValue]="null">— Elige un servicio —</option>
+      <option *ngFor="let service of services" [ngValue]="service.id">
+        {{ service.name }} (#{{ service.id }})
+      </option>
+    </select>
+  </div>
+
+  <div *ngIf="selectedServiceId" class="form-block">
+    <h3 class="block-title">2. Especialistas vinculados</h3>
+
+    <div *ngIf="loadingLinked" class="table-loading">Cargando especialistas del servicio...</div>
+
+    <div *ngIf="!loadingLinked && linkedStylists.length > 0" class="specialists-list">
+      <div *ngFor="let specialist of linkedStylists" class="specialist-item">
+        <div class="specialist-info">
+          <strong>{{ specialistFullName(specialist) }}</strong>
+          <span class="specialist-email">{{ specialist.email }}</span>
+          <span class="specialist-service">
+            Servicio: {{ selectedService?.name }}
+          </span>
+        </div>
+        <button
+          type="button"
+          class="btn-danger-soft"
+          (click)="unassignStylist(specialist.id)"
+          [disabled]="savingAssignment"
+        >
+          Remover
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="!loadingLinked && linkedStylists.length === 0" class="empty-state">
+      No hay especialistas asignados a este servicio.
+    </div>
+  </div>
+
+  <div *ngIf="selectedServiceId" class="form-block">
+    <h3 class="block-title">3. Agregar especialista</h3>
+
+    <label class="form-label">Especialista disponible</label>
+    <div class="row-add">
+      <select
+        class="form-select"
+        [(ngModel)]="selectedStylistId"
+        [disabled]="loadingSpecialists"
+      >
+        <option [ngValue]="null">— Seleccionar especialista —</option>
+        <option *ngFor="let specialist of availableSpecialists" [ngValue]="specialist.id">
+          {{ specialistFullName(specialist) }}
+        </option>
+      </select>
+      <button
+        type="button"
+        class="btn-primary"
+        (click)="assignStylist()"
+        [disabled]="savingAssignment || selectedStylistId === null || selectedServiceId === null"
+      >
+        {{ savingAssignment ? 'Asignando...' : 'Asignar' }}
+      </button>
+    </div>
+
+    <p *ngIf="availableSpecialists.length === 0" class="hint">
+      Todos los especialistas disponibles ya están asignados a este servicio.
+    </p>
+  </div>
+</div>

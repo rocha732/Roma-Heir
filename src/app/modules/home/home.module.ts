@@ -30,6 +30,8 @@ import { EditReserveComponent } from './pages/home/reservations/edit-reserve/edi
 import { ViewReservationsComponent } from './pages/home/reservations/view-reservations/view-reservations.component';
 import { CalendarReservationsComponent } from './pages/home/reservations/calendar-reservations/calendar-reservations.component';
 import { ServiceStylistsComponent } from './pages/home/services/service-stylists/service-stylists.component';
+import { ServiceStylistsEditComponent } from './pages/home/services/service-stylists-edit/service-stylists-edit.component';
+import { ServiceStylistAssignmentComponent } from './pages/home/services/service-stylist-assignment/service-stylist-assignment.component';
 import { ViewServicesComponent } from './pages/home/services/view-services/view-services.component';
 import { CalendarModule, DateAdapter } from 'angular-calendar';
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
@@ -56,6 +58,8 @@ import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
     ViewReservationsComponent,
     CalendarReservationsComponent,
     ServiceStylistsComponent,
+    ServiceStylistsEditComponent,
+    ServiceStylistAssignmentComponent,
     ViewServicesComponent,
   ],
   imports: [
