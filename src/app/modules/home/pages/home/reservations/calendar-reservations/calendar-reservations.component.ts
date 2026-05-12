@@ -113,6 +113,7 @@ export class CalendarReservationsComponent implements OnInit {
   constructor(
     private specialistsService: SpecialistsService,
     private reservationsService: ReservationsService,
+    private modalService: NgbModal,
     private productsService: ProductsService,
     private usersService: UsersService,
     private salonServicesService: SalonServicesService
