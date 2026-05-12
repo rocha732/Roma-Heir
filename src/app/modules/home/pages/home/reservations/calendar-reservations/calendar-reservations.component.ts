@@ -116,7 +116,8 @@ export class CalendarReservationsComponent implements OnInit {
     private modalService: NgbModal,
     private productsService: ProductsService,
     private usersService: UsersService,
-    private salonServicesService: SalonServicesService
+    private salonServicesService: SalonServicesService,
+    private modalService: NgbModal
   ) {}
 
   ngOnInit(): void {
