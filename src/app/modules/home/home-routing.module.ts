@@ -83,7 +83,12 @@ const routes: Routes = [
         canActivate: [AuthGuard],
       },
       {
-        path: 'services/stylists/:id/edit',
+        path: 'services/edit-stylists/:id',
+        component: ServiceStylistsEditComponent,
+        canActivate: [AuthGuard],
+      },
+      {
+        path: 'services/edit-stylists',
         component: ServiceStylistsEditComponent,
         canActivate: [AuthGuard],
       },

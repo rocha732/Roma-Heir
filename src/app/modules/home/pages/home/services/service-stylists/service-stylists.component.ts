@@ -151,11 +151,11 @@ export class ServiceStylistsComponent implements OnInit {
     return Array.from(roles).sort();
   }
 
-  /*manageSpecialist(specialist: GetSpecialists) {
+  manageSpecialist(specialist: GetSpecialists) {
     this.router.navigate(['/home', 'services', 'stylists', specialist.id, 'edit'], {
       state: { specialist },
     });
-  }*/
+  }
 
   specialistFullName(row: GetSpecialists): string {
     return `${row.firstName ?? ''} ${row.lastName ?? ''}`.trim() || `Especialista #${row.id}`;

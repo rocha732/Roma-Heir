@@ -53,6 +53,8 @@ export class EditProductComponent implements OnInit {
       if (id) {
         this.setProductToEdit(id);
       }
+      productsLoaded = true;
+      if (categoriesLoaded && productsLoaded) this.loading = false;
     });
   }
 

@@ -1,30 +1,75 @@
-.edit-form {
-  display: grid;
-  gap: 1rem;
+.page-title {
+  font-size: 1.3rem;
+  font-weight: 300;
+  color: #e5e7eb;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.02em;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.form-row {
-  display: grid;
+.edit-product-container {
+  display: flex;
+  flex-direction: column;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: rgba(18, 19, 26, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.edit-product-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
   gap: 0.5rem;
 }
 
-.form-label {
+.form-group-label {
+  font-weight: 300;
   font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.8);
+  display: block;
 }
 
-.form-input,
-.form-select {
-  width: 100%;
-  padding: 0.85rem 1rem;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.06);
+.form-control {
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(4px);
   color: #fff;
+  transition: all 0.2s ease;
+  
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: rgba(59, 130, 246, 0.5);
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
 }
 
-.form-select {
-  min-height: 120px;
+textarea.form-control {
+  min-height: 100px;
+  resize: vertical;
+}
+
+select.form-control {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -34,26 +79,179 @@
   background-position: right 0.75rem center;
   background-size: 16px;
   cursor: pointer;
-
+  
   option {
-    background: rgba(18, 19, 26, 0.95);
+    background: #1a1a2e;
     color: #fff;
   }
 }
 
-select::-ms-expand {
-  filter: invert(1);
+.image-drop-area {
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.03);
+  position: relative;
+  overflow: hidden;
+  
+  &:hover {
+    border-color: rgba(59, 130, 246, 0.4);
+    background: rgba(59, 130, 246, 0.05);
+  }
+  
+  &.dragover {
+    border-color: rgba(59, 130, 246, 0.6);
+    background: rgba(59, 130, 246, 0.1);
+    transform: scale(1.01);
+  }
 }
 
-.hint {
-  margin-top: 0.4rem;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.85rem;
-}
-
-.button-row {
+.drop-text {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.95rem;
   display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  
+  &::before {
+    content: '';
+    font-size: 2rem;
+    opacity: 0.6;
+  }
+}
+
+.image-preview {
+  max-width: 100%;
+  max-height: 200px;
+  margin-top: 0.5rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  object-fit: contain;
+}
+
+// Checkbox styling
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #3b82f6;
+  margin-right: 0.5rem;
+  cursor: pointer;
+}
+
+.btn {
+  padding: 0.7rem 1.5rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-primary {
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  color: #93c5fd;
+  backdrop-filter: blur(4px);
+  
+  &:hover:not(:disabled) {
+    background: rgba(59, 130, 246, 0.35);
+    border-color: rgba(59, 130, 246, 0.6);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Alert messages
+.alert {
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  backdrop-filter: blur(4px);
+}
+
+.alert-success {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #86efac;
+}
+
+.alert-error {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+
+// Shimmer Loading
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite ease-in-out;
+  border-radius: 8px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.shimmer-label {
+  width: 200px;
+  height: 16px;
+  margin-bottom: 0.5rem;
+}
+
+.shimmer-input {
+  width: 100%;
+  height: 42px;
+  border-radius: 10px;
+}
+
+.shimmer-textarea {
+  width: 100%;
+  height: 100px;
+  border-radius: 10px;
+}
+
+.shimmer-select {
+  width: 100%;
+  height: 42px;
+  border-radius: 10px;
+}
+
+.shimmer-image-area {
+  width: 100%;
+  height: 150px;
+  border-radius: 12px;
+}
+
+.shimmer-checkbox {
+  width: 150px;
+  height: 20px;
+}
+
+.shimmer-button {
+  width: 180px;
+  height: 44px;
+  border-radius: 10px;
+  margin-top: 0.5rem;
 }

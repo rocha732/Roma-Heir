@@ -301,6 +301,16 @@
             <li>
               <a
                 class="nav-link text-white sidebar-link"
+                routerLink="services/edit-stylists/:id"
+                routerLinkActive="active-link"
+                [routerLinkActiveOptions]="{ exact: true }"
+              >
+                Editar Servicios
+              </a>
+            </li>
+            <li>
+              <a
+                class="nav-link text-white sidebar-link"
                 routerLink="services/stylists/assign"
                 routerLinkActive="active-link"
                 [routerLinkActiveOptions]="{ exact: false }"

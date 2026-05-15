@@ -63,6 +63,7 @@
         <th>País</th>
         <th>Rol</th>
         <th>Servicios</th>
+        <th>Acciones</th>
       </tr>
     </thead>
     <tbody>
@@ -100,6 +101,15 @@
               —
             </span>
           </div>
+        </td>
+        <td>
+          <button
+            type="button"
+            class="btn btn-outline-primary btn-sm"
+            (click)="manageSpecialist(specialist)"
+          >
+            Editar
+          </button>
         </td>
       </tr>
     </tbody>

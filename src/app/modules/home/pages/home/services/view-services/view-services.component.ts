@@ -66,13 +66,23 @@ export class ViewServicesComponent implements OnInit {
       });
   }
 
-  manageStylistsById(id: number) {
-    const service = this.services.find((s: any) => s.id === id);
-    if (!service) return;
-    this.router.navigate(['/home', 'services', service.id, 'stylists'], {
-      state: { svc: { id: service.id, name: service.name } },
-    });
-  }
+  manageStylistsById = (id: number) => {
+  const service = this.services.find((s: any) => s.id === id);
+
+  if (!service) return;
+
+  this.router.navigate(
+    ['/home/services/edit-stylists', service.id],
+    {
+      state: {
+        svc: {
+          id: service.id,
+          name: service.name,
+        },
+      },
+    }
+  );
+};
 
   trimDescription(d?: string, max = 90): string {
     if (!d) return '';

@@ -1,56 +1,195 @@
-<div class="page-title">Editar especialista</div>
+<h2 class="page-title">Editar servicio</h2>
 
-<div class="glass-card">
-  <div *ngIf="errorMsg" class="alert alert-error">{{ errorMsg }}</div>
-
-  <div *ngIf="loading" class="table-loading">Cargando especialista…</div>
-
-  <form *ngIf="!loading && specialist" class="edit-form" (ngSubmit)="saveSpecialist()">
-    <div class="form-row">
-      <label class="form-label">Nombre</label>
-      <input class="form-input" [(ngModel)]="specialist.firstName" name="firstName" />
+<!-- Shimmer Loading -->
+<div *ngIf="loading" class="edit-product-container">
+  <div class="edit-product-form">
+    <div class="form-group">
+      <div class="shimmer shimmer-label"></div>
+      <div class="shimmer shimmer-select"></div>
     </div>
+  </div>
+</div>
 
-    <div class="form-row">
-      <label class="form-label">Apellido</label>
-      <input class="form-input" [(ngModel)]="specialist.lastName" name="lastName" />
-    </div>
+<!-- Contenido -->
+<div *ngIf="!loading" class="edit-product-container">
 
-    <div class="form-row">
-      <label class="form-label">Email</label>
-      <input class="form-input" [(ngModel)]="specialist.email" name="email" type="email" />
-    </div>
+  <!-- Selector -->
+  <div class="form-group" *ngIf="!service">
+    <label class="form-group-label">
+      Selecciona un servicio para editar:
+    </label>
 
-    <div class="form-row">
-      <label class="form-label">Teléfono</label>
-      <input class="form-input" [(ngModel)]="specialist.phone" name="phone" />
-    </div>
+    <select
+      class="form-control"
+      [(ngModel)]="selectedServiceId"
+      name="selectedServiceId"
+      (change)="onServiceSelect()"
+    >
+      <option [ngValue]="null">
+        Selecciona un servicio
+      </option>
 
-    <div class="form-row">
-      <label class="form-label">Rol</label>
-      <input class="form-input" [(ngModel)]="specialist.role!.name" name="roleName" />
-    </div>
-
-    <div class="form-row">
-      <label class="form-label">Servicios que brinda</label>
-      <select
-        class="form-select"
-        multiple
-        [(ngModel)]="selectedServiceIds"
-        name="serviceIds"
+      <option
+        *ngFor="let serv of allServices"
+        [ngValue]="serv.id"
       >
-        <option *ngFor="let service of services" [ngValue]="service.id">
-          {{ service.name }}
+        {{ serv.name }}
+      </option>
+    </select>
+  </div>
+
+  <!-- Formulario -->
+  <form
+    #serviceForm="ngForm"
+    class="edit-product-form"
+    *ngIf="service"
+  >
+
+    <!-- Nombre -->
+    <div class="form-group">
+      <label class="form-group-label">
+        Nombre
+      </label>
+
+      <input
+        type="text"
+        class="form-control"
+        name="name"
+        [(ngModel)]="service.name"
+        required
+      />
+    </div>
+
+    <!-- Descripción -->
+    <div class="form-group">
+      <label class="form-group-label">
+        Descripción
+      </label>
+
+      <textarea
+        class="form-control"
+        name="description"
+        [(ngModel)]="service.description"
+        required
+      ></textarea>
+    </div>
+
+    <!-- Precio -->
+    <div class="form-group">
+      <label class="form-group-label">
+        Precio
+      </label>
+
+      <input
+        type="number"
+        class="form-control"
+        name="price"
+        [(ngModel)]="service.price"
+        required
+        min="1"
+      />
+    </div>
+
+    <!-- Categoría -->
+    <div class="form-group">
+      <label class="form-group-label">
+        Categoría
+      </label>
+
+      <select
+        class="form-control"
+        name="categoryId"
+        [(ngModel)]="service.categoryId"
+        required
+      >
+        <option [ngValue]="null">
+          Selecciona una categoría
+        </option>
+
+        <option
+          *ngFor="let cat of categoryList"
+          [ngValue]="cat.id"
+        >
+          {{ cat.name }}
         </option>
       </select>
-      <p class="hint">Selecciona los servicios disponibles para este especialista.</p>
     </div>
 
-    <div class="button-row">
-      <button type="button" class="btn-secondary" (click)="cancel()">Cancelar</button>
-      <button type="submit" class="btn-primary" [disabled]="saving">
-        {{ saving ? 'Guardando…' : 'Guardar especialista' }}
-      </button>
+    <!-- Imagen -->
+    <div class="form-group">
+      <label class="form-group-label">
+        Imagen
+      </label>
+
+      <div
+        class="image-drop-area"
+        (dragover)="$event.preventDefault()"
+        (drop)="onDrop($event)"
+        (dragleave)="onDragLeave($event)"
+        (dragenter)="onDragEnter($event)"
+        [class.dragover]="isDragOver"
+      >
+
+        <input
+          type="file"
+          class="form-control"
+          (change)="onFileChange($event)"
+          style="display:none;"
+          #fileInput
+        />
+
+        <div
+          (click)="fileInput.click()"
+          class="drop-text"
+        >
+
+          <ng-container *ngIf="!imagePreview">
+            Arrastra una imagen aquí o haz clic para seleccionar
+          </ng-container>
+
+          <img
+            *ngIf="imagePreview"
+            [src]="imagePreview"
+            alt="Vista previa"
+            class="image-preview"
+          />
+
+        </div>
+      </div>
     </div>
+
+    <!-- Disponible -->
+    <div class="form-group">
+      <label class="form-group-label">
+        <input
+          type="checkbox"
+          name="available"
+          [(ngModel)]="service.available"
+        />
+
+        Disponible
+      </label>
+    </div>
+
+    <!-- Botón -->
+    <button
+      type="button"
+      class="btn btn-primary"
+      [disabled]="!serviceForm.form.valid"
+      (click)="actualizarServicio()"
+    >
+      Actualizar servicio
+    </button>
+
   </form>
+
+  <!-- Mensaje -->
+  <div
+    *ngIf="successMessage"
+    class="alert alert-success"
+    style="margin-top: 1rem;"
+  >
+    {{ successMessage }}
+  </div>
+
 </div>
