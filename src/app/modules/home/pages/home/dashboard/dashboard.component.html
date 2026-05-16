@@ -1,353 +1,226 @@
 <h2 class="page-title">Dashboard</h2>
 
-<!-- ESTADÍSTICAS CITAS -->
-<div class="stats-grid" *ngIf="!loadingCitas">
-  <div class="stat-card stat-completed">
-    <div class="stat-icon">✅</div>
-    <div class="stat-info">
-      <div class="stat-value">{{ completadasHoy }}</div>
-      <div class="stat-label">Completadas hoy</div>
-    </div>
-  </div>
-
-  <div class="stat-card stat-pending">
-    <div class="stat-icon">⏳</div>
-    <div class="stat-info">
-      <div class="stat-value">{{ pendientesTotal }}</div>
-      <div class="stat-label">Pendientes</div>
-    </div>
-  </div>
-
-  <div class="stat-card stat-cancelled">
-    <div class="stat-icon">❌</div>
-    <div class="stat-info">
-      <div class="stat-value">{{ canceladas }}</div>
-      <div class="stat-label">Canceladas</div>
-    </div>
-  </div>
-
-  <div class="stat-card stat-confirmed">
-    <div class="stat-icon">📅</div>
-    <div class="stat-info">
-      <div class="stat-value">{{ confirmadasHoy }}</div>
-      <div class="stat-label">Confirmadas</div>
-    </div>
-  </div>
-</div>
-
-<!-- Shimmer Stats -->
-<div class="stats-grid" *ngIf="loadingCitas">
-  <div class="stat-card shimmer-stat" *ngFor="let i of [1,2,3,4]">
-    <div class="shimmer shimmer-icon"></div>
-    <div class="shimmer-info">
-      <div class="shimmer shimmer-stat-value"></div>
-      <div class="shimmer shimmer-stat-label"></div>
-    </div>
-  </div>
-</div>
-
-<!-- GRÁFICOS -->
-<div class="charts-grid" *ngIf="!loadingCitas">
-
-  <!-- CHART CITAS -->
-  <div class="chart-card chart-large">
-    <div class="chart-header">
-      <h4 class="chart-title">Citas por fecha y estado</h4>
-
-      <div class="chart-filters">
-        <button
-          class="chart-btn"
-          [class.active]="selectedRange === 'week'"
-          (click)="changeRange('week')"
-        >
-          Semana
-        </button>
-
-        <button
-          class="chart-btn"
-          [class.active]="selectedRange === 'month'"
-          (click)="changeRange('month')"
-        >
-          Mes
-        </button>
-
-        <button
-          class="chart-btn"
-          [class.active]="selectedRange === 'all'"
-          (click)="changeRange('all')"
-        >
-          Total
-        </button>
+<div class="dashboard-shell" *ngIf="!loading; else loadingState">
+  <section class="kpi-grid">
+    <article class="kpi-card" *ngFor="let card of summaryCards" [ngClass]="card.className">
+      <div class="kpi-icon">{{ card.icon }}</div>
+      <div class="kpi-content">
+        <p class="kpi-label">{{ card.label }}</p>
+        <h3 class="kpi-value">{{ card.value }}</h3>
+        <small class="kpi-sub" *ngIf="card.subLabel">{{ card.subLabel }}</small>
       </div>
-    </div>
+    </article>
+  </section>
 
-    <div class="chart-wrapper chart-bar">
-      <canvas
-        baseChart
-        [data]="chartData"
-        [type]="'bar'"
-        [options]="chartOptions"
-      ></canvas>
-    </div>
-  </div>
+  <section class="charts-row">
+    <article class="panel chart-panel chart-wide">
+      <header class="panel-header">
+        <h3>Servicios realizados en el mes</h3>
+      </header>
 
-  <!-- PIE ESPECIALISTAS -->
-  <div class="chart-card">
-    <h4 class="chart-title">Reservaciones por especialista</h4>
-
-    <div class="chart-wrapper" *ngIf="specialists.length > 0 && reservaciones.length > 0">
-      <canvas
-        baseChart
-        [data]="pieChartData"
-        [type]="'pie'"
-        [options]="pieChartOptions"
-      ></canvas>
-    </div>
-
-    <div class="empty-chart" *ngIf="specialists.length === 0 || reservaciones.length === 0">
-      <div class="empty-icon">📊</div>
-
-      <p class="empty-text" *ngIf="specialists.length === 0">
-        No hay especialistas registrados
-      </p>
-
-      <p class="empty-text" *ngIf="specialists.length > 0 && reservaciones.length === 0">
-        No hay reservaciones
-      </p>
-    </div>
-  </div>
-</div>
-
-<!-- SHIMMER CHARTS -->
-<div class="charts-grid" *ngIf="loadingCitas">
-  <div class="chart-card chart-large shimmer-chart-card">
-    <div class="chart-header">
-      <div class="shimmer shimmer-chart-title-long"></div>
-
-      <div class="shimmer-filters">
-        <div class="shimmer shimmer-btn" *ngFor="let i of [1,2,3]"></div>
+      <div class="chart-wrap bar-wrap">
+        <canvas
+          baseChart
+          [data]="servicesBarChartData"
+          [type]="'bar'"
+          [options]="chartOptions"
+        ></canvas>
       </div>
-    </div>
+    </article>
 
-    <div class="shimmer shimmer-chart-bar"></div>
-  </div>
+    <article class="panel chart-panel">
+      <header class="panel-header">
+        <h3>Distribucion de servicios</h3>
+      </header>
 
-  <div class="chart-card shimmer-chart-card">
-    <div class="shimmer shimmer-chart-title"></div>
-    <div class="shimmer shimmer-chart-circle"></div>
-  </div>
-</div>
-
-<!-- ESTADÍSTICAS ÓRDENES -->
-<div class="stats-grid" *ngIf="!loadingOrders">
-
-  <div class="stat-card stat-total">
-    <div class="stat-icon">📦</div>
-
-    <div class="stat-info">
-      <div class="stat-value">{{ totalOrders }}</div>
-      <div class="stat-label">Total Órdenes</div>
-    </div>
-  </div>
-
-  <div class="stat-card stat-paid">
-    <div class="stat-icon">💰</div>
-
-    <div class="stat-info">
-      <div class="stat-value">{{ paidOrders }}</div>
-      <div class="stat-label">Pagadas</div>
-    </div>
-  </div>
-
-  <div class="stat-card stat-unpaid">
-    <div class="stat-icon">⚠️</div>
-
-    <div class="stat-info">
-      <div class="stat-value">{{ unpaidOrders }}</div>
-      <div class="stat-label">Sin pagar</div>
-    </div>
-  </div>
-
-  <div class="stat-card stat-revenue">
-    <div class="stat-icon">💵</div>
-
-    <div class="stat-info">
-      <div class="stat-value">
-        S/. {{ totalRevenue | number:'1.2-2' }}
+      <div class="chart-wrap pie-wrap">
+        <canvas
+          baseChart
+          [data]="servicesPieChartData"
+          [type]="'doughnut'"
+          [options]="pieChartOptions"
+        ></canvas>
       </div>
+    </article>
 
-      <div class="stat-label">Ingresos Totales</div>
-    </div>
-  </div>
-</div>
+    <article class="panel month-summary-panel">
+      <header class="panel-header">
+        <h3>Resumen del mes</h3>
+      </header>
 
-<!-- SHIMMER ÓRDENES -->
-<div class="stats-grid" *ngIf="loadingOrders">
-  <div class="stat-card shimmer-stat" *ngFor="let i of [1,2,3,4]">
-    <div class="shimmer shimmer-icon"></div>
+      <ul class="month-summary-list">
+        <li class="month-item" *ngFor="let row of monthSummaryRows">
+          <span class="month-icon">{{ row.icon }}</span>
+          <div>
+            <p class="month-label">{{ row.label }}</p>
+            <p class="month-value">{{ row.value }}</p>
+          </div>
+        </li>
+      </ul>
+    </article>
+  </section>
 
-    <div class="shimmer-info">
-      <div class="shimmer shimmer-stat-value"></div>
-      <div class="shimmer shimmer-stat-label"></div>
-    </div>
-  </div>
-</div>
+  <section class="tables-row">
+    <article class="panel">
+      <header class="panel-header">
+        <h3>Detalle de servicios</h3>
+      </header>
 
-<!-- CHARTS ÓRDENES -->
-<div class="charts-grid" *ngIf="!loadingOrders">
+      <div class="table-scroll">
+        <table class="dashboard-table">
+          <thead>
+            <tr>
+              <th>Servicio</th>
+              <th>Precio</th>
+              <th>Cantidad</th>
+              <th>Ingresos</th>
+              <th>% del total</th>
+              <th>Tendencia</th>
+              <th>Estilistas asignados</th>
+              <th>Estilistas activos mes</th>
+            </tr>
+          </thead>
 
-  <!-- BAR ORDERS -->
-  <div class="chart-card chart-large">
-    <h4 class="chart-title">Órdenes por fecha y estado</h4>
+          <tbody>
+            <tr *ngFor="let row of serviceDetailRows">
+              <td>{{ row.name }}</td>
+              <td>S/. {{ row.unitPrice | number:'1.2-2' }}</td>
+              <td>{{ row.quantity }}</td>
+              <td>S/. {{ row.revenue | number:'1.2-2' }}</td>
+              <td>{{ row.percentage | number:'1.1-1' }}%</td>
+              <td>
+                <span class="trend" [ngClass]="getTrendClass(row.trendPct)">
+                  {{ row.trendPct >= 0 ? '+' : '' }}{{ row.trendPct | number:'1.0-0' }}%
+                </span>
+              </td>
+              <td>{{ row.assignedStylists }}</td>
+              <td>{{ row.monthlyStylistsCount }}</td>
+            </tr>
 
-    <div class="chart-wrapper chart-bar">
-      <canvas
-        baseChart
-        [data]="ordersChartData"
-        [type]="'bar'"
-        [options]="chartOptions"
-      ></canvas>
-    </div>
-  </div>
+            <tr *ngIf="serviceDetailRows.length === 0">
+              <td colspan="8" class="empty-cell">No hay servicios para mostrar este mes.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
 
-  <!-- PIE ORDERS -->
-  <div class="chart-card">
-    <h4 class="chart-title">Órdenes pagadas vs no pagadas</h4>
+    <article class="panel">
+      <header class="panel-header">
+        <h3>Que hizo cada estilista</h3>
+      </header>
 
-    <div class="chart-wrapper">
-      <canvas
-        baseChart
-        [data]="pieOrdersChartData"
-        [type]="'pie'"
-        [options]="pieChartOptions"
-      ></canvas>
-    </div>
-  </div>
-</div>
-
-<!-- SHIMMER CHARTS ÓRDENES -->
-<div class="charts-grid" *ngIf="loadingOrders">
-
-  <div class="chart-card chart-large shimmer-chart-card">
-    <div class="shimmer shimmer-chart-title"></div>
-    <div class="shimmer shimmer-chart-bar"></div>
-  </div>
-
-  <div class="chart-card shimmer-chart-card">
-    <div class="shimmer shimmer-chart-title"></div>
-    <div class="shimmer shimmer-chart-circle"></div>
-  </div>
-</div>
-
-<!-- ========================= -->
-<!-- TABLAS DE SERVICIOS -->
-<!-- ========================= -->
-
-<div class="services-tables-grid" *ngIf="!loadingServices">
-
-  <!-- TABLA SERVICIOS -->
-  <div class="table-card" *ngIf="!loadingServices">
-  <h3 class="table-title">Detalle de servicios</h3>
-
-  <div class="table-responsive">
-    <table class="dashboard-table">
-      <thead>
-        <tr>
-          <th>Servicio</th>
-          <th>Estilistas</th>
-          <th>Precio</th>
-          <th>Estado</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <tr *ngFor="let service of servicesData">
-          <td>{{ service.name }}</td>
-
-          <td>{{ service.stylistsCount }}</td>
-
-          <td>
-            S/. {{ service.price }}
-          </td>
-
-          <td>
-            <span
-              class="status-badge"
-              [class.active]="service.available"
-              [class.inactive]="!service.available"
-            >
-              {{ service.available ? 'Activo' : 'Inactivo' }}
-            </span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-  <!-- TABLA ESTILISTAS -->
-  <div class="table-card" *ngIf="!loadingServices">
-  <h3 class="table-title">
-    ¿Qué servicios realiza cada estilista?
-  </h3>
-
-  <div class="table-responsive">
-    <table class="dashboard-table">
-      <thead>
-        <tr>
-          <th>Estilista</th>
-
-          <th *ngFor="let service of serviceNames">
-            {{ service }}
-          </th>
-
-          <th>Total servicios</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <tr *ngFor="let stylist of stylistsServiceMatrix">
-          <td class="stylist-cell">
-            <img
-              [src]="stylist.image"
-              class="stylist-avatar"
-              alt="stylist"
-            />
-
+      <div class="table-filters-row">
+        <select
+          class="table-filter-select"
+          [(ngModel)]="selectedStylistFilterId"
+        >
+          <option value="all">Todos los estilistas</option>
+          <option
+            *ngFor="let stylist of stylistPerformanceRows"
+            [ngValue]="stylist.id"
+          >
             {{ stylist.name }}
-          </td>
+          </option>
+        </select>
+      </div>
 
-          <td *ngFor="let service of serviceNames">
-            <span *ngIf="stylist[service]">✔️</span>
-            <span *ngIf="!stylist[service]">—</span>
-          </td>
+      <div class="table-scroll stylist-services-scroll">
+        <table class="dashboard-table">
+          <thead>
+            <tr>
+              <th>Estilista</th>
+              <th>Servicio asignado</th>
+              <th>Precio</th>
+              <th>Veces que hizo este servicio</th>
+              <th>Precio total</th>
+            </tr>
+          </thead>
 
-          <td>
-            {{ stylist.totalServices }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-</div>
+          <tbody>
+            <tr *ngFor="let row of filteredStylistServiceRows">
+              <td class="stylist-cell">
+                <span class="avatar" *ngIf="!row.stylistImage">{{ getAvatarText(row.stylistName) }}</span>
+                <img
+                  *ngIf="row.stylistImage"
+                  [src]="row.stylistImage"
+                  [alt]="row.stylistName"
+                  class="stylist-avatar"
+                />
+                <span>{{ row.stylistName }}</span>
+              </td>
 
-<!-- SHIMMER TABLAS -->
-<div class="services-tables-grid" *ngIf="loadingServices">
+              <td>{{ row.serviceName }}</td>
+              <td>S/. {{ row.unitPrice | number:'1.2-2' }}</td>
+              <td>{{ row.monthlyTotal }}</td>
+              <td>S/. {{ (row.unitPrice * row.monthlyTotal) | number:'1.2-2' }}</td>
+            </tr>
 
-  <div class="services-card">
-    <div class="shimmer shimmer-chart-title"></div>
+            <tr *ngIf="filteredStylistServiceRows.length === 0">
+              <td colspan="5" class="empty-cell">
+                No hay servicios ejecutados por estilistas este mes.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </section>
 
-    <div class="shimmer-table-row" *ngFor="let i of [1,2,3,4,5]">
-      <div class="shimmer shimmer-table-cell"></div>
+  <section class="top-stylist-panel panel">
+    <header class="panel-header">
+      <h3>Rendimiento de estilistas (Resumen)</h3>
+    </header>
+
+    <div class="stylist-performance-grid" *ngIf="stylistPerformanceRows.length > 0; else emptyStylistSummary">
+      <article class="stylist-performance-card" *ngFor="let stylist of stylistPerformanceRows">
+        <div class="stylist-performance-head">
+          <span class="avatar performance-avatar" *ngIf="!stylist.image">{{ getAvatarText(stylist.name) }}</span>
+          <img
+            *ngIf="stylist.image"
+            [src]="stylist.image"
+            [alt]="stylist.name"
+            class="stylist-avatar performance-avatar"
+          />
+
+          <div class="stylist-performance-copy">
+            <h4>{{ stylist.name }}</h4>
+            <p>{{ stylist.totalServices }} servicios</p>
+            <strong>S/. {{ stylist.revenue | number:'1.2-2' }} ingresos</strong>
+          </div>
+        </div>
+
+        <div class="performance-meter">
+          <span class="performance-meter-fill" [style.width.%]="stylist.percentageOfTotal"></span>
+        </div>
+
+        <p class="performance-share">
+          {{ stylist.percentageOfTotal | number:'1.1-1' }}% del total
+        </p>
+      </article>
     </div>
-  </div>
 
-  <div class="services-card">
-    <div class="shimmer shimmer-chart-title"></div>
-
-    <div class="shimmer-table-row" *ngFor="let i of [1,2,3,4,5]">
-      <div class="shimmer shimmer-table-cell"></div>
-    </div>
-  </div>
+    <ng-template #emptyStylistSummary>
+      <p class="empty-cell">No hay especialistas para mostrar este mes.</p>
+    </ng-template>
+  </section>
 </div>
+
+<ng-template #loadingState>
+  <div class="loading-shell">
+    <section class="kpi-grid">
+      <div class="loading-kpi-card" *ngFor="let i of [1,2,3,4]"></div>
+    </section>
+
+    <section class="loading-row">
+      <div class="loading-panel-card"></div>
+      <div class="loading-panel-card"></div>
+      <div class="loading-panel-card"></div>
+    </section>
+
+    <section class="loading-table-panel">
+      <div class="loading-table-header"></div>
+      <div class="loading-table-row" *ngFor="let i of [1,2,3,4,5,6,7,8]"></div>
+    </section>
+  </div>
+</ng-template>

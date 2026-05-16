@@ -136,6 +136,7 @@
         <tr>
           <th>ID</th>
           <th>Cliente</th>
+          <th>Servicio</th>
           <th>Especialista</th>
           <th>Fecha</th>
           <th>Hora</th>
@@ -157,6 +158,8 @@
               </span>
             </span>
           </td>
+
+          <td>{{ getResolvedServiceName(r) }}</td>
 
           <td>{{ getSpecialistName(r.specialistId) }}</td>
           <td>{{ r.reservedAt }}</td>
@@ -241,6 +244,7 @@
         <tr>
           <th>ID</th>
           <th>Cliente</th>
+          <th>Servicio</th>
           <th>Especialista</th>
           <th>Fecha</th>
           <th>Hora</th>
@@ -250,6 +254,7 @@
       <tbody>
         <tr *ngFor="let i of [1, 2, 3, 4, 5, 6]">
           <td><div class="shimmer shimmer-text shimmer-sm"></div></td>
+          <td><div class="shimmer shimmer-text"></div></td>
           <td><div class="shimmer shimmer-text"></div></td>
           <td><div class="shimmer shimmer-text"></div></td>
           <td><div class="shimmer shimmer-text shimmer-sm"></div></td>

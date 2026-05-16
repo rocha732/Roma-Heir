@@ -1,7 +1,21 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import {
+  catchError,
+  forkJoin,
+  map,
+  Observable,
+  of,
+} from 'rxjs';
+import { GetReservations } from '../models/reservations';
 import { SalonServiceBrief } from '../models/salon-service';
+
+export interface ServiceMonthlySummary {
+  serviceId: number;
+  stylists: any[];
+  monthlyReservations: number;
+  monthlyStylistsCount: number;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -37,5 +51,70 @@ export class SalonServicesService {
     return this.http.delete<unknown>(
       `${this.apiUrl}/Services/${serviceId}/stylists/${stylistId}`
     );
+  }
+
+  getServiceMonthlySummary(
+    serviceId: number,
+    referenceDate: Date = new Date()
+  ): Observable<ServiceMonthlySummary> {
+    return forkJoin({
+      stylistsResponse: this.getServiceStylists(serviceId).pipe(
+        catchError(() => of([]))
+      ),
+      reservations: this.http
+        .get<GetReservations[]>(`${this.apiUrl}/Reservations`)
+        .pipe(catchError(() => of([]))),
+    }).pipe(
+      map(({ stylistsResponse, reservations }) => {
+        const stylists = this.normalizeStylistsResponse(stylistsResponse);
+
+        const monthlyReservations = reservations.filter((reservation) => {
+          const reservationDate = new Date(reservation.reservedAt);
+
+          return (
+            reservation?.service?.id === serviceId &&
+            reservationDate.getMonth() === referenceDate.getMonth() &&
+            reservationDate.getFullYear() ===
+              referenceDate.getFullYear()
+          );
+        });
+
+        const stylistsWithReservations = new Set<number>();
+
+        monthlyReservations.forEach((reservation) => {
+          if (reservation.specialistId) {
+            stylistsWithReservations.add(
+              reservation.specialistId
+            );
+          }
+        });
+
+        return {
+          serviceId,
+          stylists,
+          monthlyReservations: monthlyReservations.length,
+          monthlyStylistsCount:
+            stylistsWithReservations.size,
+        };
+      })
+    );
+  }
+
+  private normalizeStylistsResponse(
+    response: unknown
+  ): any[] {
+    if (Array.isArray(response)) {
+      return response;
+    }
+
+    if (
+      response &&
+      typeof response === 'object' &&
+      Array.isArray((response as any).stylists)
+    ) {
+      return (response as any).stylists;
+    }
+
+    return [];
   }
 }

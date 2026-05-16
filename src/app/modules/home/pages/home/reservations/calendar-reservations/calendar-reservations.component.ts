@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CalendarEvent, CalendarView } from 'angular-calendar';
 import { Subject } from 'rxjs';
 import { ReservationsService } from 'src/app/core/services/reservations.service';
@@ -10,10 +10,16 @@ import {
   subWeeks,
   addDays,
   subDays,
+  endOfMonth,
+  endOfWeek,
+  format,
+  isWithinInterval,
+  startOfMonth,
+  startOfWeek,
 } from 'date-fns';
 import { addMinutes } from 'date-fns';
 
-import { isSameDay } from 'date-fns';
+import { isSameDay, isSameMonth } from 'date-fns';
 import { GetReservations } from 'src/app/core/models/reservations';
 import { UsersService } from 'src/app/core/services/users.service';
 import { ResponseUsers } from 'src/app/core/models/users';
@@ -22,18 +28,20 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NotificationModalComponent } from 'src/app/components/notification-modal/notification-modal.component';
 import { SpecialistsService } from 'src/app/core/services/specialists.service';
 import { ProductsService } from 'src/app/core/services/products.service';
+import { ProcessingOverlayService } from 'src/app/core/services/processing-overlay.service';
 
 @Component({
   selector: 'app-calendar-reservations',
   templateUrl: './calendar-reservations.component.html',
   styleUrls: ['./calendar-reservations.component.scss'],
 })
-export class CalendarReservationsComponent implements OnInit {
+export class CalendarReservationsComponent implements OnInit, OnDestroy {
   view: CalendarView = CalendarView.Month;
   CalendarView = CalendarView;
   DEFAULT_DURATION_MINUTES = 30;
   loading = true;
   selectedStatusId: number | null = null;
+  selectedSpecialistId: number | null = null;
 
   viewDate: Date = new Date();
   events: CalendarEvent[] = [];
@@ -46,6 +54,12 @@ export class CalendarReservationsComponent implements OnInit {
   refresh = new Subject<void>();
   specialistsMap = new Map<number, string>();
   usersMap = new Map<number, any>();
+  serviceNamesMap = new Map<number, string>();
+  specialistServiceIdsMap = new Map<number, number[]>();
+  reservationServiceCacheById = new Map<number, number>();
+  reservationServiceCacheByFingerprint = new Map<string, number>();
+  private readonly reservationServiceCacheKey =
+    'calendarReservationServiceCacheV1';
   statusesMap = new Map<number, string>([
     [1, 'Pendiente'],
     [2, 'Confirmada'],
@@ -94,6 +108,9 @@ export class CalendarReservationsComponent implements OnInit {
   availableHours: string[] = [];
 
   showCreateModal = false;
+  showEventDetailModal = false;
+  showDayEventsModal = false;
+  selectedEventDetail: any = null;
 
   createReservationData = {
     customerId: null,
@@ -109,42 +126,66 @@ export class CalendarReservationsComponent implements OnInit {
   customers: any[] = [];
   allServices: any[] = [];
   filteredServices: any[] = [];
+  filteredSpecialists: any[] = [];
+  private currentFilteredReservations: GetReservations[] = [];
+  private reservationSyncTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly reservationSyncMaxAttempts = 8;
+  private readonly reservationSyncDelayMs = 1200;
 
   constructor(
     private specialistsService: SpecialistsService,
     private reservationsService: ReservationsService,
     private modalService: NgbModal,
-    private productsService: ProductsService,
     private usersService: UsersService,
     private salonServicesService: SalonServicesService,
+    private productsService: ProductsService,
+    private processingOverlay: ProcessingOverlayService,
   ) {}
 
   ngOnInit(): void {
+    this.loadReservationServiceCache();
     this.loadSpecialists();
     this.loadServices();
     this.loadReservations();
     this.loading = true;
   }
 
+  ngOnDestroy(): void {
+    this.clearReservationSyncTimer();
+    this.processingOverlay.hide();
+  }
+
   loadReservations() {
+    console.log('[CalendarReservations] loadReservations() -> solicitando /Reservations');
+
     this.reservationsService.getReservations().subscribe({
       next: (reservations) => {
+        console.log('[CalendarReservations] /Reservations OK. total:', reservations?.length ?? 0);
+        console.log('[CalendarReservations] muestra de reservaciones:', (reservations ?? []).slice(0, 5));
+
         this.rawReservations = reservations;
         // 👇 cuando usuarios estén listos, ahí se arma TODO
         this.loadUsers();
       },
-      error: () => {
+      error: (err) => {
+        console.error('[CalendarReservations] /Reservations ERROR', err);
         this.loading = false;
       },
     });
   }
 
   onEventClicked(event: CalendarEvent) {
-    const r = event.meta;
+    this.selectedEventDetail = event.meta;
+    this.showEventDetailModal = true;
+  }
 
-    console.log('Cliente:', r.customerName);
-    console.log('Especialista:', r.specialistName);
-    console.log('Hora:', r.hourAt);
+  closeEventDetailModal() {
+    this.showEventDetailModal = false;
+    this.selectedEventDetail = null;
+  }
+
+  closeDayEventsModal() {
+    this.showDayEventsModal = false;
   }
 
   prev() {
@@ -194,6 +235,23 @@ export class CalendarReservationsComponent implements OnInit {
     this.selectedDayEvents = this.events.filter((e) =>
       isSameDay(e.start, date)
     );
+
+    if (
+      this.view === CalendarView.Month &&
+      this.selectedDayEvents.length > 0
+    ) {
+      this.showDayEventsModal = true;
+    }
+  }
+
+  onMiniDateChange(value: string) {
+    if (!value) {
+      return;
+    }
+
+    const date = this.parseLocalDate(value);
+    this.viewDate = date;
+    this.onDayClicked(date);
   }
 
   loadSpecialists() {
@@ -212,6 +270,8 @@ export class CalendarReservationsComponent implements OnInit {
   }
 
   mapServicesToSpecialists() {
+    this.specialistServiceIdsMap = new Map<number, number[]>();
+
     this.specialists.forEach((specialist: any) => {
       specialist.services = [];
       this.services.forEach((service: any) => {
@@ -225,54 +285,127 @@ export class CalendarReservationsComponent implements OnInit {
           });
         }
       });
+
+      const uniqueServiceIds: number[] = Array.from(
+        new Set<number>(
+          (specialist.services || [])
+            .map((srv: any) => this.toNumberOrNull(srv?.id))
+            .filter((id: number | null): id is number => id !== null)
+        )
+      );
+
+      this.specialistServiceIdsMap.set(
+        specialist.id,
+        uniqueServiceIds
+      );
     });
+
     console.log('SPECIALISTS WITH SERVICES', this.specialists);
   }
 
   loadServices() {
-  this.productsService.getProducts().subscribe({
-    next: (items: any[]) => {
+    this.salonServicesService.getServices().subscribe({
+      next: (services: any[]) => {
+        const normalized = Array.isArray(services)
+          ? services
+          : [];
 
-      const services = items.filter((item) => {
+        if (normalized.length === 0) {
+          this.loadServicesFromProductsFallback();
+          return;
+        }
 
-        const typeName =
-          item?.productType?.name ||
-          item?.ProductType?.name ||
-          item?.productTypeName ||
-          item?.ProductType;
+        this.bindStylistsToServices(normalized);
+      },
+      error: () => {
+        this.loadServicesFromProductsFallback();
+      },
+    });
+  }
 
-        return (
-          typeof typeName === 'string' &&
-          typeName.toLowerCase().includes('service')
-        );
-      });
+  private loadServicesFromProductsFallback() {
+    this.productsService.getProducts().subscribe({
+      next: (items: any[]) => {
+        const serviceItems = (Array.isArray(items)
+          ? items
+          : []
+        ).filter((item) => {
+          const typeName =
+            item?.productType?.name ||
+            item?.ProductType?.name ||
+            item?.productTypeName ||
+            item?.ProductType;
 
-      this.services = [];
+          return (
+            typeof typeName === 'string' &&
+            typeName.toLowerCase().includes('service')
+          );
+        });
 
-      services.forEach((service: any) => {
+        this.bindStylistsToServices(serviceItems);
+      },
+      error: (err) => {
+        console.error(err);
+      },
+    });
+  }
 
-        this.salonServicesService
-          .getServiceStylists(service.id)
-          .subscribe({
-            next: (response: any) => {
-              this.services.push({
-                ...service,
-                stylists: response.stylists || []
-              });
-              console.log('SERVICE WITH STYLISTS', this.services);
-              this.mapServicesToSpecialists();
-            },
-            error: (err) => {
-              console.error(err);
+  private bindStylistsToServices(services: any[]) {
+    this.serviceNamesMap = new Map<number, string>();
+    services.forEach((service: any) => {
+      const serviceName = this.getServiceDisplayName(service);
+      if (service?.id != null && serviceName) {
+        this.serviceNamesMap.set(service.id, serviceName);
+      }
+    });
+
+    this.services = [];
+
+    services.forEach((service: any) => {
+      this.salonServicesService
+        .getServiceStylists(service.id)
+        .subscribe({
+          next: (response: any) => {
+            const stylists = this.normalizeStylistsResponse(
+              response
+            );
+
+            this.services.push({
+              ...service,
+              stylists,
+            });
+
+            this.mapServicesToSpecialists();
+
+            if (
+              this.rawReservations.length > 0 &&
+              this.usersMap.size > 0
+            ) {
+              this.mapReservationsAndEvents();
             }
-          });
-      });
-    },
-    error: (err) => {
-      console.error(err);
+          },
+          error: (err) => {
+            console.error(err);
+          },
+        });
+    });
+  }
+
+  private normalizeStylistsResponse(response: any): any[] {
+    if (Array.isArray(response)) {
+      return response;
     }
-  });
-}
+
+    if (Array.isArray(response?.stylists)) {
+      return response.stylists;
+    }
+
+    if (Array.isArray(response?.data)) {
+      return response.data;
+    }
+
+    return [];
+  }
 
   loadUsers() {
     this.usersService.getUsers().subscribe((users) => {
@@ -303,13 +436,27 @@ export class CalendarReservationsComponent implements OnInit {
           customerEmail: user?.email ?? '—',
           customerPhone: user?.phone ?? '—',
           specialistName: specialist ?? '—',
+          serviceName: this.resolveServiceName(r),
         };
       });
 
+    const unresolved = this.reservations.filter(
+      (r: any) => r.serviceName === 'Sin servicio'
+    );
+    console.log('[CalendarReservations] reservas sin servicio (despues de map):', unresolved.length);
+    if (unresolved.length > 0) {
+      console.log('[CalendarReservations] muestra reservas sin servicio:', unresolved.slice(0, 5));
+    }
+
     this.allReservations = [...this.reservations];
 
-    // 2️⃣ Construyo eventos del calendario con META CORRECTA
-    this.events = this.reservations.map((r) => {
+    this.applyFilters();
+    this.loading = false;
+    this.refresh.next();
+  }
+
+  private buildEvents(reservations: GetReservations[]) {
+    return reservations.map((r) => {
       const start = this.buildDate(r.reservedAt, r.hourAt);
       const end = this.buildEndDate(start);
 
@@ -321,18 +468,357 @@ export class CalendarReservationsComponent implements OnInit {
       return {
         start,
         end,
-        title: `${r.customerName} • ${r.hourAt}`,
+        title: `${r.customerName} • ${
+          this.resolveServiceName(r)
+        }`,
         color,
         meta: {
           ...r,
+          serviceName: this.resolveServiceName(r),
           start,
           end,
         },
       };
     });
-    this.loading = false;
+  }
+
+  private resolveServiceName(reservation: any): string {
+    const nestedServiceName =
+      reservation?.service?.name || reservation?.service?.Name;
+
+    if (
+      typeof nestedServiceName === 'string' &&
+      nestedServiceName.trim().length > 0
+    ) {
+      return nestedServiceName.trim();
+    }
+
+    const explicitName =
+      reservation?.serviceName || reservation?.productName;
+
+    if (typeof explicitName === 'string') {
+      const normalizedName = explicitName.trim();
+      if (
+        normalizedName.length > 0 &&
+        normalizedName.toLowerCase() !==
+          'sin servicio'
+      ) {
+        return normalizedName;
+      }
+    }
+
+    const serviceId =
+      this.extractServiceId(reservation) ??
+      this.resolveServiceIdFromCache(reservation) ??
+      this.resolveServiceIdBySpecialist(reservation);
+
+    if (
+      typeof serviceId === 'number' &&
+      this.serviceNamesMap.has(serviceId)
+    ) {
+      return this.serviceNamesMap.get(serviceId) as string;
+    }
+
+    console.warn('[CalendarReservations] servicio no resuelto para reservacion:', {
+      reservationId: reservation?.id,
+      serviceId: reservation?.serviceId,
+      ServiceId: reservation?.ServiceId,
+      productId: reservation?.productId,
+      ProductId: reservation?.ProductId,
+      nestedServiceId: reservation?.service?.id,
+      nestedServiceName: reservation?.service?.name,
+      nestedProductId: reservation?.product?.id,
+      productName: reservation?.productName,
+      fingerprint: this.buildReservationFingerprint(reservation),
+    });
+
+    return 'Sin servicio';
+  }
+
+  private extractServiceId(source: any): number | null {
+    const candidate =
+      source?.serviceId ??
+      source?.ServiceId ??
+      source?.productId ??
+      source?.ProductId ??
+      source?.service?.id ??
+      source?.product?.id;
+
+    return this.toPositiveNumberOrNull(candidate);
+  }
+
+  private toPositiveNumberOrNull(
+    value: unknown
+  ): number | null {
+    const parsed = this.toNumberOrNull(value);
+
+    if (parsed === null || parsed <= 0) {
+      return null;
+    }
+
+    return parsed;
+  }
+
+  private toNumberOrNull(value: unknown): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+
+    if (typeof value === 'string' && value.trim().length > 0) {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+
+    return null;
+  }
+
+  private getServiceDisplayName(service: any): string {
+    const rawName =
+      service?.name ||
+      service?.Name ||
+      service?.title ||
+      service?.Title;
+
+    return typeof rawName === 'string'
+      ? rawName.trim()
+      : '';
+  }
+
+  private resolveServiceIdFromCache(
+    reservation: any
+  ): number | null {
+    const reservationId = this.toNumberOrNull(
+      reservation?.id
+    );
+
+    if (
+      reservationId !== null &&
+      this.reservationServiceCacheById.has(reservationId)
+    ) {
+      return (
+        this.reservationServiceCacheById.get(
+          reservationId
+        ) ?? null
+      );
+    }
+
+    const fingerprint =
+      this.buildReservationFingerprint(reservation);
+
+    if (
+      fingerprint &&
+      this.reservationServiceCacheByFingerprint.has(
+        fingerprint
+      )
+    ) {
+      return (
+        this.reservationServiceCacheByFingerprint.get(
+          fingerprint
+        ) ?? null
+      );
+    }
+
+    return null;
+  }
+
+  private resolveServiceIdBySpecialist(
+    reservation: any
+  ): number | null {
+    const specialistId = this.toNumberOrNull(
+      reservation?.specialistId
+    );
+
+    if (specialistId === null) {
+      return null;
+    }
+
+    const services =
+      this.specialistServiceIdsMap.get(specialistId) || [];
+
+    if (services.length === 1) {
+      return services[0];
+    }
+
+    return null;
+  }
+
+  private buildReservationFingerprint(
+    source: any
+  ): string {
+    const customerId = this.toNumberOrNull(
+      source?.customerId
+    );
+    const specialistId = this.toNumberOrNull(
+      source?.specialistId
+    );
+    const reservedAt = String(
+      source?.reservedAt || ''
+    ).trim();
+    const hourAt = String(source?.hourAt || '').trim();
+
+    if (
+      customerId === null ||
+      specialistId === null ||
+      !reservedAt ||
+      !hourAt
+    ) {
+      return '';
+    }
+
+    return `${customerId}|${specialistId}|${reservedAt}|${hourAt}`;
+  }
+
+  private saveServiceSelectionCache(
+    serviceId: number,
+    reservationId?: number | null,
+    fingerprint?: string
+  ) {
+    if (reservationId != null) {
+      this.reservationServiceCacheById.set(
+        reservationId,
+        serviceId
+      );
+    }
+
+    if (fingerprint) {
+      this.reservationServiceCacheByFingerprint.set(
+        fingerprint,
+        serviceId
+      );
+    }
+
+    this.persistReservationServiceCache();
+  }
+
+  private loadReservationServiceCache() {
+    try {
+      const raw = localStorage.getItem(
+        this.reservationServiceCacheKey
+      );
+      if (!raw) {
+        return;
+      }
+
+      const parsed = JSON.parse(raw);
+
+      const byIdEntries = Array.isArray(parsed?.byId)
+        ? parsed.byId
+        : [];
+      const byFingerprintEntries = Array.isArray(
+        parsed?.byFingerprint
+      )
+        ? parsed.byFingerprint
+        : [];
+
+      this.reservationServiceCacheById = new Map(
+        byIdEntries
+      );
+      this.reservationServiceCacheByFingerprint =
+        new Map(byFingerprintEntries);
+
+      console.log(
+        '[CalendarReservations] cache de servicio cargado:',
+        {
+          byId: this.reservationServiceCacheById.size,
+          byFingerprint:
+            this.reservationServiceCacheByFingerprint
+              .size,
+        }
+      );
+    } catch (error) {
+      console.error(
+        '[CalendarReservations] error cargando cache de servicio',
+        error
+      );
+    }
+  }
+
+  private persistReservationServiceCache() {
+    const payload = {
+      byId: Array.from(
+        this.reservationServiceCacheById.entries()
+      ),
+      byFingerprint: Array.from(
+        this.reservationServiceCacheByFingerprint.entries()
+      ),
+    };
+
+    localStorage.setItem(
+      this.reservationServiceCacheKey,
+      JSON.stringify(payload)
+    );
+  }
+
+  applyFilters() {
+    let filtered = [...this.allReservations];
+
+    if (this.selectedStatusId) {
+      filtered = filtered.filter(
+        (r) => r.statusId === this.selectedStatusId
+      );
+    }
+
+    if (this.selectedSpecialistId) {
+      filtered = filtered.filter(
+        (r) =>
+          r.specialistId === this.selectedSpecialistId
+      );
+    }
+
+    this.currentFilteredReservations = filtered;
+    this.events = this.buildEvents(filtered);
+    this.selectedDayEvents = [];
     this.refresh.next();
   }
+
+  getMonthCellCount(date: Date): number {
+    return this.currentFilteredReservations.filter(
+      (reservation) =>
+        isSameDay(
+          this.parseLocalDate(reservation.reservedAt),
+          date
+        )
+    ).length;
+  }
+
+  getMonthCellDots(date: Date): number[] {
+    return Array.from(
+      { length: Math.min(this.getMonthCellCount(date), 3) },
+      (_, index) => index
+    );
+  }
+
+  getMonthCellEvents(date: Date): CalendarEvent[] {
+    return this.events
+      .filter((event) => isSameDay(event.start, date))
+      .slice(0, 3);
+  }
+
+  getMonthCellMoreCount(date: Date): number {
+    const totalEvents = this.events.filter((event) =>
+      isSameDay(event.start, date)
+    ).length;
+
+    return Math.max(totalEvents - 3, 0);
+  }
+
+  isInCurrentMonth(date: Date): boolean {
+    return isSameMonth(date, this.viewDate);
+  }
+
+  isSelectedMonthDate(date: Date): boolean {
+    return !!this.selectedDate && isSameDay(date, this.selectedDate);
+  }
+
+  openDayEventsFromMonth(date: Date) {
+    this.onDayClicked(date);
+  }
+
+  openEventDetailFromDayModal(event: CalendarEvent) {
+    this.closeDayEventsModal();
+    this.onEventClicked(event);
+  }
+
   buildDate(date: string | Date, hour: string): Date {
     let baseDate: Date;
 
@@ -377,26 +863,121 @@ export class CalendarReservationsComponent implements OnInit {
 
   filterByStatus(statusId: number | null) {
     this.selectedStatusId = statusId;
+    this.applyFilters();
+  }
 
-    const filtered = statusId
-      ? this.allReservations.filter((r) => r.statusId === statusId)
-      : this.allReservations;
+  filterBySpecialist(
+    specialistId: number | null
+  ) {
+    this.selectedSpecialistId = specialistId;
+    this.applyFilters();
+  }
 
-    this.events = filtered.map((r) => {
-      const start = this.buildDate(r.reservedAt, r.hourAt);
-      const end = this.buildEndDate(start);
+  getCurrentRangeLabel(): string {
+    if (this.view === CalendarView.Month) {
+      return format(this.viewDate, 'MMMM yyyy', {
+        locale: es,
+      });
+    }
 
-      return {
+    if (this.view === CalendarView.Week) {
+      const start = startOfWeek(this.viewDate, {
+        weekStartsOn: 1,
+      });
+      const end = endOfWeek(this.viewDate, {
+        weekStartsOn: 1,
+      });
+
+      return `${format(start, 'd', {
+        locale: es,
+      })} - ${format(end, 'd MMMM, yyyy', {
+        locale: es,
+      })}`;
+    }
+
+    return format(this.viewDate, 'd MMMM, yyyy', {
+      locale: es,
+    });
+  }
+
+  private countInCurrentRange(
+    reservations: GetReservations[]
+  ): number {
+    let start: Date;
+    let end: Date;
+
+    if (this.view === CalendarView.Month) {
+      start = startOfMonth(this.viewDate);
+      end = endOfMonth(this.viewDate);
+    } else if (this.view === CalendarView.Week) {
+      start = startOfWeek(this.viewDate, {
+        weekStartsOn: 1,
+      });
+      end = endOfWeek(this.viewDate, {
+        weekStartsOn: 1,
+      });
+    } else {
+      start = new Date(this.viewDate);
+      start.setHours(0, 0, 0, 0);
+      end = new Date(this.viewDate);
+      end.setHours(23, 59, 59, 999);
+    }
+
+    return reservations.filter((reservation) => {
+      const date = this.parseLocalDate(
+        reservation.reservedAt
+      );
+
+      return isWithinInterval(date, {
         start,
         end,
-        title: `${r.customerName} • ${r.hourAt}`,
-        color: this.statusColors[r.statusId],
-        meta: r,
-      };
+      });
+    }).length;
+  }
+
+  get todayReservationsCount(): number {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return this.allReservations.filter((reservation) => {
+      const date = this.parseLocalDate(
+        reservation.reservedAt
+      );
+      date.setHours(0, 0, 0, 0);
+      return date.getTime() === today.getTime();
+    }).length;
+  }
+
+  get weekReservationsCount(): number {
+    const start = startOfWeek(new Date(), {
+      weekStartsOn: 1,
+    });
+    const end = endOfWeek(new Date(), {
+      weekStartsOn: 1,
     });
 
-    this.selectedDayEvents = [];
-    this.refresh.next();
+    return this.allReservations.filter((reservation) => {
+      const date = this.parseLocalDate(
+        reservation.reservedAt
+      );
+
+      return isWithinInterval(date, {
+        start,
+        end,
+      });
+    }).length;
+  }
+
+  get confirmedReservationsCount(): number {
+    return this.countInCurrentRange(
+      this.allReservations.filter((r) => r.statusId === 2)
+    );
+  }
+
+  get cancelledReservationsCount(): number {
+    return this.countInCurrentRange(
+      this.allReservations.filter((r) => r.statusId === 3)
+    );
   }
 
   isTodayOrFuture(reservedAt: string | Date): boolean {
@@ -560,6 +1141,7 @@ export class CalendarReservationsComponent implements OnInit {
       hourAt: '',
       reservedAt: selectedDate,
     };
+    this.filteredSpecialists = [];
     // 🔥 generar horas disponibles
     this.generateAvailableHours(selectedDate);
   }
@@ -569,9 +1151,16 @@ export class CalendarReservationsComponent implements OnInit {
   }
 
   createReservation() {
+    const selectedServiceId = this.toPositiveNumberOrNull(
+      this.createReservationData.serviceId
+    );
+
     const body = {
       customerId: this.createReservationData.customerId,
-      serviceId: this.createReservationData.serviceId,
+      serviceId: selectedServiceId,
+      ServiceId: selectedServiceId,
+      productId: selectedServiceId,
+      ProductId: selectedServiceId,
       specialistId: this.createReservationData.specialistId,
       requiresPersonalAdvice:
         this.createReservationData.requiresPersonalAdvice,
@@ -580,25 +1169,142 @@ export class CalendarReservationsComponent implements OnInit {
       reservedAt: this.createReservationData.reservedAt,
     };
 
+    const fingerprint = this.buildReservationFingerprint(body);
+
+    console.log('[CalendarReservations] createReservation payload:', body);
+
+    if (selectedServiceId !== null) {
+      this.saveServiceSelectionCache(
+        selectedServiceId,
+        null,
+        fingerprint
+      );
+    }
+
     this.reservationsService.createReservation(body).subscribe({
-      next: () => {
+      next: (response: any) => {
+        console.log('[CalendarReservations] createReservation OK', response);
+
+        const createdReservationId = this.toNumberOrNull(
+          response?.id
+        );
+
+        if (
+          selectedServiceId !== null &&
+          createdReservationId !== null
+        ) {
+          this.saveServiceSelectionCache(
+            selectedServiceId,
+            createdReservationId,
+            fingerprint
+          );
+        }
+
         this.closeCreateModal();
-        this.loadReservations();
+        this.startReservationRegistrationFlow(
+          createdReservationId,
+          fingerprint
+        );
       },
       error: (err) => {
-        console.error(err);
+        console.error('[CalendarReservations] createReservation ERROR', err);
       },
     });
   }
 
-  onSpecialistChange() {
-    const specialist = this.specialists.find(
-      (s) => s.id === this.createReservationData.specialistId
+  private startReservationRegistrationFlow(
+    createdReservationId: number | null,
+    fingerprint: string
+  ) {
+    this.processingOverlay.show('Se esta registrando tu reservacion...');
+    this.pollReservationUntilVisible(
+      createdReservationId,
+      fingerprint,
+      0
+    );
+  }
+
+  private pollReservationUntilVisible(
+    createdReservationId: number | null,
+    fingerprint: string,
+    attempt: number
+  ) {
+    this.reservationsService.getReservations().subscribe({
+      next: (reservations) => {
+        this.rawReservations = reservations ?? [];
+        this.mapReservationsAndEvents();
+
+        const found = this.rawReservations.some((reservation) => {
+          const reservationId = this.toNumberOrNull(reservation?.id);
+
+          if (
+            createdReservationId !== null &&
+            reservationId === createdReservationId
+          ) {
+            return true;
+          }
+
+          return (
+            fingerprint.length > 0 &&
+            this.buildReservationFingerprint(reservation) === fingerprint
+          );
+        });
+
+        if (found) {
+          this.clearReservationSyncTimer();
+          this.processingOverlay.hide();
+          return;
+        }
+
+        if (attempt >= this.reservationSyncMaxAttempts - 1) {
+          this.clearReservationSyncTimer();
+          this.processingOverlay.hide();
+          this.loadReservations();
+          return;
+        }
+
+        this.clearReservationSyncTimer();
+        this.reservationSyncTimer = setTimeout(() => {
+          this.pollReservationUntilVisible(
+            createdReservationId,
+            fingerprint,
+            attempt + 1
+          );
+        }, this.reservationSyncDelayMs);
+      },
+      error: () => {
+        if (attempt >= this.reservationSyncMaxAttempts - 1) {
+          this.clearReservationSyncTimer();
+          this.processingOverlay.hide();
+          this.loadReservations();
+          return;
+        }
+
+        this.clearReservationSyncTimer();
+        this.reservationSyncTimer = setTimeout(() => {
+          this.pollReservationUntilVisible(
+            createdReservationId,
+            fingerprint,
+            attempt + 1
+          );
+        }, this.reservationSyncDelayMs);
+      },
+    });
+  }
+
+  private clearReservationSyncTimer() {
+    if (this.reservationSyncTimer !== null) {
+      clearTimeout(this.reservationSyncTimer);
+      this.reservationSyncTimer = null;
+    }
+  }
+
+  onServiceChange() {
+    const service = this.services.find(
+      (item) => item.id === this.createReservationData.serviceId
     );
 
-    this.filteredServices = specialist?.services ?? [];
-
-    // resetear servicio seleccionado
-    this.createReservationData.serviceId = null;
+    this.filteredSpecialists = service?.stylists ?? [];
+    this.createReservationData.specialistId = null;
   }
 }

@@ -1,267 +1,282 @@
-<h2 class="page-title">Calendario de Reservaciones</h2>
+<h2 class="page-title">Agendamiento de Citas</h2>
+<p class="page-subtitle">Administra y organiza las citas de tu salon</p>
 
-<div class="calendar-container">
-  <!-- 🦴 SKELETON LOADER -->
-  <ng-container *ngIf="loading; else calendarContent">
-    <div class="calendar-skeleton">
-      <div class="skeleton-controls">
-        <div class="shimmer shimmer-btn-group"></div>
-        <div class="shimmer shimmer-title"></div>
-        <div class="shimmer shimmer-btn-group"></div>
+<div class="calendar-shell" *ngIf="!loading; else loadingState">
+  <section class="kpi-row">
+    <article class="kpi-card kpi-today">
+      <div class="kpi-icon">📅</div>
+      <div>
+        <p>Citas hoy</p>
+        <h4>{{ todayReservationsCount }}</h4>
+      </div>
+    </article>
+
+    <article class="kpi-card kpi-week">
+      <div class="kpi-icon">🗓️</div>
+      <div>
+        <p>Citas esta semana</p>
+        <h4>{{ weekReservationsCount }}</h4>
+      </div>
+    </article>
+
+    <article class="kpi-card kpi-confirmed">
+      <div class="kpi-icon">✅</div>
+      <div>
+        <p>Citas confirmadas</p>
+        <h4>{{ confirmedReservationsCount }}</h4>
+      </div>
+    </article>
+
+    <article class="kpi-card kpi-cancelled">
+      <div class="kpi-icon">⛔</div>
+      <div>
+        <p>Citas canceladas</p>
+        <h4>{{ cancelledReservationsCount }}</h4>
+      </div>
+    </article>
+  </section>
+
+  <section class="toolbar">
+    <div class="left-tools">
+      <div class="view-switch">
+        <button class="view-btn" [class.active]="view === CalendarView.Day" (click)="view = CalendarView.Day">Dia</button>
+        <button class="view-btn" [class.active]="view === CalendarView.Week" (click)="view = CalendarView.Week">Semana</button>
+        <button class="view-btn" [class.active]="view === CalendarView.Month" (click)="view = CalendarView.Month">Mes</button>
+      </div>
+    </div>
+
+    <div class="center-tools">
+      <button class="icon-btn" (click)="prev()">‹</button>
+      <button class="today-btn" (click)="today()">Hoy</button>
+      <button class="icon-btn" (click)="next()">›</button>
+      <span class="range-label">{{ getCurrentRangeLabel() }}</span>
+    </div>
+
+    <div class="right-tools">
+      <button class="create-btn" (click)="openCreateReservationModal()">+ Nueva cita</button>
+    </div>
+  </section>
+
+  <section class="calendar-layout">
+    <aside class="left-panel">
+      <div class="mini-calendar panel-card">
+        <h5>{{ viewDate | date : 'MMMM yyyy' }}</h5>
+        <input
+          type="date"
+          class="form-control"
+          [ngModel]="viewDate | date : 'yyyy-MM-dd'"
+          (ngModelChange)="onMiniDateChange($event)"
+        />
       </div>
 
-      <div class="calendar-skeleton-surface">
-        <div class="shimmer shimmer-calendar-header"></div>
-        <div class="skeleton-grid">
-          <div
-            *ngFor="let i of [].constructor(35)"
-            class="shimmer shimmer-cell"
-          ></div>
+      <div class="panel-card">
+        <h5>Estados</h5>
+        <div class="status-chips">
+          <button
+            class="status-chip"
+            [class.active]="selectedStatusId === null"
+            (click)="filterByStatus(null)"
+          >
+            Todos
+          </button>
+
+          <button
+            *ngFor="let s of statuses"
+            class="status-chip"
+            [class.active]="selectedStatusId === s.id"
+            (click)="filterByStatus(s.id)"
+          >
+            {{ s.name }}
+          </button>
         </div>
       </div>
 
-      <div class="skeleton-table mt-4">
-        <div class="shimmer shimmer-table-title"></div>
-        <div
-          *ngFor="let i of [].constructor(5)"
-          class="shimmer shimmer-row"
-        ></div>
-      </div>
-    </div>
-  </ng-container>
+      <div class="panel-card">
+        <h5>Estilistas</h5>
+        <div class="specialist-list">
+          <button
+            class="specialist-pill"
+            [class.active]="selectedSpecialistId === null"
+            (click)="filterBySpecialist(null)"
+          >
+            Todos
+          </button>
 
-  <!-- 📅 CONTENIDO REAL -->
-  <ng-template #calendarContent>
-    <!-- 🔁 CONTROLES SUPERIORES -->
-    <div class="calendar-controls">
-      <div class="calendar-view-toggle">
-        <button
-          class="calendar-btn"
-          [class.active]="view === CalendarView.Month"
-          (click)="view = CalendarView.Month"
+          <button
+            *ngFor="let specialist of specialists"
+            class="specialist-pill"
+            [class.active]="selectedSpecialistId === specialist.id"
+            (click)="filterBySpecialist(specialist.id)"
+          >
+            {{ specialist.firstName }} {{ specialist.lastName }}
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-panel panel-card">
+      <div class="calendar-wrapper">
+        <mwl-calendar-month-view
+          *ngIf="view === CalendarView.Month"
+          [viewDate]="viewDate"
+          [events]="events"
+          [refresh]="refresh"
+          [cellTemplate]="monthCellTemplate"
+          [activeDayIsOpen]="false"
+          (dayClicked)="onDayClicked($event.day.date)"
+          (eventClicked)="onEventClicked($event.event)"
+          [locale]="locale"
+          class="calendar-surface"
         >
-          Mes
-        </button>
-        <button
-          class="calendar-btn"
-          [class.active]="view === CalendarView.Week"
-          (click)="view = CalendarView.Week"
+        </mwl-calendar-month-view>
+
+        <mwl-calendar-week-view
+          *ngIf="view === CalendarView.Week"
+          [viewDate]="viewDate"
+          [events]="events"
+          [hourSegments]="hourSegments"
+          [dayStartHour]="dayStartHour"
+          [dayEndHour]="dayEndHour"
+          [refresh]="refresh"
+          [locale]="locale"
+          (eventClicked)="onEventClicked($event.event)"
+          class="calendar-surface"
         >
-          Semana
-        </button>
-        <button
-          class="calendar-btn"
-          [class.active]="view === CalendarView.Day"
-          (click)="view = CalendarView.Day"
+        </mwl-calendar-week-view>
+
+        <mwl-calendar-day-view
+          *ngIf="view === CalendarView.Day"
+          [viewDate]="viewDate"
+          [events]="events"
+          [hourSegments]="hourSegments"
+          [dayStartHour]="dayStartHour"
+          [dayEndHour]="dayEndHour"
+          [refresh]="refresh"
+          [locale]="locale"
+          (eventClicked)="onEventClicked($event.event)"
+          class="calendar-surface"
         >
-          Día
-        </button>
+        </mwl-calendar-day-view>
       </div>
+    </main>
+  </section>
 
-      <div class="calendar-title">
-        {{
-          viewDate
-            | date : (view === CalendarView.Month ? "MMMM yyyy" : "dd MMM yyyy")
-        }}
-      </div>
-
-      <div class="calendar-nav">
-        <button class="calendar-btn" (click)="prev()">‹</button>
-        <button class="calendar-btn calendar-btn-today" (click)="today()">
-          Hoy
-        </button>
-        <button class="calendar-btn" (click)="next()">›</button>
-      </div>
-    </div>
-
-    <!-- 🔍 FILTROS POR ESTADO -->
-    <div class="status-filters">
-      <button
-        class="status-btn"
-        [class.active]="selectedStatusId === null"
-        (click)="filterByStatus(null)"
-      >
-        Todos
-      </button>
-
-      <button
-        *ngFor="let s of statuses"
-        class="status-btn"
-        [ngClass]="getStatusClass(s.id)"
-        [class.active]="selectedStatusId === s.id"
-        (click)="filterByStatus(s.id)"
-      >
-        {{ s.name }}
-      </button>
-    </div>
-
-    <div class="calendar-actions">
-      <button
-        class="btn-create-reservation"
-        (click)="openCreateReservationModal()"
-      >
-        + Nueva reservación
-      </button>
-    </div>
-
-    <!-- 📊 LEYENDA DE ESTADOS -->
-    <div class="status-legend">
-      <div *ngFor="let s of statuses" class="legend-item">
-        <span
-          class="legend-dot"
-          [ngStyle]="{ background: statusColors[s.id].primary }"
-        ></span>
-        <span class="legend-text">{{ s.name }}</span>
-      </div>
-    </div>
-
-    <!-- 📅 CALENDARIO -->
-    <div class="calendar-wrapper">
-      <mwl-calendar-month-view
-        *ngIf="view === CalendarView.Month"
-        [viewDate]="viewDate"
-        [events]="events"
-        [refresh]="refresh"
-        (dayClicked)="onDayClicked($event.day.date)"
-        (eventClicked)="onEventClicked($event.event)"
-        [locale]="locale"
-        class="calendar-surface"
-      >
-      </mwl-calendar-month-view>
-
-      <mwl-calendar-week-view
-        *ngIf="view === CalendarView.Week"
-        [viewDate]="viewDate"
-        [events]="events"
-        [hourSegments]="hourSegments"
-        [dayStartHour]="dayStartHour"
-        [dayEndHour]="dayEndHour"
-        [refresh]="refresh"
-        [locale]="locale"
-        (eventClicked)="onEventClicked($event.event)"
-        class="calendar-surface"
-      >
-      </mwl-calendar-week-view>
-
-      <mwl-calendar-day-view
-        *ngIf="view === CalendarView.Day"
-        [viewDate]="viewDate"
-        [events]="events"
-        [hourSegments]="hourSegments"
-        [dayStartHour]="dayStartHour"
-        [dayEndHour]="dayEndHour"
-        [refresh]="refresh"
-        [locale]="locale"
-        (eventClicked)="onEventClicked($event.event)"
-        class="calendar-surface"
-      >
-      </mwl-calendar-day-view>
-    </div>
-
-    <!-- 📋 TABLA DE RESERVAS DEL DÍA -->
-    <div *ngIf="selectedDayEvents.length > 0" class="day-table">
-      <div class="day-table-header">
-        <h6 class="day-table-title">
-          📅 Reservas del {{ selectedDate | date : "dd/MM/yyyy" }}
-        </h6>
-        <span class="badge bg-secondary"
-          >{{ selectedDayEvents.length }} reservas</span
-        >
-      </div>
-
-      <table class="reservations-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Cliente</th>
-            <th>Especialista</th>
-            <th>Hora</th>
-            <th class="text-center">Estado</th>
-            <th class="text-center">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let e of selectedDayEvents">
-            <td class="fw-semibold">{{ e.meta.id }}</td>
-            <td>{{ e.meta.customerName }}</td>
-            <td>{{ e.meta.specialistName }}</td>
-
-            <td>
-              <span class="badge bg-info text-dark">
-                {{ e.meta.hourAt }}
-              </span>
-            </td>
-
-            <!-- ESTADO -->
-            <td class="text-center">
-              <span class="badge" [ngClass]="getStatusClass(e.meta.statusId)">
-                {{ getStatusName(e.meta.statusId) }}
-              </span>
-            </td>
-
-            <!-- ACCIONES -->
-            <td class="text-center">
-              <ng-container
-                *ngIf="isTodayOrFuture(e.meta.reservedAt); else noActions"
-              >
-                <div class="dropdown position-static">
-                  <button
-                    class="btn btn-sm btn-light border dropdown-toggle"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                  >
-                    Cambiar estado
-                  </button>
-
-                  <ul class="dropdown-menu">
-                    <li
-                      *ngFor="let s of statuses"
-                      [hidden]="s.id === e.meta.statusId"
-                    >
-                      <!-- 🔁 Reprogramar -->
-                      <button
-                        *ngIf="s.id === 6"
-                        class="dropdown-item text-info"
-                        (click)="onReprogramFromCalendar(e.meta)"
-                      >
-                        🔁 {{ s.name }}
-                      </button>
-
-                      <!-- 🔄 Otros estados -->
-                      <button
-                        *ngIf="s.id !== 6"
-                        class="dropdown-item"
-                        (click)="onChangeStatusFromCalendar(e.meta, s.id)"
-                      >
-                        {{ s.name }}
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              </ng-container>
-
-              <ng-template #noActions>
-                <span class="text-muted small">—</span>
-              </ng-template>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </ng-template>
 </div>
-<!-- 🗓 MODAL REPROGRAMAR -->
+
+<ng-template #monthCellTemplate let-day="day">
+  <button
+    type="button"
+    class="month-cell-custom"
+    [class.out-month]="!isInCurrentMonth(day.date)"
+    [class.selected-day]="isSelectedMonthDate(day.date)"
+    (click)="openDayEventsFromMonth(day.date)"
+  >
+    <span class="month-day-number">{{ day.date | date : 'd' }}</span>
+
+    <div
+      class="month-day-events"
+      *ngIf="getMonthCellEvents(day.date).length > 0"
+    >
+      <span
+        class="month-event-chip"
+        *ngFor="let event of getMonthCellEvents(day.date)"
+        [ngStyle]="{ background: event.color?.primary }"
+      >
+        {{ event.meta.customerName }} {{ event.meta.serviceName }}
+      </span>
+
+      <span class="month-more-text" *ngIf="getMonthCellMoreCount(day.date) > 0">
+        {{ getMonthCellMoreCount(day.date) }} citas mas
+      </span>
+    </div>
+  </button>
+</ng-template>
+
+<ng-template #loadingState>
+  <div class="loading-grid">
+    <section class="loading-kpi-row">
+      <div class="loading-card" *ngFor="let i of [1,2,3,4]"></div>
+    </section>
+
+    <section class="loading-layout">
+      <div class="loading-card"></div>
+      <div class="loading-calendar"></div>
+    </section>
+
+    <section class="loading-table-panel">
+      <div class="loading-table-header"></div>
+      <div class="loading-table-row" *ngFor="let i of [1,2,3,4,5,6]"></div>
+    </section>
+  </div>
+</ng-template>
+
+<div class="modal d-block" *ngIf="showEventDetailModal && selectedEventDetail">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content shadow-sm">
+      <div class="modal-header py-2">
+        <h6 class="modal-title mb-0">Detalle de cita</h6>
+        <button type="button" class="btn-close" (click)="closeEventDetailModal()"></button>
+      </div>
+
+      <div class="modal-body event-detail-body">
+        <p><strong>Cliente:</strong> {{ selectedEventDetail.customerName }}</p>
+        <p><strong>Servicio:</strong> {{ selectedEventDetail.serviceName }}</p>
+        <p><strong>Especialista:</strong> {{ selectedEventDetail.specialistName }}</p>
+        <p><strong>Fecha:</strong> {{ selectedEventDetail.reservedAt | date : 'dd/MM/yyyy' }}</p>
+        <p><strong>Hora:</strong> {{ selectedEventDetail.hourAt }}</p>
+        <p>
+          <strong>Estado:</strong>
+          <span class="badge ms-1" [ngClass]="getStatusClass(selectedEventDetail.statusId)">
+            {{ getStatusName(selectedEventDetail.statusId) }}
+          </span>
+        </p>
+      </div>
+
+      <div class="modal-footer py-2">
+        <button class="btn btn-sm btn-outline-secondary" (click)="closeEventDetailModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal d-block" *ngIf="showDayEventsModal">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content shadow-sm">
+      <div class="modal-header py-2">
+        <h6 class="modal-title mb-0">
+          Citas del {{ selectedDate | date : 'dd/MM/yyyy' }}
+        </h6>
+        <button type="button" class="btn-close" (click)="closeDayEventsModal()"></button>
+      </div>
+
+      <div class="modal-body day-events-body">
+        <button
+          type="button"
+          class="day-event-item"
+          *ngFor="let event of selectedDayEvents"
+          (click)="openEventDetailFromDayModal(event)"
+        >
+          <span class="day-event-time">{{ event.meta.hourAt }}</span>
+          <span class="day-event-copy">
+            <strong>{{ event.meta.customerName }}</strong>
+            <small>{{ event.meta.serviceName }}</small>
+          </span>
+        </button>
+      </div>
+
+      <div class="modal-footer py-2">
+        <button class="btn btn-sm btn-outline-secondary" (click)="closeDayEventsModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal d-block" *ngIf="showReprogramModal">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content shadow">
-
       <div class="modal-header">
         <h5 class="modal-title">🔄 Reprogramar reserva</h5>
-        <button
-          type="button"
-          class="btn-close"
-          (click)="closeReprogramModal()"
-        ></button>
+        <button type="button" class="btn-close" (click)="closeReprogramModal()"></button>
       </div>
 
       <div class="modal-body">
@@ -280,116 +295,73 @@
           <label class="form-label">Hora</label>
           <select class="form-select" [(ngModel)]="reprogramData.hour">
             <option value="">Seleccione hora</option>
-            <option *ngFor="let h of availableHours" [value]="h">
-              {{ h }}
-            </option>
+            <option *ngFor="let h of availableHours" [value]="h">{{ h }}</option>
           </select>
         </div>
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="closeReprogramModal()">
-          Cancelar
-        </button>
-        <button class="btn btn-primary" (click)="submitReprogram()">
-          Guardar
-        </button>
+        <button class="btn btn-secondary" (click)="closeReprogramModal()">Cancelar</button>
+        <button class="btn btn-primary" (click)="submitReprogram()">Guardar</button>
       </div>
-
     </div>
   </div>
 </div>
 
-<!-- CREAR RESERVACIÓN -->
- <div class="modal d-block" *ngIf="showCreateModal">
+<div class="modal d-block" *ngIf="showCreateModal">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content shadow">
-
       <div class="modal-header">
-        <h5 class="modal-title">
-          ✨ Nueva reservación
-        </h5>
+        <h5 class="modal-title">✨ Nueva reservacion</h5>
 
-        <button
-          type="button"
-          class="btn-close"
-          (click)="closeCreateModal()"
-        ></button>
+        <button type="button" class="btn-close" (click)="closeCreateModal()"></button>
       </div>
 
       <div class="modal-body">
-
-        <!-- CLIENTE -->
         <div class="mb-3">
           <label class="form-label">Cliente</label>
 
-          <select
-            class="form-select"
-            [(ngModel)]="createReservationData.customerId"
-          >
-            <option [ngValue]="null">
-              Seleccione cliente
-            </option>
+          <select class="form-select" [(ngModel)]="createReservationData.customerId">
+            <option [ngValue]="null">Seleccione cliente</option>
 
-            <option
-              *ngFor="let c of users"
-              [ngValue]="c.id"
-            >
+            <option *ngFor="let c of users" [ngValue]="c.id">
               {{ c.firstName }} {{ c.lastName }}
             </option>
           </select>
         </div>
 
-        <!-- ESPECIALISTA -->
         <div class="mb-3">
-          <label class="form-label">
-            Especialista
-          </label>
-
-          <select
-            class="form-select"
-            [(ngModel)]="createReservationData.specialistId"
-            (change)="onSpecialistChange()"
-          >
-            <option [ngValue]="null">
-              Seleccione especialista
-            </option>
-
-            <option
-              *ngFor="let s of specialists"
-              [ngValue]="s.id"
-            >
-              {{ s.firstName }}
-              {{ s.lastName }}
-            </option>
-          </select>
-        </div>
-
-        <!-- SERVICIO -->
-        <div class="mb-3">
-          <label class="form-label">
-            Servicio
-          </label>
+          <label class="form-label">Servicio</label>
 
           <select
             class="form-select"
             [(ngModel)]="createReservationData.serviceId"
-            [disabled]="!createReservationData.specialistId"
+            (change)="onServiceChange()"
           >
-            <option [ngValue]="null">
-              Seleccione servicio
-            </option>
+            <option [ngValue]="null">Seleccione servicio</option>
 
-            <option
-              *ngFor="let service of filteredServices"
-              [ngValue]="service.id"
-            >
+            <option *ngFor="let service of services" [ngValue]="service.id">
               {{ service.name }}
             </option>
           </select>
         </div>
 
-        <!-- FECHA -->
+        <div class="mb-3">
+          <label class="form-label">Especialista</label>
+
+          <select
+            class="form-select"
+            [(ngModel)]="createReservationData.specialistId"
+            [disabled]="!createReservationData.serviceId"
+          >
+            <option [ngValue]="null">Seleccione especialista</option>
+
+            <option *ngFor="let specialist of filteredSpecialists" [ngValue]="specialist.id">
+              {{ specialist.firstName }} {{ specialist.lastName }}
+            </option>
+          </select>
+        </div>
+
         <div class="mb-3">
           <label class="form-label">Fecha</label>
 
@@ -401,28 +373,18 @@
           />
         </div>
 
-        <!-- HORA -->
         <div class="mb-3">
           <label class="form-label">Hora</label>
 
-          <select
-            class="form-select"
-            [(ngModel)]="createReservationData.hourAt"
-          >
-            <option value="">
-              Seleccione hora
-            </option>
+          <select class="form-select" [(ngModel)]="createReservationData.hourAt">
+            <option value="">Seleccione hora</option>
 
-            <option
-              *ngFor="let h of availableHours"
-              [value]="h"
-            >
+            <option *ngFor="let h of availableHours" [value]="h">
               {{ h }}
             </option>
           </select>
         </div>
 
-        <!-- ASESORÍA -->
         <div class="form-check">
           <input
             class="form-check-input"
@@ -430,37 +392,18 @@
             [(ngModel)]="createReservationData.requiresPersonalAdvice"
           />
 
-          <label class="form-check-label">
-            Requiere asesoría personalizada
-          </label>
+          <label class="form-check-label">Requiere asesoria personalizada</label>
         </div>
-
       </div>
 
       <div class="modal-footer">
-        <button
-          class="btn btn-secondary"
-          (click)="closeCreateModal()"
-        >
-          Cancelar
-        </button>
+        <button class="btn btn-secondary" (click)="closeCreateModal()">Cancelar</button>
 
-        <button
-          class="btn btn-primary"
-          (click)="createReservation()"
-        >
-          Crear reservación
-        </button>
+        <button class="btn btn-primary" (click)="createReservation()">Crear reservacion</button>
       </div>
-
     </div>
   </div>
 </div>
 
-<div
-  class="modal-backdrop show"
-  *ngIf="showCreateModal"
-></div>
-
-<!-- backdrop -->
+<div class="modal-backdrop show" *ngIf="showCreateModal"></div>
 <div class="modal-backdrop show" *ngIf="showReprogramModal"></div>

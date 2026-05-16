@@ -1,8 +1,12 @@
 import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { Chart } from 'chart.js/auto';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { GetReservations } from 'src/app/core/models/reservations';
 import { ReservationStatusesService } from 'src/app/core/services/reservation-statuses.service';
 import { ReservationsService } from 'src/app/core/services/reservations.service';
+import { ProductsService } from 'src/app/core/services/products.service';
+import { SalonServicesService } from 'src/app/core/services/salon-services.service';
 import * as XLSX from 'xlsx';
 import flatpickr from 'flatpickr';
 import { Spanish } from 'flatpickr/dist/l10n/es';
@@ -23,6 +27,7 @@ export class ViewReservationsComponent implements AfterViewInit {
   loading = true;
   private usersLoaded = false;
   private reservationsLoaded = false;
+  private serviceContextLoaded = false;
 
   reservations: GetReservations[] = [];
   allReservations: GetReservations[] = [];
@@ -39,6 +44,13 @@ export class ViewReservationsComponent implements AfterViewInit {
   pieChart!: Chart<'pie', number[], string>;
   specialistsMap = new Map<number, string>();
   usersMap = new Map<number, any>();
+  serviceNamesMap = new Map<number, string>();
+  servicePriceMap = new Map<number, number>();
+  specialistServiceIdsMap = new Map<number, number[]>();
+  reservationServiceCacheById = new Map<number, number>();
+  reservationServiceCacheByFingerprint = new Map<string, number>();
+  private readonly reservationServiceCacheKey =
+    'calendarReservationServiceCacheV1';
   statues = [
     {
       id: 1,
@@ -82,14 +94,28 @@ export class ViewReservationsComponent implements AfterViewInit {
     private reservationsService: ReservationsService,
     private reservationStatusesService: ReservationStatusesService,
     private usersService: UsersService,
+    private salonServicesService: SalonServicesService,
+    private productsService: ProductsService,
     private modalService: NgbModal
   ) {}
 
   ngOnInit() {
     this.loading = true;
+    this.loadReservationServiceCache();
     this.loadSpecialists();
+    this.loadServiceContext();
     this.loadUsers();
     this.loadReservations();
+  }
+
+  private tryMapReservations() {
+    if (
+      this.usersLoaded &&
+      this.reservationsLoaded &&
+      this.serviceContextLoaded
+    ) {
+      this.mapReservations();
+    }
   }
 
   loadReservations() {
@@ -97,12 +123,137 @@ export class ViewReservationsComponent implements AfterViewInit {
       next: (res) => {
         this.rawReservations = res;
         this.reservationsLoaded = true;
-        if (this.usersLoaded) this.mapReservations();
+        this.tryMapReservations();
       },
       error: () => {
         this.loading = false;
       },
     });
+  }
+
+  private loadServiceContext() {
+    forkJoin({
+      services: this.salonServicesService
+        .getServices()
+        .pipe(catchError(() => of([]))),
+      products: this.productsService
+        .getProducts()
+        .pipe(catchError(() => of([]))),
+    }).subscribe({
+      next: ({ services, products }) => {
+        this.buildServiceLookup(services as any[], products as any[]);
+
+        const serviceIds = Array.from(this.serviceNamesMap.keys()).filter(
+          (id) => id > 0
+        );
+
+        if (serviceIds.length === 0) {
+          this.serviceContextLoaded = true;
+          this.tryMapReservations();
+          return;
+        }
+
+        const requests = serviceIds.map((serviceId) =>
+          this.salonServicesService
+            .getServiceStylists(serviceId)
+            .pipe(catchError(() => of([])))
+        );
+
+        forkJoin(requests).subscribe({
+          next: (responses) => {
+            const specialistMap = new Map<number, number[]>();
+
+            responses.forEach((response, index) => {
+              const serviceId = serviceIds[index];
+              const stylists = this.normalizeStylistsResponse(response);
+
+              stylists.forEach((stylist: any) => {
+                const specialistId = Number(stylist?.id);
+                if (!Number.isFinite(specialistId) || specialistId <= 0) {
+                  return;
+                }
+
+                const current = specialistMap.get(specialistId) || [];
+                if (!current.includes(serviceId)) {
+                  current.push(serviceId);
+                }
+                specialistMap.set(specialistId, current);
+              });
+            });
+
+            this.specialistServiceIdsMap = specialistMap;
+            this.serviceContextLoaded = true;
+            this.tryMapReservations();
+          },
+          error: () => {
+            this.serviceContextLoaded = true;
+            this.tryMapReservations();
+          },
+        });
+      },
+      error: () => {
+        this.serviceContextLoaded = true;
+        this.tryMapReservations();
+      },
+    });
+  }
+
+  private buildServiceLookup(services: any[], products: any[]) {
+    this.serviceNamesMap = new Map<number, string>();
+    this.servicePriceMap = new Map<number, number>();
+
+    products.forEach((product: any) => {
+      const typeName = String(
+        product?.productType?.name ||
+          product?.ProductType?.name ||
+          product?.productTypeName ||
+          product?.ProductType ||
+          ''
+      ).toLowerCase();
+
+      if (!typeName.includes('service')) {
+        return;
+      }
+
+      const id = Number(product?.id);
+      const name = String(product?.name || product?.Name || '').trim();
+      const price = Number(product?.price ?? product?.Price ?? 0);
+
+      if (Number.isFinite(id) && id > 0) {
+        if (name) {
+          this.serviceNamesMap.set(id, name);
+        }
+
+        if (Number.isFinite(price)) {
+          this.servicePriceMap.set(id, price);
+        }
+      }
+    });
+
+    services.forEach((service: any) => {
+      const id = Number(service?.id);
+      const name = String(service?.name || service?.Name || '').trim();
+
+      if (Number.isFinite(id) && id > 0 && name) {
+        this.serviceNamesMap.set(id, name);
+      }
+    });
+  }
+
+  private normalizeStylistsResponse(response: any): any[] {
+    if (Array.isArray(response)) {
+      return response;
+    }
+
+    if (Array.isArray(response?.stylists)) {
+      return response.stylists;
+    }
+
+    if (Array.isArray(response?.data)) {
+      return response.data;
+    }
+
+    return [];
   }
   ngAfterViewInit() {
     this.flatpickrInstance = flatpickr(this.dateRangeInput.nativeElement, {
@@ -261,6 +412,8 @@ export class ViewReservationsComponent implements AfterViewInit {
       Email: r.customerEmail,
       Teléfono: r.customerPhone,
       Especialista: r.specialistName,
+      Servicio: (r as any).resolvedServiceName ?? 'Sin servicio',
+      Precio: Number((r as any).resolvedServicePrice ?? 0).toFixed(2),
       Fecha: r.reservedAt,
       Hora: r.hourAt,
       Estado: this.getStatusLabel(r.statusId),
@@ -357,6 +510,13 @@ export class ViewReservationsComponent implements AfterViewInit {
     return this.specialistsMap.get(id) || `ID ${id}`;
   }
 
+  getResolvedServiceName(reservation: GetReservations): string {
+    return (
+      (reservation as any).resolvedServiceName ||
+      'Sin servicio'
+    );
+  }
+
   loadUsers() {
     this.usersService.getUsers().subscribe((users) => {
       users.forEach((u) => {
@@ -368,13 +528,166 @@ export class ViewReservationsComponent implements AfterViewInit {
       });
 
       this.usersLoaded = true;
-      if (this.reservationsLoaded) this.mapReservations();
+      this.tryMapReservations();
     });
   }
+
+  private resolveServiceId(source: any): number | null {
+    const directId = Number(
+      source?.serviceId ??
+        source?.ServiceId ??
+        source?.productId ??
+        source?.ProductId ??
+        source?.service?.id ??
+        source?.product?.id ??
+        0
+    );
+
+    if (Number.isFinite(directId) && directId > 0) {
+      return directId;
+    }
+
+    const byCache = this.resolveServiceIdFromCache(source);
+    if (byCache !== null) {
+      return byCache;
+    }
+
+    const specialistId = Number(source?.specialistId ?? 0);
+    const servicesByStylist =
+      this.specialistServiceIdsMap.get(specialistId) || [];
+
+    if (servicesByStylist.length === 1) {
+      return servicesByStylist[0];
+    }
+
+    return null;
+  }
+
+  private resolveServiceIdFromCache(source: any): number | null {
+    const reservationId = Number(source?.id ?? 0);
+
+    if (
+      Number.isFinite(reservationId) &&
+      reservationId > 0 &&
+      this.reservationServiceCacheById.has(reservationId)
+    ) {
+      return this.reservationServiceCacheById.get(reservationId) || null;
+    }
+
+    const fingerprint = this.buildReservationFingerprint(source);
+
+    if (
+      fingerprint &&
+      this.reservationServiceCacheByFingerprint.has(fingerprint)
+    ) {
+      return (
+        this.reservationServiceCacheByFingerprint.get(fingerprint) || null
+      );
+    }
+
+    return null;
+  }
+
+  private resolveServiceName(
+    source: any,
+    serviceId: number | null
+  ): string {
+    const directName = String(
+      source?.service?.name ||
+        source?.service?.Name ||
+        source?.serviceName ||
+        source?.productName ||
+        ''
+    ).trim();
+
+    if (
+      directName &&
+      directName.toLowerCase() !== 'sin servicio'
+    ) {
+      return directName;
+    }
+
+    if (serviceId && this.serviceNamesMap.has(serviceId)) {
+      return this.serviceNamesMap.get(serviceId) || 'Sin servicio';
+    }
+
+    return 'Sin servicio';
+  }
+
+  private resolveServicePrice(
+    source: any,
+    serviceId: number | null
+  ): number {
+    const direct = Number(source?.service?.price ?? 0);
+
+    if (Number.isFinite(direct) && direct > 0) {
+      return direct;
+    }
+
+    if (serviceId && this.servicePriceMap.has(serviceId)) {
+      return this.servicePriceMap.get(serviceId) || 0;
+    }
+
+    return 0;
+  }
+
+  private buildReservationFingerprint(source: any): string {
+    const customerId = Number(source?.customerId ?? 0);
+    const specialistId = Number(source?.specialistId ?? 0);
+    const reservedAt = String(source?.reservedAt || '').trim();
+    const hourAt = String(source?.hourAt || '').trim();
+
+    if (
+      !Number.isFinite(customerId) ||
+      customerId <= 0 ||
+      !Number.isFinite(specialistId) ||
+      specialistId <= 0 ||
+      !reservedAt ||
+      !hourAt
+    ) {
+      return '';
+    }
+
+    return `${customerId}|${specialistId}|${reservedAt}|${hourAt}`;
+  }
+
+  private loadReservationServiceCache() {
+    try {
+      const raw = localStorage.getItem(this.reservationServiceCacheKey);
+      if (!raw) {
+        return;
+      }
+
+      const parsed = JSON.parse(raw);
+      const byIdEntries = Array.isArray(parsed?.byId)
+        ? parsed.byId
+        : [];
+      const byFingerprintEntries = Array.isArray(parsed?.byFingerprint)
+        ? parsed.byFingerprint
+        : [];
+
+      this.reservationServiceCacheById = new Map(byIdEntries);
+      this.reservationServiceCacheByFingerprint = new Map(
+        byFingerprintEntries
+      );
+    } catch (error) {
+      console.error('[ViewReservations] error leyendo cache de servicio', error);
+    }
+  }
+
   mapReservations() {
     this.reservations = this.rawReservations.map((r) => {
       const user = this.usersMap.get(r.customerId);
       const specialist = this.specialistsMap.get(r.specialistId);
+      const resolvedServiceId = this.resolveServiceId(r);
+      const resolvedServiceName = this.resolveServiceName(
+        r,
+        resolvedServiceId
+      );
+      const resolvedServicePrice = this.resolveServicePrice(
+        r,
+        resolvedServiceId
+      );
 
       return {
         ...r,
@@ -382,6 +695,9 @@ export class ViewReservationsComponent implements AfterViewInit {
         customerEmail: user?.email ?? '—',
         customerPhone: user?.phone ?? '—',
         specialistName: specialist ?? '—',
+        resolvedServiceId,
+        resolvedServiceName,
+        resolvedServicePrice,
       };
     });
 

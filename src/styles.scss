@@ -25,7 +25,7 @@ $roma-hair-theme: mat.define-light-theme((
 // -----------------------------------------------------
 // 3) Your custom variables (safe here)
 // -----------------------------------------------------
-$primary: #0a0a0f !default;  
+$primary: #3b3b3c !default;  
 $secondary: #12131a !default;
 $success: #10b981 !default;
 $danger: #ef4444 !default;
@@ -136,6 +136,32 @@ body {
 // Glass select dropdown arrow fix
 .orders-filter-select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='rgba(255,255,255,0.6)' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E") !important;
+}
+
+// Global select readability (dropdown list + selected value)
+select,
+.form-select,
+.table-filter-select,
+.orders-filter-select {
+  color: #e5e7eb !important;
+  background-color: rgba(18, 19, 26, 0.78) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  color-scheme: dark;
+}
+
+select option,
+.form-select option,
+.table-filter-select option,
+.orders-filter-select option {
+  color: #f3f4f6;
+  background-color: #171923;
+}
+
+select option:disabled,
+.form-select option:disabled,
+.table-filter-select option:disabled,
+.orders-filter-select option:disabled {
+  color: rgba(243, 244, 246, 0.5);
 }
 
 // Order details glass
