@@ -259,8 +259,19 @@ export class CalendarReservationsComponent implements OnInit, OnDestroy {
       next: (specialists) => {
         this.specialists = specialists;
         specialists.forEach((s: any) => {
+          const specialistId = this.toPositiveNumberOrNull(
+            s?.id
+          );
+
+          if (specialistId === null) {
+            return;
+          }
+
           const fullName = `${s.firstName} ${s.lastName}`;
-          this.specialistsMap.set(s.id, fullName);
+          this.specialistsMap.set(
+            specialistId,
+            fullName
+          );
         });
       },
       error: (err) => {
@@ -273,10 +284,20 @@ export class CalendarReservationsComponent implements OnInit, OnDestroy {
     this.specialistServiceIdsMap = new Map<number, number[]>();
 
     this.specialists.forEach((specialist: any) => {
+      const specialistId = this.toPositiveNumberOrNull(
+        specialist?.id
+      );
+
+      if (specialistId === null) {
+        return;
+      }
+
       specialist.services = [];
       this.services.forEach((service: any) => {
         const exists = service.stylists?.some(
-          (s: any) => s.id === specialist.id
+          (s: any) =>
+            this.toPositiveNumberOrNull(s?.id) ===
+            specialistId
         );
         if (exists) {
           specialist.services.push({
@@ -295,7 +316,7 @@ export class CalendarReservationsComponent implements OnInit, OnDestroy {
       );
 
       this.specialistServiceIdsMap.set(
-        specialist.id,
+        specialistId,
         uniqueServiceIds
       );
     });
@@ -353,9 +374,12 @@ export class CalendarReservationsComponent implements OnInit, OnDestroy {
   private bindStylistsToServices(services: any[]) {
     this.serviceNamesMap = new Map<number, string>();
     services.forEach((service: any) => {
+      const serviceId = this.toPositiveNumberOrNull(
+        service?.id
+      );
       const serviceName = this.getServiceDisplayName(service);
-      if (service?.id != null && serviceName) {
-        this.serviceNamesMap.set(service.id, serviceName);
+      if (serviceId !== null && serviceName) {
+        this.serviceNamesMap.set(serviceId, serviceName);
       }
     });
 
@@ -1300,8 +1324,14 @@ export class CalendarReservationsComponent implements OnInit, OnDestroy {
   }
 
   onServiceChange() {
+    const selectedServiceId = this.toPositiveNumberOrNull(
+      this.createReservationData.serviceId
+    );
+
     const service = this.services.find(
-      (item) => item.id === this.createReservationData.serviceId
+      (item) =>
+        this.toPositiveNumberOrNull(item?.id) ===
+        selectedServiceId
     );
 
     this.filteredSpecialists = service?.stylists ?? [];
