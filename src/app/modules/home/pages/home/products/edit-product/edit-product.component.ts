@@ -176,4 +176,50 @@ export class EditProductComponent implements OnInit {
       }
     });
   }
+
+  eliminarProducto() {
+
+  if (!this.product?.id) return;
+
+  const confirmDelete = confirm(
+    `¿Seguro que deseas eliminar "${this.product.name}"?`
+  );
+
+  if (!confirmDelete) return;
+
+  this.processingOverlay.show('Estamos eliminando el producto');
+
+  this.productsService
+    .deleteProduct(this.product.id)
+    .pipe(
+      finalize(() => {
+        this.processingOverlay.hide();
+      })
+    )
+    .subscribe({
+      next: () => {
+
+        const modalRef = this.modalService.open(
+          NotificationModalComponent,
+          { centered: true }
+        );
+
+        modalRef.componentInstance.title = 'Éxito';
+        modalRef.componentInstance.message =
+          'Producto eliminado correctamente';
+        modalRef.componentInstance.type = 'success';
+
+        modalRef.result.finally(() => {
+          this.router.navigate(['/home/products/view-products']);
+        });
+      },
+
+      error: (err) => {
+        this.openErrorModal(
+          err,
+          'No se pudo eliminar el producto.'
+        );
+      }
+    });
+  }
 }

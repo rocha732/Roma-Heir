@@ -35,6 +35,7 @@ import { ServiceStylistAssignmentComponent } from './pages/home/services/service
 import { ViewServicesComponent } from './pages/home/services/view-services/view-services.component';
 import { CalendarModule, DateAdapter } from 'angular-calendar';
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
+import { CreateServiceComponent } from './pages/home/services/create-services/create-service.component';
 
 @NgModule({
   declarations: [
@@ -61,6 +62,7 @@ import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
     ServiceStylistsEditComponent,
     ServiceStylistAssignmentComponent,
     ViewServicesComponent,
+    CreateServiceComponent
   ],
   imports: [
     CommonModule,

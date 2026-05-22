@@ -9,7 +9,7 @@
   margin-right: auto;
 }
 
-.edit-product-container {
+.create-product-container {
   display: flex;
   flex-direction: column;
   max-width: 700px;
@@ -23,7 +23,7 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
-.edit-product-form {
+.create-product-form {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
@@ -94,8 +94,6 @@ select.form-control {
   cursor: pointer;
   transition: all 0.3s ease;
   background: rgba(255, 255, 255, 0.03);
-  position: relative;
-  overflow: hidden;
   
   &:hover {
     border-color: rgba(59, 130, 246, 0.4);
@@ -130,7 +128,6 @@ select.form-control {
   margin-top: 0.5rem;
   border-radius: 10px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-  object-fit: contain;
 }
 
 // Checkbox styling
@@ -215,7 +212,7 @@ input[type="checkbox"] {
 }
 
 .shimmer-label {
-  width: 200px;
+  width: 120px;
   height: 16px;
   margin-bottom: 0.5rem;
 }
@@ -254,20 +251,4 @@ input[type="checkbox"] {
   height: 44px;
   border-radius: 10px;
   margin-top: 0.5rem;
-}
-
-.button-group{
-  display:flex;
-  gap:12px;
-  margin-top:20px;
-}
-
-.btn-danger{
-  background:#dc3545;
-  border:none;
-  color:white;
-}
-
-.btn-danger:hover{
-  background:#bb2d3b;
 }

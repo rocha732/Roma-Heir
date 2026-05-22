@@ -262,4 +262,58 @@ export class ServiceStylistsEditComponent implements OnInit {
         }
       });
   }
+
+  eliminarServicio() {
+
+  if (!this.service?.id) return;
+
+  const confirmDelete = confirm(
+    `¿Seguro que deseas eliminar "${this.service.name}"?`
+  );
+
+  if (!confirmDelete) return;
+
+  this.processingOverlay.show(
+    'Estamos eliminando el servicio'
+  );
+
+  this.productsService
+    .deleteProduct(this.service.id)
+    .pipe(
+      finalize(() => {
+        this.processingOverlay.hide();
+      })
+    )
+    .subscribe({
+
+      next: () => {
+
+        const modalRef = this.modalService.open(
+          NotificationModalComponent,
+          { centered: true }
+        );
+
+        modalRef.componentInstance.title = 'Éxito';
+        modalRef.componentInstance.message =
+          'Servicio eliminado correctamente';
+        modalRef.componentInstance.type = 'success';
+
+        modalRef.result.finally(() => {
+
+          this.router.navigate([
+            '/home/services/list'
+          ]);
+
+        });
+      },
+
+      error: (err) => {
+
+        this.openErrorModal(
+          err,
+          'No se pudo eliminar el servicio.'
+        );
+      }
+    });
+}
 }

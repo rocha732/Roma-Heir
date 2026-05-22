@@ -1,55 +1,49 @@
-<h2 class="page-title">Editar servicio</h2>
+<h2 class="page-title">Crear nuevo servicio</h2>
 
-<!-- Shimmer Loading -->
-<div *ngIf="loading" class="edit-product-container">
-  <div class="edit-product-form">
+<div *ngIf="loading" class="create-product-container">
+  <div class="create-product-form">
+
+    <div class="form-group">
+      <div class="shimmer shimmer-label"></div>
+      <div class="shimmer shimmer-input"></div>
+    </div>
+
+    <div class="form-group">
+      <div class="shimmer shimmer-label"></div>
+      <div class="shimmer shimmer-textarea"></div>
+    </div>
+
+    <div class="form-group">
+      <div class="shimmer shimmer-label"></div>
+      <div class="shimmer shimmer-input"></div>
+    </div>
+
     <div class="form-group">
       <div class="shimmer shimmer-label"></div>
       <div class="shimmer shimmer-select"></div>
     </div>
+
   </div>
 </div>
 
-<!-- Contenido -->
-<div *ngIf="!loading" class="edit-product-container">
+<div *ngIf="!loading" class="create-product-container">
 
-  <!-- Selector -->
-  <div class="form-group" *ngIf="!service">
-    <label class="form-group-label">
-      Selecciona un servicio para editar:
-    </label>
-
-    <select
-      class="form-control"
-      [(ngModel)]="selectedServiceId"
-      name="selectedServiceId"
-      (change)="onServiceSelect()"
-    >
-      <option [ngValue]="null">
-        Selecciona un servicio
-      </option>
-
-      <option
-        *ngFor="let serv of allServices"
-        [ngValue]="serv.id"
-      >
-        {{ serv.name }}
-      </option>
-    </select>
+  <div
+    *ngIf="successMessage"
+    class="alert alert-success"
+    style="margin-bottom:1rem;"
+  >
+    {{ successMessage }}
   </div>
 
-  <!-- Formulario -->
   <form
-    #serviceForm="ngForm"
-    class="edit-product-form"
-    *ngIf="service"
+    (ngSubmit)="onSubmit()"
+    #productForm="ngForm"
+    class="create-product-form"
   >
 
-    <!-- Nombre -->
     <div class="form-group">
-      <label class="form-group-label">
-        Nombre
-      </label>
+      <label class="form-group-label">Nombre</label>
 
       <input
         type="text"
@@ -60,25 +54,19 @@
       />
     </div>
 
-    <!-- Descripción -->
     <div class="form-group">
-      <label class="form-group-label">
-        Descripción
-      </label>
+      <label class="form-group-label">Descripción</label>
 
       <textarea
         class="form-control"
         name="description"
         [(ngModel)]="service.description"
-        required
-      ></textarea>
+        required>
+      </textarea>
     </div>
 
-    <!-- Precio -->
     <div class="form-group">
-      <label class="form-group-label">
-        Precio
-      </label>
+      <label class="form-group-label">Precio</label>
 
       <input
         type="number"
@@ -90,11 +78,8 @@
       />
     </div>
 
-    <!-- Categoría -->
     <div class="form-group">
-      <label class="form-group-label">
-        Categoría
-      </label>
+      <label class="form-group-label">Categoría</label>
 
       <select
         class="form-control"
@@ -102,24 +87,24 @@
         [(ngModel)]="service.categoryId"
         required
       >
+
         <option [ngValue]="null">
           Selecciona una categoría
         </option>
 
         <option
           *ngFor="let cat of categoryList"
-          [ngValue]="cat.id"
-        >
+          [ngValue]="cat.id">
+
           {{ cat.name }}
+
         </option>
+
       </select>
     </div>
 
-    <!-- Imagen -->
     <div class="form-group">
-      <label class="form-group-label">
-        Imagen
-      </label>
+      <label class="form-group-label">Imagen</label>
 
       <div
         class="image-drop-area"
@@ -155,12 +140,13 @@
           />
 
         </div>
+
       </div>
     </div>
 
-    <!-- Disponible -->
     <div class="form-group">
       <label class="form-group-label">
+
         <input
           type="checkbox"
           name="available"
@@ -168,40 +154,18 @@
         />
 
         Disponible
+
       </label>
     </div>
 
-    <!-- Botón -->
-    <div class="button-group">
-
-      <button
-        type="button"
-        class="btn btn-primary"
-        [disabled]="!serviceForm.form.valid"
-        (click)="actualizarServicio()"
-      >
-        Actualizar servicio
-      </button>
-
-      <button
-        type="button"
-        class="btn btn-danger"
-        (click)="eliminarServicio()"
-      >
-        Eliminar servicio
-      </button>
-
-    </div>
+    <button
+      type="submit"
+      class="btn btn-primary"
+      [disabled]="!productForm.form.valid"
+    >
+      Guardar servicio
+    </button>
 
   </form>
-
-  <!-- Mensaje -->
-  <div
-    *ngIf="successMessage"
-    class="alert alert-success"
-    style="margin-top: 1rem;"
-  >
-    {{ successMessage }}
-  </div>
 
 </div>

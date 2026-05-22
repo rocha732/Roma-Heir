@@ -20,6 +20,7 @@ import { ServiceStylistsComponent } from './pages/home/services/service-stylists
 import { ServiceStylistsEditComponent } from './pages/home/services/service-stylists-edit/service-stylists-edit.component';
 import { ServiceStylistAssignmentComponent } from './pages/home/services/service-stylist-assignment/service-stylist-assignment.component';
 import { ViewServicesComponent } from './pages/home/services/view-services/view-services.component';
+import { CreateServiceComponent } from './pages/home/services/create-services/create-service.component';
 
 const routes: Routes = [
   {
@@ -87,6 +88,7 @@ const routes: Routes = [
         component: ServiceStylistsEditComponent,
         canActivate: [AuthGuard],
       },
+      { path: 'services/create-service', component: CreateServiceComponent },
       {
         path: 'services/edit-stylists',
         component: ServiceStylistsEditComponent,

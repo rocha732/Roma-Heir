@@ -61,4 +61,8 @@ export class ProductsService {
     }
     return this.http.put(`${this.apiUrl}/Products/${id}`, formData);
   }
+
+  deleteProduct(id: number) {
+    return this.http.delete(`${this.apiUrl}/Products/${id}`);
+  }
 }

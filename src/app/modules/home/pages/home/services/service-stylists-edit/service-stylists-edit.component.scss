@@ -255,3 +255,19 @@ input[type="checkbox"] {
   border-radius: 10px;
   margin-top: 0.5rem;
 }
+
+.button-group{
+  display:flex;
+  gap:12px;
+  margin-top:20px;
+}
+
+.btn-danger{
+  background:#dc3545;
+  border:none;
+  color:white;
+}
+
+.btn-danger:hover{
+  background:#bb2d3b;
+}
